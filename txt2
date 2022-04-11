@@ -1,0 +1,72 @@
+Early Blockchain Application 
+Crypto currency:
+ Cryptocurrencies are digital currencies that are built over Blockchain technology that securely records all transaction in a decentralized manner. A cryptocurrency (for example, Bitcoin) could be used as a digital kind of money to get everything from everyday things to larger purchases like cars and houses. This will also bring blockchain recording the dealing and also the new owner of assets. The charm of cryptocurrencies is that everything is recorded in an exceedingly public ledger.
+To date, there square measure roughly half-dozen,700 cryptocurrencies within the world that have a complete market cap around $1.6 trillion, with Bitcoin holding a majority of the worth.
+Advantages of using blockchains for cryptocurrency:
+	They’re global: this means that cryptocurrencies can exchanged quickly and can be accepted as global means of trade.
+
+	They increase privacy: Cryptocurrency payments don’t require personal information, which protects you from your identity being reveled against every your transactions in the public ledger.
+
+	They’re open: As a result of transactions of cryptocurrencies are being printed in public ledger, that means anyone will be able to scrutinize them. That leaves no area for manipulation of transactions, adjusting the foundations in mid-game and removes the dependencies of third party for any validation. The package that constitutes the core of those currencies is freely available for contribution.
+
+Supply-chain :
+By leveraging blockchain in the supply chain, Distributed Ledger Technology (DLT) applications enable global trading partners to transact securely and with consensus over shared facts to increase efficiency, transparency and visibility. Blockchain use cases for supply chain include immutability into the provenance of goods, the elimination of reconciliation pain across multiple parties and the real-time visibility to perform track and trace analysis, assess risks and accelerate physical and financial supply chains.[1]
+Supply chains contain complex networks of suppliers, manufacturers, distributors, retailers, auditors, and consumers. A blockchain’s shared IT infrastructure would streamline workflows for all parties, no matter the size of the business network. Additionally, a shared infrastructure would provide auditors with greater visibility into participants’ activities along the value chain.[2]
+This means that for blockchain in the supply chain, companies can build trust that transactions are correct and secure–even in instances where there is little of no trust established between the parties.
+
+For example, where a company is working with suppliers and logistic carriers across the globe, it will be able to track all parts and be assured that parts are genuine without the need for third parties and intermediaries to continually check. Blockchain technology in supply chain management allows organizations to operate in an almost ‘zero trust’ environment.[3]
+
+Defi: 
+Decentralized finance (DeFi) —refers to the shift from existing centralized monetary systems to peer-to-peer finance enabled DLT, which is engineered totally on Public Blockchain.
+DeFi is a concept that describes financial services that are built on public blockchains, such as Bitcoin and Ethereum,  for an example, enable users to earn interest or borrow against their cryptocurrency holdings. DeFi is comprised of a variety of applications around financial services such as trading, borrowing, lending and derivatives.
+DeFi uses cryptocurrencies and smart contracts to provide financial services to eliminate the need for intermediaries such as guarantors and proceed with minimum collaterals. Such services include lending (where users can lend out their cryptocurrency or tokes or Digital assets and earn interest), receiving a loan instantly, making peer-to-peer trades without brokerage, saving cryptocurrency, and earning a better interest rate than from a bank, and buying derivatives such as stocks.
+
+Land Registry:
+
+
+Role of Blockchain in enhancing current technology:
+5G:
+ Blockchain, as a distributed database system, can record all information about transactions. This fits perfectly into the basic functions and architecture of the IoT. The distributed nature of blockchain allows the industrial entities and various IoT devices to exchange data to and from their peers, eliminating the centralized operational requirement. Blockchain thereby enables users of 5G IoT networks to interact and transact (store and retrieve data) with ensured data provenance and authenticity, accountability, immutability, and non-repudiation for every user. Blockchain can thereby help alleviate the security, privacy concerns associated with IoT, by building trust, cost reduction and the acceleration of transactions, without relying on central participants.
+
+Helium Blockchain: 
+Helium is described as a blockchain-based network for IoT devices that uses nodes as Hotspots to connect wireless devices to the network.
+So, Helium blockchain which is an open-source, public blockchain network that is developed to incentivize the creation of a physical, decentralized wireless network. Instead of building out the network themselves, Helium is paying individuals in cryptocurrency to operate the IoT hotspots.
+Let’s break this down. Firstly, one of the main challenges IoT operators face is the physical build-out of their public network infrastructure. This requires capital, which investors will only provide if they see an appropriate return on investment (ROI). The network build-out also requires time and effort to obtain the permits and approvals to locate the hotspots on buildings and street poles. 
+Secondly, Wi-Fi already has support for IoT devices. However, supporting as many different devices as possible brings up privacy concerns.
+Now here Helium comes into picture, Individuals can install Helium routers called "hotspots". Helium is trying to solve this issue using a decentralized architecture and consensus mechanism providing a long-range form of WiFi called LongFi that reportedly reaches 200 times farther than a traditional WiFi hot spot, or as much as 10 miles depending on environmental conditions.
+Hotspot hosts are paid in Helium Network Tokens (HNT). By having individuals across the globe build and run their network, Helium has eliminated the growth pain points. This is a very creative way to use blockchain technology to support a global wireless network.
+
+
+Metaverse:
+
+The metaverse is defined as a three-dimensional virtual reality space where users can interact with digital objects and with each other in an immersive surrounding. The metaverse is persistent, real-time, infinite, self-sustaining, interoperable, and decentralized.
+
+It is easy to imagine how cryptocurrency could fit into the vision for the metaverse. Crypto is completely untethered from real-world fiat currencies, both in terms of value and physical form. This makes it a convenient mode for payment and transactions in the virtual world.
+
+Also, by its very definition, the metaverse is decentralized in nature. No single entity should or can control the metaverse – decentralizing its currency would go a long way in adhering to this philosophy.
+
+Further, crypto (and blockchain technology in general) could be a useful anchor in a constantly evolving world.
+
+In the metaverse, our surroundings, natural habitats, people’s appearances, objects, etc. would shift according to developer activity and ongoing customization. The immutable nature of blockchain and crypto would introduce necessary stability.
+
+	Self-identity authentication
+As users navigate the metaverse and their identity evolves, blockchain technology can keep track – essentially acting as the equivalent of a social security number, but virtual.
+
+Age, changes to one’s appearance, online activity history, and other unique details can be stored on the blockchain for transparency and to prevent crime in the metaverse.
+
+	Real estate in the metaverse
+Like in-game assets, real estate is another key commodity in the metaverse. Defining and regulating real estate can be a challenge, given that the metaverse is infinite both in terms of space and concurrent users.
+
+Blockchain could act as an immutable record of how real estate is created, altered, traded, and destroyed in the metaverse.
+
+	Creator incentivization
+This will probably be among the first applications of blockchain in the metaverse. In August of last year, Epic Games sued Apple for charging a 30% fee for any purchase that users make through its popular game, Fortnite.
+
+
+---------------------------------- Reference --------------------------------------------------
+[1] https://www.r3.com/customers/supply-chain/
+[2] https://consensys.net/Blockchain-use-cases/supply-chain-management/
+[3] https://blogs.opentext.com/blockchain-in-the-supply-chain/
+
+
+
