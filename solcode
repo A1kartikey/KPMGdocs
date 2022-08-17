@@ -1,0 +1,79 @@
+pragma  solidity ^0.8.7 ;
+
+
+
+
+contract test {
+
+
+
+
+struct  Fee {
+
+
+
+        uint amount ;
+
+        uint price ;
+
+        uint price2 ;
+
+        uint platformfree ;
+
+        uint NFTaddress ;
+
+}
+
+
+
+enum BuyType { ERC721 , ERC1155 }
+
+
+
+function getFees(uint _amount, BuyType, address _nftAddress, uint _tokenId )
+
+
+
+internal returns(Fee[] memory ) {
+
+
+
+Fee[] feeArray;
+
+Fee memory fee1 ;
+
+fee1 = Fee((25*(Trade.unitPrice)/1000,
+
+
+
+    ((10*Trade.unitPrice)/100))
+
+
+
+    ((10*Trade.unitPrice)/100),
+
+
+
+    Fee.platformFee+ buyerFee+ (Trade.unitPrice * Trade.qty),
+
+
+
+    _nftAddress);
+
+
+
+
+feeArray.push(fee1) ; 
+
+
+
+
+return(feeArray);
+
+
+
+}
+
+
+
+}
