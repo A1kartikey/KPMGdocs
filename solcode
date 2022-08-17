@@ -1,79 +1,74 @@
-pragma  solidity ^0.8.7 ;
-
-
+pragma  solidity ^0.8.7 ;
 
 
 contract test {
 
+uint buyerFee = 10 ; 
 
+struct  Fee {
 
-
-struct  Fee {
-
-
-
-        uint amount ;
-
-        uint price ;
-
-        uint price2 ;
-
-        uint platformfree ;
-
-        uint NFTaddress ;
-
+        uint amount ;
+        uint price ;
+        uint price2 ;
+        uint platformfree ;
+        address NFTaddress ;
 }
 
+struct Trade {
 
+        address seller;
+
+        address buyer;
+
+        address erc20Address;
+
+        address nftAddress;
+
+        BuyType nftType;
+
+        uint unitPrice;
+
+        uint amount;
+
+        uint tokenId;
+
+        uint qty;
+
+    }
 
 enum BuyType { ERC721 , ERC1155 }
 
+Fee[] public feeArray;
 
-
-function getFees(uint _amount, BuyType, address _nftAddress, uint _tokenId )
-
-
+function getFees(  uint _amount, BuyType, address _nftAddress, uint _tokenId )
 
 internal returns(Fee[] memory ) {
 
+Trade memory Trade1 ;
 
 
-Fee[] feeArray;
-
-Fee memory fee1 ;
-
-fee1 = Fee((25*(Trade.unitPrice)/1000,
+Fee memory feeTemp ;
+Fee memory Fee1 ;
 
 
+feeTemp = Fee(
+    
+    (25*(Trade1.unitPrice)/1000),
 
-    ((10*Trade.unitPrice)/100))
+    ((10*Trade1.unitPrice)/100),
 
+    ((10*Trade1.unitPrice)/200),
 
+     buyerFee+ (Trade1.unitPrice * Trade1.qty),
 
-    ((10*Trade.unitPrice)/100),
-
-
-
-    Fee.platformFee+ buyerFee+ (Trade.unitPrice * Trade.qty),
-
-
-
-    _nftAddress);
+    _nftAddress);
 
 
-
-
-feeArray.push(fee1) ; 
-
-
+feeArray.push(feeTemp) ; 
 
 
 return(feeArray);
 
-
-
 }
-
-
 
 }
