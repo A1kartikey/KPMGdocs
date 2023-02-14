@@ -1,1 +1,18 @@
-https://api.postman.com/collections/3380735-78c25a39-78f4-4cd5-9329-daee55f7e627?access_key=PMAT-01GS81DHPYMJ77NCM7FQZQRMHA
+{
+    "peers" : ["peer0.org1.example.com","peer0.org2.example.com"],
+    "fcn" : "addDistributorsAndRetailer",
+    "args" : { 
+        
+            "key" : "1002",
+            "cartoon" : "C1",
+            "stakeholder": "Distributor",
+            "productName": "DairyMilk",
+            "quantity": 20,
+          "distributorName": "Kartikey",
+          "distributorLocation": "indian"  
+          
+}
+ 
+
+
+}
