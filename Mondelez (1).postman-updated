@@ -1,0 +1,672 @@
+{
+	"info": {
+		"_postman_id": "563334b9-beae-47dc-b2cc-3f09fecfb8b2",
+		"name": "Mondelez",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "CreateUser",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"jsmith_vg5\",\r\n\"orgName\": \"Org2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/users",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Addproduct",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"peers\" : [\"peer0.org1.example.com\",\"peer0.org2.example.com\"],\r\n    \"fcn\" : \"addproduct\",\r\n    \"args\" : { \r\n        \r\n            \"key\" : \"2\",\r\n            \"rawmaterialname\" : \"buffaloilk\",\r\n            \"farmername\": \"vipin\",\r\n            \"productType\": \"Coco\",\r\n            \"quantity\": 20,\r\n          \"materialexpdate\": \"23/10/2022\",\r\n          \"animaltype\": \"indian\",\r\n          \"materialcolor\": \"blue\",\r\n          \"phvalue\": \"92\",\r\n          \"temperature\": \"20.2\"  \r\n          \r\n}\r\n \r\n\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "supplychain"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deleteProduct",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"peers\" : [\"peer0.org1.example.com\",\"peer0.org2.example.com\"],\r\n    \"fcn\" : \"deleteProduct\",\r\n    \"args\" : { \r\n        \r\n            \"key\" : \"4\"\r\n          \r\n}\r\n \r\n\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "supplychain"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createqr",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"peers\": [\r\n        \"peer0.org1.example.com\",\r\n        \"peer0.org2.example.com\"\r\n    ],\r\n    \"fcn\": \"qrCreate\",\r\n    \"args\": {\r\n        \"key\": \"PO_2084\",\r\n        \"status\": \"CREATED\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "supplychain"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "shippingUnitCarton",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"peers\": [\r\n        \"peer0.org1.example.com\",\r\n        \"peer0.org2.example.com\"\r\n    ],\r\n    \"fcn\": \"shippingUnitCarton\",\r\n    \"args\": {\r\n        \"details\": [\r\n            {\r\n                \"productId\": \"PO_3593\",\r\n                \"productUnits\": 122\r\n\r\n\r\n            },{\r\n                \"productId\": \"PO_6794\",\r\n                \"productUnits\": 100\r\n            }\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/shippingUnitCarton",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"shippingUnitCarton"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "processing product",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"peers\": [\r\n        \"peer0.org1.example.com\",\r\n        \"peer0.org2.example.com\"\r\n    ],\r\n    \"fcn\": \"processingProduct\",\r\n    \"input\": {\r\n  \r\n        \"status\": \"CREATE_QRCODE\",\r\n        \"productImage\": \"\",\r\n        \"processedProductName\": \"\",\r\n        \"details\":{\r\n        \"milk\": {\r\n            \"key\": [\r\n                \"1\",\r\n                \"2\"\r\n            ],\r\n            \"name\": \"vinee\",\r\n            \"type\": \"sdfs\"\r\n        },\r\n        \"coco\": {\r\n            \"key\": [\r\n                \"4\",\r\n                \"5\"\r\n                \r\n            ],\r\n            \"name\": \"vipin\"\r\n        },\r\n        \"almond\": {\r\n            \"key\": [\r\n                \"6\",\r\n                \"7\"\r\n            ],\r\n            \"name\": \"kartikey\"\r\n        }\r\n    }\r\n}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/productProcessing",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"productProcessing"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getmilk list",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName?args=101&fcn=getmilk&peer=[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"query": [
+						{
+							"key": "args",
+							"value": "101"
+						},
+						{
+							"key": "fcn",
+							"value": "getmilk"
+						},
+						{
+							"key": "peer",
+							"value": "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]"
+						}
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "supplychain"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getmproduct",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName?args=Apples&fcn=getProduct&peer=[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"query": [
+						{
+							"key": "args",
+							"value": "Apples"
+						},
+						{
+							"key": "fcn",
+							"value": "getProduct"
+						},
+						{
+							"key": "peer",
+							"value": "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]"
+						}
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "supplychain"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getProductProcessing",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName?args=productProcessing&fcn=getProductProcessing&peer=[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"query": [
+						{
+							"key": "args",
+							"value": "productProcessing"
+						},
+						{
+							"key": "fcn",
+							"value": "getProductProcessing"
+						},
+						{
+							"key": "peer",
+							"value": "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]"
+						}
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "supplychain"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCartoonList",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName?args=getCartoonList&fcn=getCartoonList&peer=[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"query": [
+						{
+							"key": "args",
+							"value": "getCartoonList"
+						},
+						{
+							"key": "fcn",
+							"value": "getCartoonList"
+						},
+						{
+							"key": "peer",
+							"value": "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]"
+						}
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "supplychain"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getProductShippingUnit",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/channels/:channelName/chaincodes/:chaincodeName?args=productProcessing&fcn=getProductShippingUnit&peer=[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"channels",
+						":channelName",
+						"chaincodes",
+						":chaincodeName"
+					],
+					"query": [
+						{
+							"key": "args",
+							"value": "productProcessing"
+						},
+						{
+							"key": "fcn",
+							"value": "getProductShippingUnit"
+						},
+						{
+							"key": "peer",
+							"value": "[\"peer0.org1.example.com\",\"peer0.org2.example.com\"]"
+						}
+					],
+					"variable": [
+						{
+							"key": "channelName",
+							"value": ""
+						},
+						{
+							"key": "chaincodeName",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "gettotal quantity",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/totalquantiity?args=Milk",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"totalquantiity"
+					],
+					"query": [
+						{
+							"key": "args",
+							"value": "Milk"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
