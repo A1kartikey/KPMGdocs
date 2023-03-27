@@ -42,3 +42,5 @@ Improved scalability: Docker containers can be easily scaled up or down to handl
 Increased portability: Docker containers can be easily moved between different environments, making it easy to test and deploy web applications across different platforms and architectures.
 
 Faster development cycles: Docker containers enable developers to quickly spin up new instances of an application, reducing development cycles and enabling faster time-to-market.
+
+ MongoDB stores data in collections of JSON-like documents. Each document can have a different structure, allowing for more flexible data modeling and schema evolution. MongoDB also supports powerful querying and indexing capabilities, making it easy to retrieve and analyze data.
