@@ -7,3 +7,17 @@ Some of the key features of Azure Web App include automatic scaling, load balanc
 Azure Web App also provides a range of tools and services to help developers monitor, debug, and diagnose issues with their applications. This includes logging and monitoring tools, application insights, and integration with popular DevOps tools such as Azure DevOps and GitHub.
 
 Overall, Azure Web App is a powerful and flexible platform for deploying and hosting web applications in the cloud, with a range of features and tools to support developers throughout the development and deployment process.
+
+
+
+Nginx is designed to handle a high volume of traffic and concurrent connections, making it ideal for use in large-scale applications and websites. It is known for its low resource usage, which allows it to handle a large number of requests with minimal hardware requirements.
+
+In addition to serving static and dynamic content, Nginx can also act as a reverse proxy server, load balancer, and HTTP cache. It can be used to distribute traffic across multiple servers, improve application performance by caching frequently accessed content, and improve security by serving as a buffer between the internet and the application server.
+
+Nginx is highly configurable and has a modular architecture that allows developers to add or remove functionality as needed. It can be configured using a variety of methods, including configuration files, environment variables, and command-line options.
+
+Overall, Nginx is a powerful and flexible web server that is widely used by developers and system administrators for its speed, scalability, and versatility.
+
+
+
+
