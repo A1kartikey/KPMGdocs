@@ -1,2 +1,27 @@
+Roles and responsibilities 
 Key roles and responsibilities when operating in a blockchain environment
 Detailed explanation and required skills sets for various roles types – Beginner to expert
+
+
+Governance (Internal and external)
+Key governance models during various phase – Evaluation, design, build, deploy and maintain.
+Governance with multiple parties involved and how changes to network would be implemented (e.g., Supply chain use case with multiple vendors)
+
+
+Technical and implementation specifications
+Capturing hands on technical specification around the specified dev platforms (e.g. Ethereum, Hyperledger, polygon), Consensus mechanism, Data structures (Arweave, IPFS and cloud)
+
+
+Architecture and scalability
+How to build the best solution architecture considering and utilizing the overall Shell product ecosystem and best practices 
+Building a scalable infra and architecture to support growth in users and transactions
+
+
+Guidelines on ensuring security and integrity of the network and its participants 
+How to manage multisig wallets, key managements and overall smart contract and code security standards, audits etc.
+
+
+
+Maintenance and troubleshooting
+Detailed guide on key maintenance activities such as Software, network updates, performance monitoring, regular security audits, compliance monitoring 
+Troubleshoot guides, debugging tools on common issues related to transactions, smart contract or the network itself 
