@@ -1,21 +1,21 @@
-Here are possible key deliverables for a course on blockchain basics:
+Here are possible key deliverables for a course on public blockchain Ethereum:
 
-1. Understanding of the core principles of blockchain technology, including distributed ledgers, consensus algorithms, and cryptographic protocols.
+1. Understanding of the Ethereum blockchain network, including its architecture, nodes, and consensus algorithm.
 
-2. Familiarity with different types of blockchain networks, including public, private, and hybrid blockchains, and their use cases.
+2. Familiarity with the Ethereum Virtual Machine (EVM) and the Solidity programming language used to develop smart contracts.
 
-3. Understanding of the key components of a blockchain network, including nodes, blocks, transactions, and smart contracts.
+3. Hands-on experience with the development and deployment of smart contracts on the Ethereum network, including testing and debugging.
 
-4. Hands-on experience with blockchain development tools and frameworks, such as Ethereum, Solidity, and Remix.
+4. Understanding of the security risks and vulnerabilities of Ethereum smart contracts, and familiarity with best practices for smart contract development and security auditing.
 
-5. Understanding of the security risks and vulnerabilities of blockchain networks, including the 51% attack, double-spending, and smart contract security issues.
+5. Understanding of the Ethereum development ecosystem, including the use of development tools such as Remix, Truffle, and Ganache.
 
-6. Familiarity with the legal and regulatory landscape surrounding blockchain technology, including key laws and regulations such as GDPR, AML/KYC, SEC rules, and the FATF guidelines.
+6. Understanding of the legal and regulatory landscape surrounding Ethereum development, including key laws and regulations such as GDPR, AML/KYC, SEC rules, and the FATF guidelines.
 
-7. Understanding of the current state and future potential of blockchain technology, including emerging use cases and applications.
+7. Understanding of the emerging use cases and applications of Ethereum, such as decentralized finance (DeFi), non-fungible tokens (NFTs), and supply chain management.
 
-8. Development and implementation of a simple blockchain project, including the design and implementation of a smart contract and deployment on a blockchain network.
+8. Development and implementation of a simple Ethereum smart contract, including the design and testing of the contract logic, deployment on the Ethereum network, and integration with a user interface.
 
-9. Presentation of a final project, such as a blockchain-based decentralized application (dApp), with a written report detailing the design, implementation, and testing of the solution.
+9. Presentation of a final project, such as an Ethereum-based decentralized application (dApp), with a written report detailing the design, implementation, and testing of the solution.
 
-Overall, the deliverables for a course on blockchain basics should demonstrate the student's understanding and ability to design, develop, and deploy blockchain-based solutions. The deliverables should also showcase the student's ability to apply best practices for network administration, security, and regulatory compliance in a blockchain environment.
+Overall, the deliverables for a course on public blockchain Ethereum should demonstrate the student's understanding and ability to develop, deploy, and integrate smart contracts on the Ethereum network. The deliverables should also showcase the student's ability to apply best practices for smart contract development, security, and regulatory compliance in an Ethereum development environment.
