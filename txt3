@@ -1,27 +1,27 @@
 Roles and responsibilities 
-Key roles and responsibilities when operating in a blockchain environment
-Detailed explanation and required skills sets for various roles types – Beginner to expert
+Key roles and responsibilities when operating in a blockchain environment (UPDATED: "Operating in a blockchain environment entails key roles and responsibilities that need to be fulfilled.")
+Detailed explanation and required skills sets for various roles types – Beginner to expert (UPDATED: "For various types of roles - from beginner to expert level - there is a need for a detailed explanation of the required skill sets.")
 
 
 Governance (Internal and external)
-Key governance models during various phase – Evaluation, design, build, deploy and maintain.
-Governance with multiple parties involved and how changes to network would be implemented (e.g., Supply chain use case with multiple vendors)
+Key governance models during various phase – Evaluation, design, build, deploy and maintain. (UPDATED: "During the different phases of evaluation, design, build, deployment, and maintenance, key governance models come into play.")
+Governance with multiple parties involved and how changes to network would be implemented (e.g., Supply chain use case with multiple vendors) (UPDATED: "In cases where multiple parties are involved in governance, such as a supply chain scenario with multiple vendors, implementing changes to the network requires careful consideration.")
 
 
-Technical and implementation specifications
-Capturing hands on technical specification around the specified dev platforms (e.g. Ethereum, Hyperledger, polygon), Consensus mechanism, Data structures (Arweave, IPFS and cloud)
+Technical and implementation specifications 
+Capturing hands on technical specification around the specified dev platforms (e.g. Ethereum, Hyperledger, polygon), Consensus mechanism, Data structures (Arweave, IPFS and cloud) (UPDATED: "Capturing hands-on technical specifications related to specified development platforms such as Ethereum, Hyperledger, Polygon, consensus mechanisms, and data structures like Arweave, IPFS, and cloud is essential.")
 
 
 Architecture and scalability
-How to build the best solution architecture considering and utilizing the overall Shell product ecosystem and best practices 
-Building a scalable infra and architecture to support growth in users and transactions
+How to build the best solution architecture considering and utilizing the overall Shell product ecosystem and best practices (UPDATED: "In order to build the most optimal solution architecture, it is important to consider and utilize the overall Shell product ecosystem and adhere to best practices.")
+Building a scalable infra and architecture to support growth in users and transactions (UPDATED: "The construction of a scalable infrastructure and architecture is necessary to support the growth of users and transactions.")
 
 
-Guidelines on ensuring security and integrity of the network and its participants 
-How to manage multisig wallets, key managements and overall smart contract and code security standards, audits etc.
+Guidelines on ensuring security and integrity of the network and its participants (UPDATED: "Guidelines should be established to ensure the security and integrity of both the network and its participants.")
+How to manage multisig wallets, key managements and overall smart contract and code security standards, audits etc. (UPDATED: "Managing multisig wallets, key management, and overall security standards for smart contracts and code, including audits, are crucial aspects that need to be addressed.")
 
 
 
 Maintenance and troubleshooting
-Detailed guide on key maintenance activities such as Software, network updates, performance monitoring, regular security audits, compliance monitoring 
-Troubleshoot guides, debugging tools on common issues related to transactions, smart contract or the network itself 
+Detailed guide on key maintenance activities such as Software, network updates, performance monitoring, regular security audits, compliance monitoring  (UPDATED: "A comprehensive guide should be provided on the key maintenance activities such as software and network updates, performance monitoring, regular security audits, and compliance monitoring.")
+Troubleshoot guides, debugging tools on common issues related to transactions, smart contract or the network itself (UPDATED: "Troubleshooting guides and debugging tools are essential in addressing common issues related to transactions, smart contracts, or the network itself.")
