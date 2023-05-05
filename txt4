@@ -1,1 +1,21 @@
-https://www.figma.com/file/4sTijOiHXE5lYddjnNFPJZ/Interview-Assessment-File?node-id=0%3A1&t=zXd908ty36wYnIyA-1
+Here are possible deliverables for a course on Hyperledger Fabric:
+
+1. Installation and configuration of Hyperledger Fabric on a local development environment, with sample smart contracts deployed and tested.
+
+2. Implementation of a simple Hyperledger Fabric network, including a set of peers, orderers, and channels, with a set of smart contracts deployed and tested.
+
+3. Development and deployment of a custom Hyperledger Fabric smart contract using the Go programming language.
+
+4. Design and implementation of an identity management system for a Hyperledger Fabric network, including user roles and permissions.
+
+5. Implementation of a set of security best practices for a Hyperledger Fabric network, including the use of the Hyperledger Fabric Certificate Authority and secure communication channels.
+
+6. Design and implementation of a simple Hyperledger Fabric application, using the Hyperledger Fabric SDK for Node.js or another programming language, with a set of smart contracts deployed and tested.
+
+7. Deployment of a Hyperledger Fabric network on a cloud-based or on-premises infrastructure, with a set of smart contracts deployed and tested.
+
+8. Development and implementation of a scaling strategy for a Hyperledger Fabric network, including load testing and performance optimization.
+
+9. Presentation of a final project, such as a Hyperledger Fabric-based supply chain solution, with a written report detailing the design, implementation, and testing of the solution.
+
+Overall, the deliverables for a course on Hyperledger Fabric should demonstrate the student's understanding and ability to develop, deploy, and manage Hyperledger Fabric networks and applications. The deliverables should also showcase the student's ability to apply best practices for network administration, security, and performance optimization.
