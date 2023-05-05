@@ -1,21 +1,21 @@
-Here are possible deliverables for a course on Layer 2 Polygon (formerly Matic Network):
+Here are possible deliverables for a course on risk and compliance in blockchain:
 
-1. Installation and configuration of the Polygon development environment, including the Polygon SDK and web3.js, with sample smart contracts deployed and tested.
+1. Analysis and comparison of different types of blockchain networks (public, private, hybrid), their features, and the regulatory and compliance challenges they pose.
 
-2. Implementation of a simple Polygon network, including the deployment of checkpoints, validators, and Plasma, with a set of smart contracts deployed and tested.
+2. Understanding of the legal and regulatory landscape surrounding blockchain technology, including key laws and regulations such as GDPR, AML/KYC, SEC rules, and the FATF guidelines.
 
-3. Development and deployment of a custom Polygon smart contract using Solidity or Vyper.
+3. Familiarity with blockchain security risks and vulnerabilities, including smart contract security issues, 51% attacks, and double spending attacks.
 
-4. Design and implementation of an identity management system for a Polygon network, including user roles and permissions.
+4. Development and implementation of risk management strategies for blockchain projects, including the use of risk assessment tools and frameworks.
 
-5. Implementation of a set of security best practices for a Polygon network, including the use of checkpoints, validators, and Plasma, and secure communication channels.
+5. Understanding of blockchain governance models and their implications for risk management and compliance.
 
-6. Design and implementation of a simple Polygon application, using the Polygon SDK and web3.js, with a set of smart contracts deployed and tested.
+6. Familiarity with the role of auditors and regulators in blockchain projects, including the auditing process, compliance reporting, and regulatory compliance audits.
 
-7. Deployment of a Polygon network on a cloud-based or on-premises infrastructure, with a set of smart contracts deployed and tested.
+7. Development and implementation of blockchain compliance policies and procedures, including governance and risk management frameworks, reporting requirements, and compliance monitoring systems.
 
-8. Development and implementation of a scaling strategy for a Polygon network, including load testing and performance optimization.
+8. Design and implementation of a compliance monitoring and reporting system, including the use of blockchain analytics tools and technologies.
 
-9. Presentation of a final project, such as a Polygon-based decentralized application (dApp), with a written report detailing the design, implementation, and testing of the solution.
+9. Presentation of a final project, such as a risk and compliance assessment report for a blockchain project, with a written report detailing the methodology, findings, and recommendations.
 
-Overall, the deliverables for a course on Layer 2 Polygon should demonstrate the student's understanding and ability to develop, deploy, and manage Polygon networks and applications. The deliverables should also showcase the student's ability to apply best practices for network administration, security, and performance optimization in a Layer 2 environment.
+Overall, the deliverables for a course on risk and compliance in blockchain should demonstrate the student's understanding and ability to analyze and manage regulatory and compliance risks in blockchain projects. The deliverables should also showcase the student's ability to design and implement effective risk management and compliance strategies, policies, and procedures in a blockchain environment.
