@@ -1,9 +1,29 @@
-Polymath: Polymath is a blockchain-based platform that provides tools for the creation, issuance, and management of security tokens, including real estate tokens.
+Learn the basics of Polygon:
+Polygon is a Layer 2 scaling solution for Ethereum. It provides faster and cheaper transactions for Ethereum-based applications. Start by reading the Polygon whitepaper, which explains the technology and principles behind Polygon.
 
-Harbor: Harbor is a blockchain-based platform that specializes in the tokenization of real estate assets. The platform provides tools for the creation, issuance, and management of security tokens, and also includes a regulatory compliance framework.
+Understand the Polygon architecture:
+Polygon is a modular, multi-chain system that consists of several components, including the Polygon SDK, Polygon POS chain, and the Polygon Bridge. Understanding the Polygon architecture is essential for developing Polygon-based applications.
 
-Swarm: Swarm is a decentralized platform that enables the tokenization of real assets, including real estate. The platform provides a marketplace for the trading of security tokens, and also includes tools for the creation and management of tokens.
+Learn Solidity:
+Solidity is the most popular programming language used to write smart contracts on the Ethereum and Polygon blockchains. Solidity is similar to JavaScript in syntax, and it's relatively easy to learn. You can start by taking Solidity tutorials, watching Solidity coding videos, and working through example Solidity smart contracts.
 
-Propellr: Propellr is a blockchain-based platform that specializes in the tokenization of real estate assets. The platform provides a marketplace for the trading of security tokens, and also includes tools for the creation and management of tokens.
+Set up your development environment:
+Setting up your development environment is an essential step in Polygon development. You'll need to install the Polygon network on your local machine and configure your development environment to connect to it. You can use Remix, Hardhat, or Truffle to create, test, and deploy smart contracts on the Polygon network.
 
-RealT: RealT is a blockchain-based platform that enables fractional ownership of real estate assets. The platform provides a marketplace for the trading of security tokens, and also includes tools for the creation and management of tokens.
+Build a simple Polygon-based application:
+Start by building a simple Polygon-based application. It can be a simple gaming dApp or a decentralized finance (DeFi) platform. This will help you understand the development process and get familiar with the Polygon development tools.
+
+Test your smart contracts:
+Testing your smart contracts is crucial to ensure their reliability and security. You can use the Truffle framework to write and run tests for your smart contracts. Truffle provides a suite of testing tools that can be used to write and run tests for your smart contracts.
+
+Deploy your smart contracts:
+Once you have tested your smart contracts, you can deploy them on the Polygon network. You'll need to use an Ethereum wallet like MetaMask to deploy your smart contracts. Deploying smart contracts on the Polygon network incurs gas fees, which are paid in MATIC tokens.
+
+Monitor and maintain your application:
+After deploying your application, you need to monitor and maintain it. You'll need to keep track of the gas fees and ensure that your smart contracts are functioning correctly. You can use tools like the Polygon Explorer to monitor the transactions on the Polygon network.
+
+In conclusion, developing on the Polygon network requires a solid understanding of the Polygon architecture, Solidity programming, and the development tools and frameworks used to build Polygon-based applications. Follow the above roadmap to get started with Polygon development, and remember to continually learn and improve your skills.
+
+
+
+
