@@ -1,41 +1,28 @@
-Protecting user security from vulnerabilities to malware in the blockchain ecosystem is crucial. Here are some measures and best practices to consider:
+Vishnupriya Pallikaranai Thirumalai
+Manager, Digital Trust
+KPMG Consulting and Assurance Services LLP
+Function and Specialization
+Vishnupriya is part of the Digital Trust practice specializing in risk assessments for emerging technologies (Blockchain and Cloud). She is also part of attestation and assurance engagements in Digital practice.
 
-1. Software and System Security:
-   - Keep all software, including operating systems, blockchain wallets, and applications, up to date with the latest security patches and updates.
-   - Use reputable antivirus and anti-malware software to scan your system regularly.
-   - Enable firewalls and configure them to block unauthorized access.
-   - Be cautious of downloading and installing software or files from untrusted sources.
+Education, Licenses & Certifications
+B. E Computer Science- Anna University, India
+Master of Applied Science (Information Security and Assurance) - RMIT University, Australia
+AWS Certified Solutions Architect Associate
+Microsoft Security Compliance and Identity Fundamentals
+Microsoft Certified Identity and Access Administrator Associate
+Microsoft Certified Azure Fundamentals
+Certificate of Cloud Security Knowledge
+Certified Blockchain Expert
 
-2. Secure Wallet Management:
-   - Use hardware wallets or reputable software wallets from trusted sources to store your cryptocurrencies securely.
-   - Enable two-factor authentication (2FA) for wallet access and transactions.
-   - Backup your wallet and private keys in offline, secure locations.
-   - Be wary of phishing attempts and ensure you are accessing legitimate wallet websites.
+What can I do for you?
+Vishnupriya is a Technology Risk Consultant with the Digital Trust practice and has been working with KPMG since 2018. Her key expertise spans areas of IT Attestation and Assurance and blockchain risk assessment across sectors with a focus on IT/ IT Enabled Services.
+Vishnupriya has also experience in assessing AWS and Azure cloud environments as part of her engagements in KPMG.
 
-3. Smart Contract Security:
-   - Conduct thorough audits of smart contracts before deployment to identify and mitigate vulnerabilities.
-   - Follow best practices and security guidelines for smart contract development, such as avoiding known vulnerabilities and using standardized libraries.
-   - Regularly monitor and update smart contracts to address any identified security issues promptly.
-
-4. Education and Awareness:
-   - Stay informed about the latest security threats and vulnerabilities in the blockchain space.
-   - Educate yourself about common attack vectors, such as phishing, social engineering, and malicious websites.
-   - Be cautious when clicking on suspicious links or providing sensitive information online.
-   - Verify the authenticity of websites, projects, or applications before interacting with them.
-
-5. Community and Network Security:
-   - Participate in blockchain communities and forums to stay updated on security practices and share knowledge.
-   - Be cautious of engaging with unknown or unverified entities in the blockchain space.
-   - Regularly monitor and follow security updates and announcements from blockchain projects and platforms.
-
-6. Regular Backups and Recovery:
-   - Backup your important blockchain-related data, such as wallet files and private keys, and store them securely offline.
-   - Establish recovery plans and procedures in case of a security breach or loss of access to your accounts or funds.
-   - Consider using multi-signature wallets that require multiple authorizations for transactions.
-
-7. Third-Party Risk Management:
-   - Be cautious when using third-party blockchain services, such as exchanges or lending platforms.
-   - Conduct due diligence on the reputation, security practices, and track record of any third-party service provider you intend to use.
-   - Consider decentralized exchanges or peer-to-peer trading platforms that reduce reliance on centralized entities.
-
-Remember that user security in the blockchain ecosystem is a shared responsibility. By implementing these measures and staying vigilant, you can enhance your protection against malware and other security threats.
+Professional Experience
+She has worked on Blockchain risk assessments for Central Bank in the Caribbean region to identify risks in the Digital Currency platform implemented by the Bank. The areas in the scope of risk assessment include Consensus Mechanism, Key Management, Identity and Access Management, Network Security, Node Governance and general security best practices in cloud.
+She has led blockchain risk assessment for a Financial Services organization that is offering services based on CAD denominated stablecoin in Canada. The primary areas of focus were wallet lifecycle, key management, identity and access management, smart contract risks and cloud security.
+She is involved in developing blockchain risk control framework for Hyperledger and other DLT based platforms..
+She has performed cybersecurity audits for circular issued by Reserve Bank of India (RBI). The scope of assessment included assessing the Bank’s Digital Payment infrastructure. Her responsibilities as Team Lead were to plan engagement approach, review testing and working papers and prepare draft report for review by Engagement Managers and Engagement Partners. The engagement posed unique challenges in terms of stringent deadlines, remote auditing and delays due to the ongoing pandemic
+Vishnupriya has worked on multiple SOC 2 engagements for leading IT/ITeS organizations in both AWS and Azure environments. The scope of SOC 2 covered Trust Service Categories- Security, Availability, Confidentiality and Processing Integrity for the organizations’ environments that support service delivery. She has worked across industries like IT/ ITeS, Life sciences and Retail.
+She has led multiple ISAE 3402/ SOC 1 engagements for clients spanning various industries like healthcare, IT/ITeS, Registrar and Transfer Agencies, Insurance, Financial Services and Manufacturing.
+She has worked on multiple statutory audit engagements spanning different industries like IT/ITeS, FMCG and Manufacturing throughout her tenure in KPMG.
