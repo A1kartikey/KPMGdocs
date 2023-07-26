@@ -1,0 +1,1088 @@
+{
+	"info": {
+		"_postman_id": "8e86556c-6891-4e56-a9cb-61890b00db95",
+		"name": "Por-Prod",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"fullName\" : \"kartikey\",\r\n    \"email\": \"test@kpmg.com\",\r\n    \"role\": \"admin\",\r\n    \"Exchange\": [\"kar\",\"vin\"],\r\n    \"password\": \"Password\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/auth/register",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "signin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\" : \"test1@kpmg.com\",\r\n    \"password\": \"Password\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/auth/sign_in",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"sign_in"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reset-password",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n    \"email\": \"test@kpmg.com\",\r\n\r\n    \"password\": \"Passwords\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/auth/update",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "libalities-importcsv (slide3--> post-- excel upload)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/vineethboppudi/Downloads/Dummy-Data-Set-PoR-Tool-1k.csv"
+						},
+						{
+							"key": "exchange_name",
+							"value": "wazirx",
+							"type": "default"
+						},
+						{
+							"key": "date",
+							"value": "2023-08-15",
+							"type": "default"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/new-upload",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"new-upload"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "[\"Eth\",\"BTC\"]",
+							"disabled": true
+						},
+						{
+							"key": "date",
+							"value": "4/5/2023",
+							"disabled": true
+						},
+						{
+							"key": "exchange_name",
+							"value": "coinmetrics",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-liabilities--slide-3--withpagination",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/getexchange_list?exchange_name=wazirx&date=2023-07-18&limit=1&skip=0",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"getexchange_list"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						},
+						{
+							"key": "date",
+							"value": "2023-07-18"
+						},
+						{
+							"key": "limit",
+							"value": "1"
+						},
+						{
+							"key": "skip",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-liabilities--slide-3--with out pagination",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/get_exchange_list?exchange_name=wazirx&date=2023-07-01",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"get_exchange_list"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						},
+						{
+							"key": "date",
+							"value": "2023-07-01"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "liabilities_getdates-- for liablities",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://4.204.209.215:5000/liabilities_getdates?exchange_name=wazirx",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"liabilities_getdates"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "totalamountof each-asset (liabilities--screen-3) Copy 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://4.204.209.215:5000/totalassetamount?date=2023-08-02&exchange_name=kuber",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"totalassetamount"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-08-02"
+						},
+						{
+							"key": "exchange_name",
+							"value": "kuber"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "generateleafhash",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"wazirx\",\r\n    \"salting\": \"vin\",\r\n    \"date\": \"2023-08-20\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/generateleafhash",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"generateleafhash"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "[\"Eth\",\"BTC\"]",
+							"disabled": true
+						},
+						{
+							"key": "date",
+							"value": "4/5/2023",
+							"disabled": true
+						},
+						{
+							"key": "exchange_name",
+							"value": "coinmetrics",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "export leafhashes",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/getleafhash?date=2023-08-20&exchange_name=wazirx",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"getleafhash"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-08-20"
+						},
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "generate_Merkletree",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"wazirx\",\r\n    \"date\": \"2023-08-29\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/generate_Merkletree",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"generate_Merkletree"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "[\"Eth\",\"BTC\"]",
+							"disabled": true
+						},
+						{
+							"key": "date",
+							"value": "4/5/2023",
+							"disabled": true
+						},
+						{
+							"key": "exchange_name",
+							"value": "coinmetrics",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_Merkletree",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/get_Merkletree?date=2023-07-30&exchange_name=wazirx",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"get_Merkletree"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-07-30"
+						},
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-dates-merkletree",
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "key",
+							"value": "api_key",
+							"type": "string"
+						},
+						{
+							"key": "value",
+							"value": "<API Key>",
+							"type": "string"
+						},
+						{
+							"key": "in",
+							"value": "query",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://4.204.209.215:5000/get-dates-merkletree?exchange_name=wazirx",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"get-dates-merkletree"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-06-33",
+							"disabled": true
+						},
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "VerifyleafProof",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/VerifyleafProof?date=2023-07-30&exchange_name=wazirx&leaf=165a402be804836a12e6e7ec7a5ff9ca726f69d6780654fc90ae0f3884002e7dd",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"VerifyleafProof"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-07-30"
+						},
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						},
+						{
+							"key": "leaf",
+							"value": "165a402be804836a12e6e7ec7a5ff9ca726f69d6780654fc90ae0f3884002e7dd"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "exchange reserves--importcsv",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/vineethboppudi/OneDrive - KPMG/Documents/Kpmg-canada/POR/exchange-reserves - Copy.csv"
+						},
+						{
+							"key": "exchange_name",
+							"value": "wazirx",
+							"type": "default"
+						},
+						{
+							"key": "date",
+							"value": "2023-08-12",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/walletcsv",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"walletcsv"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-exchange-reserves-without-pagination",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/get_exchange_wallet_find?exchange_name=coindcx&date=2023-07-20",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"get_exchange_wallet_find"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "coindcx"
+						},
+						{
+							"key": "date",
+							"value": "2023-07-20"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-exchange-reserves-with-pagination",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/get_exchange_wallets?exchange_name=coinmetrics&date=2023-07-01&limit=20&skip=0",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"get_exchange_wallets"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "coinmetrics"
+						},
+						{
+							"key": "date",
+							"value": "2023-07-01"
+						},
+						{
+							"key": "limit",
+							"value": "20"
+						},
+						{
+							"key": "skip",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getdates for reserves screen",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://4.204.209.215:5000/reserves-getdates?exchange_name=wazirx",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"reserves-getdates"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "totalamountof each-wallet  (exchange-reserves-screen)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/totalwalletamount?date=2023-07-03&exchange_name=kuber",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"totalwalletamount"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-07-03"
+						},
+						{
+							"key": "exchange_name",
+							"value": "kuber"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "thirdpartyapi",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "accountlist",
+							"value": "0xe91eDAdCaEFBE188e6c7f14AdA8d33Ea147a0897",
+							"type": "default"
+						},
+						{
+							"key": "assettype",
+							"value": "eth",
+							"type": "default"
+						},
+						{
+							"key": "date",
+							"value": "2023-06-13",
+							"type": "default"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/thirdpartyapi",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"thirdpartyapi"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "[\"Eth\",\"BTC\"]",
+							"disabled": true
+						},
+						{
+							"key": "date",
+							"value": "4/5/2023",
+							"disabled": true
+						},
+						{
+							"key": "exchange_name",
+							"value": "coinmetrics",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "updateowner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\",\r\n    \"wallet_address\": \"0x1\",\r\n    \"date\": \"April-2028\",\r\n    \"verification\": \"true\",\r\n    \"verification_date\": \"2/2/3\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/updateowner",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"updateowner"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "solvency",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://4.204.209.215:5000/solvency?exchange_name=wazirx&start_date=2023-07-08&end_date=2023-07-10",
+					"protocol": "http",
+					"host": [
+						"4",
+						"204",
+						"209",
+						"215"
+					],
+					"port": "5000",
+					"path": [
+						"solvency"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "wazirx"
+						},
+						{
+							"key": "start_date",
+							"value": "2023-07-08"
+						},
+						{
+							"key": "end_date",
+							"value": "2023-07-10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_assettype",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/test?exchange_name=bitso&date=2023-06-30",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"test"
+					],
+					"query": [
+						{
+							"key": "exchange_name",
+							"value": "bitso"
+						},
+						{
+							"key": "date",
+							"value": "2023-06-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_assettype Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"wazirx\",\r\n    \"date\": \"2023-07-27\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/leaf-hash",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"leaf-hash"
+					],
+					"query": [
+						{
+							"key": "limit_per_account",
+							"value": "1",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exchange_name\" : \"coinmetrics\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://20.96.181.1:5000/test",
+					"protocol": "http",
+					"host": [
+						"20",
+						"96",
+						"181",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"test"
+					],
+					"query": [
+						{
+							"key": "limit_per_account",
+							"value": "1",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
