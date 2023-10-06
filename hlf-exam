@@ -1,0 +1,36 @@
+Fundamentals of Blockchain --16%
+Distributed Ledgers
+Smart Contracts
+Consensus
+Hyperledger Fabric Model : https://hyperledger-fabric.readthedocs.io/en/release-2.5/fabric_model.html
+Business Benefits
+
+Hyperledger Fabric Networks  --36 %
+Network Structure : https://hyperledger-fabric.readthedocs.io/en/release-2.5/network/network.html
+Transaction Flow: https://hyperledger-fabric.readthedocs.io/en/release-2.5/txflow.html?highlight=transcation%20flow%20
+Ordering Service: https://hyperledger-fabric.readthedocs.io/en/release-2.5/orderer/ordering_service.html
+Peers: https://hyperledger-fabric.readthedocs.io/en/release-2.5/peers/peers.html
+World State Storage: https://hyperledger-fabric.readthedocs.io/en/release-2.5/ledger/ledger.html
+Network Creation: https://hyperledger-fabric.readthedocs.io/en/release-2.5/build_network.html?highlight=network%20creation
+Membership Service Providers: https://hyperledger-fabric.readthedocs.io/en/release-2.5/membership/membership.html
+Maintenance and Operation: https://hyperledger-fabric.readthedocs.io/en/release-2.5/operations_service.html?highlight=operations%20
+Channel-related Operations: https://hyperledger-fabric.readthedocs.io/en/release-2.1/capabilities_concept.html 
+Design and Deployment of Production Networks: https://hyperledger-fabric.readthedocs.io/en/release-2.5/deployment_guide_overview.html
+Smart Contracts --24%
+Design and Implementation
+Chaincode Lifecycle: https://hyperledger-fabric.readthedocs.io/en/release-2.5/commands/peerlifecycle.html?highlight=cahincode%20lifecycle,   - https://hyperledger-fabric.readthedocs.io/en/release-2.5/chaincode_lifecycle.html?highlight=cahincode%20lifecycle
+
+Reading and Modifying the Ledger State
+Executing Queries on the Ledger
+Private Data and Private Data Collections: https://hyperledger-fabric.readthedocs.io/en/release-2.5/private-data-arch.html
+State-based Endorsement Policies: https://hyperledger-fabric.readthedocs.io/en/release-2.1/policies/policies.html
+
+Client Applications --24%
+Gateway Model
+Peer Gateway Service: https://hyperledger-fabric.readthedocs.io/en/release-2.5/gateway.html?highlight=peer%20gateway
+Smart Contract Invocation
+Chaincode and Block Eventing: sdk docs chaincode event and block events from peer 
+Offline Signing: https://hyperledger.github.io/fabric-sdk-node/release-2.2/tutorial-sign-transaction-offline.html
+
+event: https://hyperledger-fabric.readthedocs.io/en/release-2.5/peer_event_services.html
+
