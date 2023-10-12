@@ -1,3 +1,8 @@
+
+Azure Active Directory (Azure AD) is Microsoft's cloud-based identity and access management service. It provides secure authentication and authorization for users and applications, enabling single sign-on, multi-factor authentication, and user management. Azure AD is widely used to centralize identity management and enhance security in various scenarios, including web applications, enterprise systems, and cloud services.
+
+
+
 After the development phase, the team responsible for integrating IoT-based carbon footprint software with Distributed Ledger Technology (DLT) in a production environment transitions into an operational and maintenance role. Here are the roles and responsibilities of this team in the post-development phase:
 
 1. **Operations Manager:**
