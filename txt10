@@ -3,7 +3,7 @@ Azure Active Directory (Azure AD) is Microsoft's cloud-based identity and access
 
 Azure App Service is a fully managed platform for building, deploying, and scaling web applications. It supports various programming languages, frameworks, and CI/CD integrations, making it easy to create and maintain web apps. With features like auto-scaling, continuous monitoring, and integration with Azure services, it streamlines web development and ensures high availability.
 
-
+Azure Cosmos DB is a globally distributed, multi-model database service provided by Microsoft. It offers seamless scalability, low-latency access, and multiple data models, including document, key-value, graph, and column-family stores. This makes it a versatile choice for applications requiring high availability and global reach, like IoT, gaming, and modern web services
 
 
 
