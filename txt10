@@ -5,7 +5,7 @@ Azure App Service is a fully managed platform for building, deploying, and scali
 
 Azure Cosmos DB is a globally distributed, multi-model database service provided by Microsoft. It offers seamless scalability, low-latency access, and multiple data models, including document, key-value, graph, and column-family stores. This makes it a versatile choice for applications requiring high availability and global reach, like IoT, gaming, and modern web services
 
-
+Azure SharePoint isn't a standalone service but typically refers to SharePoint Online, part of Microsoft 365 and hosted in Azure. It's a collaborative platform for document management, content sharing, and team collaboration. Azure SharePoint provides tools for building intranets, document libraries, and workflows, fostering efficient communication and information sharing within organizations.
 
 After the development phase, the team responsible for integrating IoT-based carbon footprint software with Distributed Ledger Technology (DLT) in a production environment transitions into an operational and maintenance role. Here are the roles and responsibilities of this team in the post-development phase:
 
