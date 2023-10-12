@@ -1,6 +1,10 @@
 
 Azure Active Directory (Azure AD) is Microsoft's cloud-based identity and access management service. It provides secure authentication and authorization for users and applications, enabling single sign-on, multi-factor authentication, and user management. Azure AD is widely used to centralize identity management and enhance security in various scenarios, including web applications, enterprise systems, and cloud services.
 
+Azure App Service is a fully managed platform for building, deploying, and scaling web applications. It supports various programming languages, frameworks, and CI/CD integrations, making it easy to create and maintain web apps. With features like auto-scaling, continuous monitoring, and integration with Azure services, it streamlines web development and ensures high availability.
+
+
+
 
 
 After the development phase, the team responsible for integrating IoT-based carbon footprint software with Distributed Ledger Technology (DLT) in a production environment transitions into an operational and maintenance role. Here are the roles and responsibilities of this team in the post-development phase:
