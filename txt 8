@@ -1,3 +1,10 @@
+Certainly! Here's a three-line problem statement for a Proof of Reserve system:
+
+"Design a secure and transparent Proof of Reserve (PoR) protocol for financial institutions to prove the availability of customer funds without revealing sensitive data. The system should allow for real-time verification of reserves, prevent double spending, and maintain privacy for account holders. Ensure the PoR mechanism is resistant to fraud, tampering, and collusion among parties."
+
+
+
+
 In an audit report context, it can be stated as follows:
 
 "The master branch hosts code that is primed for production deployment, while the develop branch houses the most recent code in active development. Feature branches are derived from the develop branch, and upon completion, they are integrated back into the develop branch. Once the develop branch attains readiness for release, it is merged into the master branch, and subsequently, a new release is generated."
