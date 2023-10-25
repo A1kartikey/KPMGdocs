@@ -1,5 +1,6 @@
-Please rephrase (or reword)  following paragraph in context of crypto exchange's need for proof of reserves problem statement "Custodial financial platforms do not provide total custody of assets to their users, as they keep private keys to these addresses. We can acquire the details of assets held by the custodial institution by tracing transaction details that involve their cold and hot wallets. But it needs to pinpoint individual users’ portion of the total assets. Rather, it showcases only a combined view of the custodial platform’s total assets. This inadequate knowledge of who owns what can lead to a lack of trust among users."
+In the context of a crypto exchange's requirement for a Proof of Reserves system, the paragraph could be rephrased as:
 
+"Custodial financial platforms do not grant full asset custody to users, retaining private keys for these addresses. While it's possible to track asset information within the custodial institution by examining transactions involving their cold and hot wallets, identifying the specific portions belonging to individual users remains challenging. Instead, the system provides only an aggregated perspective of the total assets held by the custodial platform. This limited insight into ownership can erode user trust."
 
 Certainly! Here's a three-line problem statement for a Proof of Reserve system:
 
