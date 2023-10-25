@@ -1,3 +1,6 @@
+Please rephrase (or reword)  following paragraph in context of crypto exchange's need for proof of reserves problem statement "Custodial financial platforms do not provide total custody of assets to their users, as they keep private keys to these addresses. We can acquire the details of assets held by the custodial institution by tracing transaction details that involve their cold and hot wallets. But it needs to pinpoint individual users’ portion of the total assets. Rather, it showcases only a combined view of the custodial platform’s total assets. This inadequate knowledge of who owns what can lead to a lack of trust among users."
+
+
 Certainly! Here's a three-line problem statement for a Proof of Reserve system:
 
 "Design a secure and transparent Proof of Reserve (PoR) protocol for financial institutions to prove the availability of customer funds without revealing sensitive data. The system should allow for real-time verification of reserves, prevent double spending, and maintain privacy for account holders. Ensure the PoR mechanism is resistant to fraud, tampering, and collusion among parties."
