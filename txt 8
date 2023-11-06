@@ -1,59 +1,43 @@
-Title: Audit Report - Code Merging and CI/CD Pipeline Process
+Introducing pre- and post-consuming choices
+Choices in DAML can be ‘consuming’ or ‘non-consuming’ with respect to the contracts on which they are exercised. In short, a consuming choice on a contract leaves the contract inactive, a non-consuming choice does not. By default, a choice is assumed to be consuming. To indicate a non-consuming choice, DAML provides the nonconsuming keyword. Recently, DAML choice annotation syntax has been added to further categorize choices as ‘pre-consuming’ or ‘post-consuming’. This post reviews the consuming concept and explains the meaning of the newly added preconsuming and postconsuming keywords. The example code used here can be found in this Gist.
 
-1. **Objective:**
-   The objective of this audit is to review and assess the process of merging code into GitLab's master branch, including the execution of the Continuous Integration/Continuous Deployment (CI/CD) pipeline, and the subsequent steps taken post-merging, specifically the cutting of release tags for production deployment.
+[Note: The code here uses the new ‘flexible controller’ syntax first introduced in this blog post.]
 
-2. **Process Overview:**
+Consuming choices
+Normally, exercising a choice on a contract amounts to actions that terminate the contract or replace the contract with one or more new contracts. For this reason, by default, exercising a choice on a contract is assumed to ‘consume’ the contract. For example, suppose a contract represents some kind of offer to purchase goods or services with provision for the provider to withdraw the offer:
 
-   a. **Code Merging:**
-      - The code merging process involves the integration of code changes from feature branches into the master branch of the GitLab repository.
-      - It is imperative that code merges adhere to established version control policies, ensuring code quality and consistency.
 
-   b. **CI/CD Pipeline Execution:**
-      - Following code merging, an automated CI/CD pipeline is triggered to build, test, and deploy the application.
-      - The pipeline must be designed to validate code changes, perform necessary tests, and generate artifacts for deployment.
+DAML guarantees that any Offer instance on which a Withdraw choice has been exercised is thereafter ‘inactive’ — meaning any attempts to exercise further choices on that instance must fail. Exercising a Withdraw choice is said to ‘archive’ the contract.
 
-   c. **Post-Merging Activities:**
-      - After successful completion of the CI/CD pipeline, additional actions may be required such as containerization, documentation updates, and environment configurations.
+Non-consuming choices
+It’s sometimes the case though that exercising a choice on a contract instance does not imply the instance should be archived. For such a choice, we can indicate that with a nonconsuming annotation. To illustrate, here’s a simple model of a leasing agreement between a landlord and tenant. The landlord may like to, say, extend to the tenant the opportunity to ‘refer a friend’ in order to obtain a cash-premium — so we write that into the contract like so:
 
-   d. **Release Tag Creation:**
-      - A release tag is generated to mark a specific version of the codebase that is considered stable and ready for production deployment.
-      - The tagging process should include detailed metadata specifying the version, date, and relevant release notes.
 
-3. **Audit Findings:**
+In this case, no matter how many times a ReferAFriend choice is exercised on a Lease contract instance, that lease contract remains active.
 
-   a. **Code Merging Process:**
-      - The code merging process is documented and adhered to as per established version control policies.
-      - Code reviews and approvals are systematically recorded, demonstrating compliance with review procedures.
+Introducing pre- and post-consuming choices
+Suppose we wish to write a clause into our Lease agreement allowing for its termination. Put yourself in the role of the developer contracted by the realtor to model their business process that mandates that, on termination, not only is the agreement archived but also a ReferAFriendOffer is issued. That would lead us to try to write something like the following.
 
-   b. **CI/CD Pipeline Execution:**
-      - The CI/CD pipeline is automated and appropriately configured to validate code changes, conduct tests, and generate deployable artifacts.
-      - Continuous Integration ensures that code is merged only when all tests pass, enhancing code quality.
 
-   c. **Post-Merging Activities:**
-      - Post-merging activities are conducted systematically, encompassing containerization, documentation updates, and environment configurations.
+As indicated by the comment though, what we wrote won’t cut it. The reason is, at the point at which we try to exercise the ReferAFriend choice on the lease contract, the lease has already been archived! The semantics of this auto-archiving are ‘pre-consuming’. The contract on which the choice is being exercised is archived before the choice body is executed — and so the attempt to exercise the ReferAFriend choice on the lease in the Terminate choice body fails because the lease is inactive.
 
-   d. **Release Tag Creation:**
-      - Release tags are consistently generated upon successful CI/CD pipeline execution.
-      - Tags include comprehensive metadata, facilitating traceability and clarity in the release process.
+In fact, the newly introduced preconsuming choice annotation is provided for those that wish to be explicit in their definitions. That is,
 
-4. **Recommendations:**
 
-   a. **Enhance Monitoring and Logging:**
-      - Implement robust monitoring and logging mechanisms to track code merges, pipeline execution, and release tag creation for improved traceability.
+and,
 
-   b. **Automated Testing Augmentation:**
-      - Consider expanding automated testing coverage to encompass a wider range of scenarios and edge cases for thorough validation.
 
-   c. **Documentation Review:**
-      - Periodically review and update documentation to ensure alignment with evolving code merging and CI/CD pipeline processes.
+mean the same thing and, as we have seen, the semantics of this archival scheme hinder our ability to naturally express the business process.
 
-   d. **Security Assessment:**
-      - Conduct periodic security assessments to identify and mitigate potential vulnerabilities in the codebase.
+What’s lacking here is a choice archival scheme with slightly different semantics — one that auto-archives its contract but not before the choice body has been executed. This is provided for by the newly added postconsuming annotation. Now we have the tools to express our intent.
 
-5. **Conclusion:**
-   The code merging process, CI/CD pipeline execution, and post-merging activities, including release tag creation, have been assessed and found to be compliant with established procedures. The recommendations provided aim to further enhance process efficiency and robustness.
 
-Audit Conducted By: [Auditor's Name]
-Date of Audit: [Date]
-Signature: [Auditor's Signature]
+What we see here is that the postconsuming annotation, in contrast to a preconsuming annotation, means that the contract remains active for the duration of the choice body and is archived thereafter.
+
+There is one subtlety left to explain regarding privacy rules with respect to post-consuming choices. Like non-consuming choices, contracts created in the choice body are known only to the signatories and controllers of the contracts and not made known to the observers of the contract on which the choice was exercised. That means, in terms of the example, a guarantor will not be privy to the creation of a ReferAFriendOffer raised by exercising Terminate on a lease but, as a stakeholder, will be privy to the archiving of the Lease itself.
+
+A remark for ledger writers
+In practice, DAML-LF only has pre-consuming choices. Post-consuming choices are implemented by code generation during the DAML to DAML-LF desugaring process. Don’t worry if this remark doesn’t mean anything to you as a DAML developer — you can safely ignore it!
+
+Summary
+In this note, we have revisited the notions of ‘consuming’ and ‘non-consuming’ choices. Consuming choices render their contracts inactive; non-consuming choices have no effect on their contracts. Consuming choices can be further nuanced into ‘pre-consuming’ and ‘post-consuming’ choices. Pre-consuming choices archive their contracts before their bodies are executed, and post-consuming choices archive their contracts after their bodies are executed. Annotations preconsuming, nonconsuming, and postconsuming can be attached to choice definitions to select between the different possibilities. If you don’t annotate a choice then it defaults to preconsuming.
