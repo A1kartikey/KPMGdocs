@@ -1,43 +1,30 @@
-Introducing pre- and post-consuming choices
-Choices in DAML can be ‘consuming’ or ‘non-consuming’ with respect to the contracts on which they are exercised. In short, a consuming choice on a contract leaves the contract inactive, a non-consuming choice does not. By default, a choice is assumed to be consuming. To indicate a non-consuming choice, DAML provides the nonconsuming keyword. Recently, DAML choice annotation syntax has been added to further categorize choices as ‘pre-consuming’ or ‘post-consuming’. This post reviews the consuming concept and explains the meaning of the newly added preconsuming and postconsuming keywords. The example code used here can be found in this Gist.
+The Bahamas launched the Sand Dollar, its central bank digital currency (CBDC), marking a significant achievement in the adoption of digital currency at the national level. Here are relevant points, facts, and statistics you can include in your presentation:
 
-[Note: The code here uses the new ‘flexible controller’ syntax first introduced in this blog post.]
+1. **Introduction of the Sand Dollar**:
+   - The Sand Dollar was introduced in October 2020, becoming the world's first CBDC to be fully deployed nationwide.
 
-Consuming choices
-Normally, exercising a choice on a contract amounts to actions that terminate the contract or replace the contract with one or more new contracts. For this reason, by default, exercising a choice on a contract is assumed to ‘consume’ the contract. For example, suppose a contract represents some kind of offer to purchase goods or services with provision for the provider to withdraw the offer:
+2. **Financial Inclusion and Accessibility**:
+   - Highlight how the Sand Dollar aims to improve financial inclusion by providing access to banking services for remote or underserved communities, reducing reliance on cash.
 
+3. **Efficiency and Cost Savings**:
+   - Showcase statistics or estimates illustrating potential cost savings and increased efficiency in payment processing and financial transactions by utilizing a digital currency infrastructure.
 
-DAML guarantees that any Offer instance on which a Withdraw choice has been exercised is thereafter ‘inactive’ — meaning any attempts to exercise further choices on that instance must fail. Exercising a Withdraw choice is said to ‘archive’ the contract.
+4. **Blockchain Technology Implementation**:
+   - Discuss the use of blockchain or a distributed ledger technology (DLT) in the Sand Dollar's infrastructure, emphasizing its role in ensuring secure and transparent transactions.
 
-Non-consuming choices
-It’s sometimes the case though that exercising a choice on a contract instance does not imply the instance should be archived. For such a choice, we can indicate that with a nonconsuming annotation. To illustrate, here’s a simple model of a leasing agreement between a landlord and tenant. The landlord may like to, say, extend to the tenant the opportunity to ‘refer a friend’ in order to obtain a cash-premium — so we write that into the contract like so:
+5. **Regulatory Framework and Compliance**:
+   - Discuss the regulatory framework established by the Central Bank of The Bahamas to govern the issuance and use of the Sand Dollar, ensuring compliance with financial regulations and anti-money laundering (AML) standards.
 
+6. **User Adoption and Usage Statistics**:
+   - Highlight statistics on the adoption rate of the Sand Dollar among citizens, businesses, and financial institutions. Discuss transaction volumes and the scope of Sand Dollar usage across various sectors.
 
-In this case, no matter how many times a ReferAFriend choice is exercised on a Lease contract instance, that lease contract remains active.
+7. **Partnerships and Technological Integration**:
+   - Mention collaborations between the government, financial institutions, and technology providers that facilitated the successful implementation of the Sand Dollar.
 
-Introducing pre- and post-consuming choices
-Suppose we wish to write a clause into our Lease agreement allowing for its termination. Put yourself in the role of the developer contracted by the realtor to model their business process that mandates that, on termination, not only is the agreement archived but also a ReferAFriendOffer is issued. That would lead us to try to write something like the following.
+8. **Impact on the Economy and Monetary Policy**:
+   - Discuss how the introduction of a digital currency impacts monetary policy, foreign exchange, and the overall economy of The Bahamas.
 
+9. **Lessons for Corporate Applications**:
+   - Highlight how the Sand Dollar's implementation offers lessons and insights for corporations regarding the adoption of digital currencies, blockchain integration, and the potential for enhancing financial services.
 
-As indicated by the comment though, what we wrote won’t cut it. The reason is, at the point at which we try to exercise the ReferAFriend choice on the lease contract, the lease has already been archived! The semantics of this auto-archiving are ‘pre-consuming’. The contract on which the choice is being exercised is archived before the choice body is executed — and so the attempt to exercise the ReferAFriend choice on the lease in the Terminate choice body fails because the lease is inactive.
-
-In fact, the newly introduced preconsuming choice annotation is provided for those that wish to be explicit in their definitions. That is,
-
-
-and,
-
-
-mean the same thing and, as we have seen, the semantics of this archival scheme hinder our ability to naturally express the business process.
-
-What’s lacking here is a choice archival scheme with slightly different semantics — one that auto-archives its contract but not before the choice body has been executed. This is provided for by the newly added postconsuming annotation. Now we have the tools to express our intent.
-
-
-What we see here is that the postconsuming annotation, in contrast to a preconsuming annotation, means that the contract remains active for the duration of the choice body and is archived thereafter.
-
-There is one subtlety left to explain regarding privacy rules with respect to post-consuming choices. Like non-consuming choices, contracts created in the choice body are known only to the signatories and controllers of the contracts and not made known to the observers of the contract on which the choice was exercised. That means, in terms of the example, a guarantor will not be privy to the creation of a ReferAFriendOffer raised by exercising Terminate on a lease but, as a stakeholder, will be privy to the archiving of the Lease itself.
-
-A remark for ledger writers
-In practice, DAML-LF only has pre-consuming choices. Post-consuming choices are implemented by code generation during the DAML to DAML-LF desugaring process. Don’t worry if this remark doesn’t mean anything to you as a DAML developer — you can safely ignore it!
-
-Summary
-In this note, we have revisited the notions of ‘consuming’ and ‘non-consuming’ choices. Consuming choices render their contracts inactive; non-consuming choices have no effect on their contracts. Consuming choices can be further nuanced into ‘pre-consuming’ and ‘post-consuming’ choices. Pre-consuming choices archive their contracts before their bodies are executed, and post-consuming choices archive their contracts after their bodies are executed. Annotations preconsuming, nonconsuming, and postconsuming can be attached to choice definitions to select between the different possibilities. If you don’t annotate a choice then it defaults to preconsuming.
+These points can help showcase The Bahamas' successful implementation of the Sand Dollar, emphasizing the benefits, technological aspects, and implications for financial inclusion and digital transformation.
