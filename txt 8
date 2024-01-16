@@ -1,44 +1,31 @@
-Updated Architecture Description: Hyperledger Fabric Blockchain as a Service (BaaS) with Cloud Active Directory
+Creating a Hyperledger Fabric API sandbox involves setting up a fully functional Hyperledger Fabric network and providing a set of APIs that users can utilize to interact with the network, deploy their smart contracts, and perform various actions. Below is a high-level overview of the technical implementation steps for such a sandbox:
 
-Introduction:
-The Hyperledger Fabric Blockchain as a Service (BaaS) has been enhanced to incorporate Cloud Active Directory for user authentication, providing seamless integration with legacy systems. This architecture, utilizing Terraform for infrastructure provisioning, Kubernetes for container orchestration, Helm charts for Hyperledger Fabric deployment, and Cloud Active Directory for user authentication, ensures a robust and secure blockchain environment. Additionally, a load balancer and API gateway are implemented to manage traffic efficiently.
+Hyperledger Fabric Network Setup:
 
-Key Components:
+Install and configure the necessary dependencies, including Docker and Docker Compose.
+Set up a network with multiple peer nodes, orderer nodes, and other required components using Hyperledger Fabric's official Docker images.
+Configure channels, organizations, and consensus mechanisms (e.g., Raft or Kafka) based on your requirements.
+API Layer:
 
-Terraform for Cloud Infrastructure:
+Choose a programming language and framework for your API layer. Common choices include Node.js, Python, or Java.
+Use a web framework such as Express.js for Node.js or Flask/Django for Python to create RESTful APIs.
+Implement authentication and authorization mechanisms to secure API endpoints, ensuring that only authorized users can interact with the network.
+Smart Contract Management API:
 
-Cloud VPC Deployment: Terraform provisions Virtual Private Clouds (VPCs), creating a secure environment for hosting the Hyperledger Fabric blockchain network.
+Design and implement APIs that allow users to upload, deploy, and manage their smart contracts on the Hyperledger Fabric network.
+Define endpoints for uploading the smart contract code and metadata.
+Use the Fabric SDK for your chosen programming language to interact with the network, deploy chaincode, and manage its lifecycle.
+Smart Contract Invocation API:
 
-Kubernetes Service Deployment: Terraform orchestrates the deployment of Kubernetes services, providing scalability and resilience for managing containers.
+Create APIs that enable users to interact with deployed smart contracts.
+Implement endpoints for invoking transactions and querying the ledger.
+Define a mechanism to pass transaction data securely and handle responses from the Hyperledger Fabric network.
+User Management API:
 
-Off-chain Database Deployment: Terraform configures the off-chain database, enhancing the overall functionality of the blockchain application.
+Develop APIs for user registration, authentication, and authorization.
+Implement mechanisms to associate users with specific organizations and grant appropriate permissions for interacting with the network.
+Event Streaming API:
 
-Hyperledger Fabric Infrastructure:
-
-Helm Charts for Deployment: Hyperledger Fabric components are deployed using Helm charts, allowing for easy customization and updates.
-
-Dynamic Network Configuration: Users can customize the Hyperledger Fabric network configuration based on specific requirements, ensuring flexibility.
-
-Cloud Active Directory for User Authentication:
-
-User Identity Management: Cloud Active Directory is integrated for user authentication, providing a centralized and secure identity management solution.
-
-Legacy System Integration: Legacy systems can leverage Cloud Active Directory for seamless user authentication, promoting interoperability.
-
-Cloud Hardware Security Module (HSM):
-
-Secure Key Storage: Security keys are securely stored in the Cloud HSM, ensuring the confidentiality and integrity of cryptographic material.
-
-Key Management: The Cloud HSM facilitates secure key generation, storage, and management, enhancing the overall security of the blockchain infrastructure.
-
-Load Balancer and API Gateway:
-
-Traffic Management: A load balancer is implemented to distribute incoming traffic across multiple instances of Hyperledger Fabric nodes, ensuring optimal resource utilization.
-
-API Gateway: An API gateway is deployed to manage and secure the communication between external systems and the Hyperledger Fabric network, enhancing overall network accessibility and security.
-
-Off-chain Database:
-
-Data Storage and Retrieval: The off-chain database is integrated to store and retrieve non-blockchain data efficiently, complementing the blockchain's functionality.
-
-Integration with Blockchain Smart Contracts: Smart contracts on the Hyperledger Fabric network can interact with the off-chain database, allowing for seamless integration of on-chain and off-chain data.
+Set up APIs for subscribing to blockchain events.
+Use Hyperledger Fabric's event streaming capabilities to notify users of relevant blockchain activities.
+Design endpoints for users to subscribe and unsubscribe from specific events.
