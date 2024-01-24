@@ -1,1 +1,5 @@
-To mint new units of a stablecoin, users can deposit USD to a stablecoin issuer who will mint a corresponding amount of stablecoins. 
+1. **Stablecoin Minting Process:**
+   Users can create new units of a stablecoin by depositing USD with a stablecoin issuer, who then generates an equivalent amount of stablecoins.
+
+2. **Issuance Mechanism:**
+   The issuance of stablecoins involves users providing USD to a stablecoin issuer, and in return, the issuer mints a corresponding quantity of stablecoins.
