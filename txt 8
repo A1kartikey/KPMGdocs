@@ -1,11 +1,1 @@
-1. **Regulatory Uncertainty:**
-   Implementing stable coins faces challenges due to the evolving and often unclear regulatory landscape. Governments worldwide are grappling with how to classify and regulate these digital assets. The lack of consistent regulations can hinder stable coin projects, as they navigate compliance issues and attempt to establish a stable and secure framework for their operations.
-
-2. **Volatility Risks:**
-   While stable coins aim to maintain a stable value, they are not entirely immune to market fluctuations. External economic factors or sudden changes in demand can still pose risks to the stability of these coins. Striking the right balance and ensuring that stable coins remain resilient to unforeseen market shocks is a persistent challenge for developers.
-
-3. **Centralization Concerns:**
-   Achieving stability often involves pegging stable coins to traditional fiat currencies or other assets. However, this pegging can lead to centralization concerns if the backing assets are concentrated in the hands of a few entities. Striking a balance between stability and decentralization is a challenge, as excessive centralization can undermine the trust and security of stable coin implementations.
-
-4. **Technology and Security Risks:**
-   The implementation of stable coins relies heavily on blockchain and smart contract technology. Ensuring the security and robustness of these technologies is an ongoing challenge. Smart contract vulnerabilities, network security issues, and potential exploits can jeopardize the stability and integrity of stable coins. Continuous efforts to enhance the technological foundation and address security vulnerabilities are crucial for the success of stable coin projects.
+To mint new units of a stablecoin, users can deposit USD to a stablecoin issuer who will mint a corresponding amount of stablecoins. 
