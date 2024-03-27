@@ -1,40 +1,72 @@
-1. Code Architecture Design:
+## Project Plan: Production Deployment of SSI Solution with Hyperledger Aries, Indy, and AWS
 
-Modular Design:
-Is the codebase designed with modularity in mind, allowing for independent development, deployment, and scaling of different components?
-Are clear separation of concerns and well-defined interfaces implemented to promote loose coupling between modules?
-Scalability Considerations:
-Does the architecture consider potential future growth in terms of data volume, user base, or functionality?
-Are architectural patterns or design choices employed to facilitate horizontal scaling (adding more resources) or vertical scaling (upgrading existing resources)?
-2. Database and Data Access Layer:
+This plan outlines the steps for deploying your SSI solution using Hyperledger Aries, Indy, and AWS for production. 
 
-Database Schema Design:
-Is the database schema normalized to minimize redundancy and improve data integrity?
-Are indexing strategies implemented to optimize query performance for anticipated data growth?
-Data Access Layer Design:
-Does the data access layer provide an abstraction layer between the application code and the underlying database?
-Is the data access layer designed to handle different database implementations or facilitate future database migrations (if necessary)?
-3. Resource Utilization and Monitoring:
+**Preparation:**
 
-Resource Management:
-Are mechanisms implemented to efficiently manage resources (e.g., CPU, memory, network) within the application?
-Are resource usage patterns monitored to identify potential bottlenecks that might hinder scalability?
-Scalability Testing:
-Are load testing or performance testing practices conducted to assess the system's ability to handle increased load?
-Are scalability limitations identified and addressed proactively through architectural improvements or resource planning?
-4. Future Maintainability and Expansion:
+1. **Define Requirements:**
+    * Clearly define the functionalities of your SSI solution.
+    * Specify the type of credentials you will be issuing and verifying.
+    * Determine document storage needs for DocumentDB.
+    * Outline performance and scalability expectations.
 
-Code Documentation:
-Is the codebase well-documented to facilitate understanding for future developers who might need to modify or extend the code?
-Does the documentation include information about design decisions, scalability considerations, and potential future expansion points?
-Technology Stack:
-Are the chosen programming languages, frameworks, and libraries considered to be future-proof and have a sustainable development community?
-Are developers aware of potential limitations or obsolescence risks associated with specific technologies used in the codebase?
-5. Continuous Improvement and Planning:
+2. **Choose AWS Services:**
+    * Select the appropriate EC2 instance type based on anticipated load.
+    * Define an EBS (Elastic Block Store) volume for persistent data storage (optional).
+    * Choose a security group configuration for secure access.
 
-Scalability Roadmap:
-Does the organization have a defined roadmap for addressing scalability challenges and future expansion needs?
-Are resources allocated for ongoing architectural improvements and technology upgrades when necessary?
-Lessons Learned:
-Are lessons learned from past challenges or limitations incorporated into future development and architecture decisions?
-Is there a culture of continuous improvement that prioritizes code maintainability and scalability for the long term?
+3. **Prepare Helm Charts:**
+    * Ensure compatibility of your Aries, Indy, and DocumentDB Helm charts with your desired versions.
+    * Configure the charts with specific values for:
+        * Aries agent connection details (e.g., URLs, credentials).
+        * Indy pool configuration (e.g., schema names, credential definitions).
+        * DocumentDB connection details (endpoint, username, password).
+
+4. **Security Considerations:**
+    * Implement strong access controls for Aries agents and Indy ledger.
+    * Securely store sensitive data (e.g., wallet credentials) using AWS Key Management Service (KMS).
+    * Encrypt data at rest and in transit using industry-standard protocols.
+
+5. **Testing:**
+    * Conduct thorough testing of your solution in a non-production environment.
+    * Simulate real-world user flows for issuing, verifying, and storing credentials.
+    * Test performance and scalability under expected load.
+
+##  Deployment Steps:
+
+1. **Provision AWS Infrastructure:**
+    * Launch EC2 instances based on your chosen configuration.
+    * Configure security groups for inbound and outbound traffic restrictions.
+    * Set up EBS volumes for persistent data storage if needed.
+
+2. **Deploy Helm Charts:**
+    * Use AWS CloudFormation or other orchestration tools to deploy Helm charts.
+    * Deploy the Aries agent chart, specifying configurations for connection details and wallet.
+    * Deploy the Indy Node chart, defining pool configuration and schema details.
+    * Deploy the DocumentDB chart with connection information for your solution.
+
+3. **Configure Services:**
+    * Configure Aries agents to connect to the Indy ledger and DocumentDB.
+    * Define schemas and credential definitions on the Indy ledger for your specific use case.
+    * Set up DocumentDB collections for storing relevant documents.
+
+4. **Integration Testing:**
+    * Perform integration tests to ensure proper communication between Aries agents, Indy ledger, and DocumentDB.
+    * Test issuance, verification, and storage of credentials using a simulated environment.
+
+5. **Monitoring and Logging:**
+    * Configure monitoring tools for real-time insights into system health and performance.
+    * Implement logging solutions for troubleshooting and auditing purposes.
+
+6. **Go Live:**
+    * Gradually shift traffic from the non-production environment to the production environment.
+    * Monitor performance and address any issues promptly.
+
+##  Additional Considerations:
+
+* **Security Best Practices:**  Continually review and update security configurations to ensure protection against vulnerabilities.
+* **Backups and Disaster Recovery:** Establish a backup and disaster recovery plan to safeguard your data and maintain service availability.
+* **Scalability:** Design your solution with scalability in mind to accommodate future growth. You might consider auto-scaling mechanisms for EC2 instances.
+* **Documentation:**  Maintain comprehensive documentation of your deployment process, configurations, and operational procedures.
+
+**Note:** This is a high-level plan. Specific details may vary depending on your unique solution and chosen tools. Consider using existing documentation and resources from Hyperledger Aries, Indy, and AWS for in-depth configuration and best practices.
