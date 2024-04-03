@@ -1,72 +1,22 @@
-## Project Plan: Production Deployment of SSI Solution with Hyperledger Aries, Indy, and AWS
+Purpose
 
-This plan outlines the steps for deploying your SSI solution using Hyperledger Aries, Indy, and AWS for production. 
+Polygon CDK: Designed for launching new Layer 2 (L2) chains on the Ethereum network using zkEVM (zero-knowledge proofs). Focuses on blockchain development.
+Hyperledger Aries: Framework for creating secure, interoperable identity wallets and credential exchange protocols. Not specific to blockchain, but can be used within blockchain applications.
+Target Users
 
-**Preparation:**
+Polygon CDK: Blockchain developers looking to build custom L2 chains on Ethereum.
+Hyperledger Aries: Developers working on projects that require secure digital identity management and verifiable credential exchange. This could include blockchain applications, but also non-blockchain use cases.
+Technical Approach
 
-1. **Define Requirements:**
-    * Clearly define the functionalities of your SSI solution.
-    * Specify the type of credentials you will be issuing and verifying.
-    * Determine document storage needs for DocumentDB.
-    * Outline performance and scalability expectations.
+Polygon CDK: Provides a toolkit for building custom blockchain networks with specific features like zkEVM compatibility, modularity, and customizable gas tokens.
+Hyperledger Aries: Offers a set of reusable components and protocols for implementing secure identity wallets and verifiable credential exchange. Doesn't directly deal with building blockchain networks.
+Key Differences
 
-2. **Choose AWS Services:**
-    * Select the appropriate EC2 instance type based on anticipated load.
-    * Define an EBS (Elastic Block Store) volume for persistent data storage (optional).
-    * Choose a security group configuration for secure access.
+Focus: Polygon CDK is specific to blockchain development on Ethereum, while Hyperledger Aries has a broader scope of secure identity management applicable to various scenarios, including blockchain and non-blockchain applications.
+Level of Abstraction: Polygon CDK provides a higher level of abstraction for working with blockchain infrastructure, while Hyperledger Aries focuses on lower-level protocols for identity and credential exchange.
+Similarities
 
-3. **Prepare Helm Charts:**
-    * Ensure compatibility of your Aries, Indy, and DocumentDB Helm charts with your desired versions.
-    * Configure the charts with specific values for:
-        * Aries agent connection details (e.g., URLs, credentials).
-        * Indy pool configuration (e.g., schema names, credential definitions).
-        * DocumentDB connection details (endpoint, username, password).
-
-4. **Security Considerations:**
-    * Implement strong access controls for Aries agents and Indy ledger.
-    * Securely store sensitive data (e.g., wallet credentials) using AWS Key Management Service (KMS).
-    * Encrypt data at rest and in transit using industry-standard protocols.
-
-5. **Testing:**
-    * Conduct thorough testing of your solution in a non-production environment.
-    * Simulate real-world user flows for issuing, verifying, and storing credentials.
-    * Test performance and scalability under expected load.
-
-##  Deployment Steps:
-
-1. **Provision AWS Infrastructure:**
-    * Launch EC2 instances based on your chosen configuration.
-    * Configure security groups for inbound and outbound traffic restrictions.
-    * Set up EBS volumes for persistent data storage if needed.
-
-2. **Deploy Helm Charts:**
-    * Use AWS CloudFormation or other orchestration tools to deploy Helm charts.
-    * Deploy the Aries agent chart, specifying configurations for connection details and wallet.
-    * Deploy the Indy Node chart, defining pool configuration and schema details.
-    * Deploy the DocumentDB chart with connection information for your solution.
-
-3. **Configure Services:**
-    * Configure Aries agents to connect to the Indy ledger and DocumentDB.
-    * Define schemas and credential definitions on the Indy ledger for your specific use case.
-    * Set up DocumentDB collections for storing relevant documents.
-
-4. **Integration Testing:**
-    * Perform integration tests to ensure proper communication between Aries agents, Indy ledger, and DocumentDB.
-    * Test issuance, verification, and storage of credentials using a simulated environment.
-
-5. **Monitoring and Logging:**
-    * Configure monitoring tools for real-time insights into system health and performance.
-    * Implement logging solutions for troubleshooting and auditing purposes.
-
-6. **Go Live:**
-    * Gradually shift traffic from the non-production environment to the production environment.
-    * Monitor performance and address any issues promptly.
-
-##  Additional Considerations:
-
-* **Security Best Practices:**  Continually review and update security configurations to ensure protection against vulnerabilities.
-* **Backups and Disaster Recovery:** Establish a backup and disaster recovery plan to safeguard your data and maintain service availability.
-* **Scalability:** Design your solution with scalability in mind to accommodate future growth. You might consider auto-scaling mechanisms for EC2 instances.
-* **Documentation:**  Maintain comprehensive documentation of your deployment process, configurations, and operational procedures.
-
-**Note:** This is a high-level plan. Specific details may vary depending on your unique solution and chosen tools. Consider using existing documentation and resources from Hyperledger Aries, Indy, and AWS for in-depth configuration and best practices.
+Both are open-source projects.
+Both can be used to build secure and scalable applications.
+Both are relevant to the overall blockchain ecosystem, though in different ways.
+In summary, Polygon CDK is a specialized toolkit for blockchain development on Ethereum, whereas Hyperledger Aries is a more general framework for secure digital identity management that can be applied in various contexts, including blockchain.
