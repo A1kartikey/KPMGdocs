@@ -1,27 +1,21 @@
-Pros of developing an SSI solution using Hyperledger Aries with Hyperledger Indy:
-Strong foundation for SSI:  This combination offers a powerful toolkit specifically designed for building Self-Sovereign Identity (SSI) solutions. Hyperledger Indy provides the secure storage and management of DIDs and VCs on a blockchain ledger, while Hyperledger Aries enables secure communication and exchange of credentials between different entities.
+Here's a breakdown of the pros and cons of developing a Self-Sovereign Identity (SSI) solution using Polygon ID:
 
-Interoperability: Hyperledger Aries is designed to be interoperable with various ledger technologies, including Hyperledger Indy. This allows you to choose the most suitable underlying infrastructure for your specific needs.
+Pros:
 
-Standardized protocols: Hyperledger Aries leverages established and standardized protocols for secure data exchange in an SSI ecosystem. This ensures compatibility and interoperability with other SSI applications built using Aries.
+Efficiency and Scalability: Polygon ID leverages Polygon's Layer 2 infrastructure, which boasts faster transaction speeds and lower fees compared to the Ethereum mainnet. This can be beneficial for high-volume SSI applications where frequent credential exchange is expected.
 
-Enhanced security and privacy:  By utilizing blockchain technology, Hyperledger Indy offers a tamper-proof and decentralized approach to storing identity data. Users have greater control over their credentials and can choose what information to share with whom.
+Interoperability: Polygon ID is designed to be interoperable with Ethereum and other blockchain ecosystems. This allows users to hold and manage their credentials across different blockchain networks.
 
-Scalability: Hyperledger Indy can scale to support a large number of users and credentials due to its blockchain nature.
+Familiarity: Developers familiar with Ethereum development tools and concepts can likely adapt quickly to Polygon ID due to its Ethereum Virtual Machine (EVM) compatibility.
 
-Cons of developing an SSI solution using Hyperledger Aries with Hyperledger Indy:
-Complexity: Setting up and managing both Hyperledger Indy and Hyperledger Aries can be complex, requiring technical expertise in blockchain and SSI protocols.
+Growing Ecosystem: Polygon has a growing ecosystem and developer base, which can provide support and resources for building SSI solutions on Polygon ID.
 
-Performance: Blockchain technology can sometimes have limitations in terms of transaction speed compared to centralized systems. This might be a concern for high-volume SSI applications.
+Cons:
 
-Maturity: While both projects are well-established, they are still under development, and the ecosystem around them might be evolving.
+Limited SSI Functionality: While Polygon ID offers some features relevant to SSI, such as decentralized storage of identity data, it lacks the comprehensive protocol suite for secure credential exchange and management provided by Hyperledger Aries. You might need to develop additional functionalities on top of Polygon ID to achieve full-fledged SSI capabilities.
 
-Integration: Integrating Hyperledger Indy and Aries with existing systems can be challenging, especially for organizations with legacy infrastructure.
+Centralized Aspects: Polygon is a permissioned blockchain, meaning there's a certain degree of centralization in its validator network. This might contradict the core principles of SSI, which emphasize user sovereignty and data control.
 
-Additional factors to consider:
+Newer Technology: Polygon ID is a relatively new solution compared to established SSI frameworks like Hyperledger Aries. This could mean less field-testing and potential for unforeseen challenges.
 
-Project requirements:  Evaluate the specific needs of your SSI project. If scalability and high security are paramount, this combination might be ideal. However, if faster transaction processing is critical, you might need to explore alternative approaches.
-
-Technical expertise:  Ensure your team has the necessary skills and knowledge to develop and manage an SSI solution using Hyperledger Indy and Aries.
-
-Overall, using Hyperledger Aries with Hyperledger Indy offers a robust and secure foundation for building SSI solutions. However, it's important to carefully consider the complexity and potential drawbacks before making a decision.
+Vendor Lock-in: By using Polygon ID, you become somewhat reliant on the Polygon network and its future development. There might be less flexibility compared to using blockchain-agnostic SSI frameworks.
