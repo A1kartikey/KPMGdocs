@@ -1,59 +1,17 @@
-Absolutely! Here's a breakdown of the structure of a Java program following the Google Java Style Guide:
+Blockchain has the potential to revolutionize the financial industry, but there are several challenges hindering its widespread adoption. Here are some of the key ones:
 
-**1. Package Declaration (Optional):**
+Regulatory uncertainty:  Financial institutions are heavily regulated, and the lack of clear regulations around blockchain applications creates uncertainty and risk. Regulators are still grappling with how to oversee this new technology, which can make banks hesitant to invest.
 
-- Adhere to Google's recommended package naming conventions (typically using reverse domain name notation, e.g., `com.google.api.client`).
+Integration challenges: Integrating blockchain technology with existing financial systems can be complex and expensive. Banks have invested heavily in their current infrastructure, and transitioning to a blockchain-based system can be a daunting task.
 
-**2. Import Statements:**
+Scalability limitations: Current blockchain technology can struggle to handle the high volume of transactions that financial institutions typically process.  Public blockchains can be slow and expensive, while private blockchains raise concerns about centralization.
 
-- Follow Google's style for ordering imports:
-    - Standard Java libraries (e.g., `java.util`)
-    - Third-party libraries (alphabetically ordered)
-    - Your own project's imports (grouped by package, then alphabetically within the group)
-- Avoid wildcard imports (`import java.util.*`).
+Security concerns: While blockchain is generally considered secure, there have been instances of hacks and exploits.  Financial institutions need to be confident that their data and assets are safe on a blockchain network.
 
-**3. Class Definition:**
+Lack of talent:  The financial industry needs a workforce with the skills and knowledge to develop and implement blockchain solutions. There is currently a shortage of qualified blockchain professionals.
 
-- Use PascalCase for class names (e.g., `HttpClient`).
-- Strive for short and descriptive class names.
-- Consider using public inner classes only when the inner class is tightly coupled to the outer class.
+Resistance to change:  Traditional financial institutions may be resistant to change and may be slow to adopt new technologies. Shifting to a blockchain-based system can require a significant change in how they operate.
 
-**4. Access Modifiers:**
+Throughput limitations: Even private blockchains can get bogged down by high transaction volumes, common in financial applications like trade finance or securities trading.
 
-- Google Java Style Guide generally recommends using `private` for member variables and methods unless there's a specific reason for increased visibility.
-- Public methods should have a clear justification for public access.
-
-**5. Class Members:**
-
-- **Variables:**
-    - Use descriptive and lowercase_with_underscores variable names.
-    - Declare them with appropriate data types and proper initialization (avoid uninitialized variables).
-- **Methods:**
-    - Use descriptive and lowercase_with_underscores method names.
-    - Follow Google's recommendations for method parameter naming and method length (generally less than 100 lines).
-    - Adhere to proper indentation (typically 2 spaces) and use clear formatting for method calls.
-
-**6. Comments:**
-
-- Use clear and concise comments to explain complex logic or non-obvious sections.
-- Google Java Style Guide discourages excessive commenting, as well-written code should be self-documenting to a large extent.
-
-**7. Code Blocks:**
-
-- Structure your code using control flow statements with proper indentation for readability.
-- Avoid overly nested control flow for better maintainability.
-- Follow Google's recommendations for formatting `if`, `else`, `for`, `while` statements (specific spacing and use of braces).
-
-**8. Additional Considerations:**
-
-- **Interfaces:** Follow Google's style guide for interface naming (typically start with `I` prefix) and method declarations within interfaces.
-- **Inheritance:** Use inheritance judiciously, favoring composition when appropriate.
-- **Error Handling:** Implement exception handling using `try-catch` blocks, adhering to Google's recommendations for specific exception types and handling strategies.
-- **Packaging:** Use tools like JAR for deployment, following Google's guidelines for JAR structure and versioning (if applicable).
-
-**Remember:**
-
-- Refer to the official Google Java Style Guide for detailed recommendations on formatting, naming conventions, and best practices: [https://github.com/google/styleguide](https://github.com/google/styleguide)
-- This is a general overview, and the specific structure may vary depending on the complexity of your program.
-
-By following these principles, you'll write Java programs that are not only well-structured but also adhere to Google's recommended coding standards, promoting code clarity, consistency, and maintainability within a larger codebase.
+Centralization for Speed:  Scaling often involves reducing validators (who verify transactions). This makes the system faster but less decentralized, potentially reducing trust between financial institutions – a key element in FS.
