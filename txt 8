@@ -1,36 +1,27 @@
-## Deep Dive into SSI with Hyperledger Aries and Indy
+Self-Sovereign Identity (SSI) with Hyperledger Aries and Indy
+This approach leverages Hyperledger Aries APIs and Indy for SSI by enabling individuals to control their digital identities. Here's the breakdown:
 
-Let's dissect the steps you mentioned to understand how Hyperledger Aries and Indy enable Self-Sovereign Identity (SSI):
+Schema and Credential Definition:
 
-**1. Schema and Credential Definition:**
+Schema Creation: The issuer defines what information a credential will hold (e.g., name, date of birth). This schema acts as a blueprint.
 
-* **Schema Creation (Blueprinting Identity):** Imagine the schema as a template for credentials. The issuer defines the specific attributes a credential will contain. This could include things like a person's name, date of birth, educational qualifications, or work experience. By pre-defining these attributes, the issuer ensures consistency and clarity in the information conveyed by the credential.
+Credential Definition: Based on the schema, the issuer creates a definition containing details about the schema and a unique Credential ID.
 
-* **Credential Definition (Linking Schema and Issuer):**  Think of the credential definition as a signed document that connects the schema to a specific issuer. It contains details like the schema itself, a unique identifier for the credential type, and information about the issuer (e.g., their public key). This binding ensures that everyone knows who issued the credential and what information it should contain based on the schema.
+Ledger Storage:
 
-**2. Ledger Storage (Public Verification):**
+Both the schema and credential definition are stored on the Hyperledger Indy ledger. This makes them publicly verifiable by anyone interacting with credentials issued under that schema.
+Credential Issuance:
 
-Here's where Hyperledger Indy comes into play. Both the schema and credential definition are stored on the Indy ledger. This distributed ledger technology provides several advantages:
+Offer & Request: The issuer sends a credential offer containing the definition ID to the holder.  The holder generates a request and sends it back.
 
-  - **Public Accessibility:** Anyone interacting with credentials issued under this schema can easily access and verify the schema and definition on the ledger. This transparency fosters trust in the system.
-  - **Verifiable Authenticity:** When a verifier receives a credential, they can check the ledger to confirm that the schema and definition associated with the credential ID are valid. This helps prevent fraud and ensures the legitimacy of the credential.
+Issuing the Credential: The issuer verifies the request and creates the credential using the defined attributes. This credential is then sent to the holder.
 
-**3. Credential Issuance (Secure Exchange):**
+Credential Usage:
 
-This stage involves secure communication between the issuer and the holder, facilitated by Hyperledger Aries:
+Storage: The holder securely stores the issued credential in their digital wallet.
 
-  - **Offer & Request (Initiating Issuance):** The issuer creates a credential offer containing the ID of the relevant credential definition. This offer is sent to the holder, essentially proposing the issuance of a credential based on that specific schema. Upon receiving the offer, the holder generates a credential request. This request includes some cryptographic information that proves the holder's identity without revealing it directly.
+Proof Generation: When needed, the holder can generate a proof containing specific attributes from the credential without revealing everything.
 
-  - **Issuing the Credential (Verifying and Granting):** The issuer verifies the holder's request and, if satisfied, creates the credential. This credential contains the requested attributes from the schema along with cryptographic proofs that link it back to the valid schema and definition on the ledger. Finally, the issuer sends the credential to the holder's digital wallet.
+Verification: The verifier checks the proof against the publicly available schema and definition on the ledger to confirm its authenticity.
 
-**4. Credential Usage (Privacy-Preserving Sharing):**
-
-This phase showcases the power of SSI for individuals:
-
-  - **Secure Storage:** The holder stores the issued credential in their digital wallet, a secure application under their control.
-
-  - **Selective Disclosure (Proof Generation):** When needed, the holder can generate a proof. This proof is a cryptographic statement that reveals specific attributes from the credential without disclosing everything. For instance, a holder might prove they are above 18 for age-gated content without revealing their actual birth date.
-
-  - **Verification with Public Trust:** The verifier can check the proof against the publicly available schema and definition on the ledger. This allows them to confirm the validity of the proof and trust the information it conveys.
-
-In conclusion, Hyperledger Aries and Indy work together to create a system where individuals control their digital identities. They can decide what information to share and with whom, all while maintaining a secure and verifiable ecosystem for online interactions. 
+This SSI approach empowers individuals to manage their credentials and share only what's necessary, enhancing privacy and control over their digital identity.
