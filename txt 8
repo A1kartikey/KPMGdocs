@@ -1,1 +1,12 @@
-https://teams.microsoft.com/l/meetup-join/19%3ameeting_ZmEyYTQwMGItOTA2MC00OTdjLTkzZWEtN2I0ZGIyZTkwYmM5%40thread.v2/0?context=%7b%22Tid%22%3a%22deff24bb-2089-4400-8c8e-f71e680378b2%22%2c%22Oid%22%3a%2235521f21-7626-458a-b3a3-bc74a24e1088%22%7d
+1.	Schema and Credential Definition Creation:
+o	Schema Creation: The issuer defines the schema for the credential. This schema includes details like the attributes the credential will contain (e.g., name, date of birth, degree).
+o	Credential Definition: Once the schema is created, the issuer creates a credential definition, which is linked to the schema. The credential definition contains information about the schema and the Credential ID.
+2.	Storing Schema and Credential Definition on the Ledger:
+o	The schema and credential definition are stored on the Indy ledger. This ensures that they are publicly accessible and verifiable by any party that interacts with the credentials issued under this schema.
+3.	Credential Issuance:
+o	Offer Credential: The issuer creates a credential offer and sends it to the holder. The offer includes the credential definition ID.
+o	Request Credential: The holder receives the credential offer, generates a credential request, and sends it back to the issuer.
+o	Issue Credential: The issuer generates the credential using the credential request and sends it to the holder. The credential contains the attributes defined in the schema.
+4.	Storing and Using Credentials:
+o	The holder stores the issued credential in their digital wallet.
+o	When the holder needs to prove the credential, they generate a proof request and present it to the verifier. The verifier can check the credential definition and schema on the ledger to verify the credential's authenticity.
