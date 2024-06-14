@@ -1,27 +1,12 @@
-Self-Sovereign Identity (SSI) with Hyperledger Aries and Indy
-This approach leverages Hyperledger Aries APIs and Indy for SSI by enabling individuals to control their digital identities. Here's the breakdown:
+Dear [Manager's Name],
 
-Schema and Credential Definition:
+I am writing to follow up on my recent performance appraisal. I received the letter today and I'm happy to see my contributions have been recognized.
 
-Schema Creation: The issuer defines what information a credential will hold (e.g., name, date of birth). This schema acts as a blueprint.
+I noticed that the appraisal doesn't mention the special bonus we discussed for [ Briefly mention the reason for the bonus request, e.g., exceeding sales targets, completing a key project].  Could you please clarify if this is still under consideration?
 
-Credential Definition: Based on the schema, the issuer creates a definition containing details about the schema and a unique Credential ID.
+I'm happy to discuss this further at your convenience.
 
-Ledger Storage:
+Thank you for your time and consideration.
 
-Both the schema and credential definition are stored on the Hyperledger Indy ledger. This makes them publicly verifiable by anyone interacting with credentials issued under that schema.
-Credential Issuance:
-
-Offer & Request: The issuer sends a credential offer containing the definition ID to the holder.  The holder generates a request and sends it back.
-
-Issuing the Credential: The issuer verifies the request and creates the credential using the defined attributes. This credential is then sent to the holder.
-
-Credential Usage:
-
-Storage: The holder securely stores the issued credential in their digital wallet.
-
-Proof Generation: When needed, the holder can generate a proof containing specific attributes from the credential without revealing everything.
-
-Verification: The verifier checks the proof against the publicly available schema and definition on the ledger to confirm its authenticity.
-
-This SSI approach empowers individuals to manage their credentials and share only what's necessary, enhancing privacy and control over their digital identity.
+Best regards,
+[Your Name]
