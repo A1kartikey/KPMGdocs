@@ -1,6 +1,5 @@
 {
-
-     "verifiableCredential": {
+    "verifiableCredential": {
         "@context": [
             "https://www.w3.org/2018/credentials/v1",
             "https://w3id.org/citizenship/v1",
@@ -16,7 +15,7 @@
         "type": [
             "VerifiableCredential"
         ],
-        "issuer": "did:key:z6MkrePipzqSx8YvGGsxJ8eYJqzoqBY9zSz4ZQYtZAav1ZG7",
+        "issuer": "did:key:z6MkpTR6557VLz6ALc7Pczfdv43qudMm32Gc6JfQ21ysRfRG",
         "issuanceDate": "2010-01-01T19:23:24Z",
         "expirationDate": "2010-01-01T19:23:24Z",
         "credentialSubject": {
@@ -27,9 +26,9 @@
         "proof": {
             "type": "Ed25519Signature2020",
             "proofPurpose": "assertionMethod",
-            "verificationMethod": "did:key:z6MkrePipzqSx8YvGGsxJ8eYJqzoqBY9zSz4ZQYtZAav1ZG7#z6MkrePipzqSx8YvGGsxJ8eYJqzoqBY9zSz4ZQYtZAav1ZG7",
-            "created": "2024-07-31T06:04:26+00:00",
-            "proofValue": "z2xhhp6kx5vLkVKD5D7NN3LwEbSoz8XCvpeR39TLkQsxS97fZEftRXN9ryqh4LXc5dfozehs2U6Xb6bieAtP1CWFL"
+            "verificationMethod": "did:key:z6MkpTR6557VLz6ALc7Pczfdv43qudMm32Gc6JfQ21ysRfRG#z6MkpTR6557VLz6ALc7Pczfdv43qudMm32Gc6JfQ21ysRfRG",
+            "created": "2024-07-31T06:12:30+00:00",
+            "proofValue": "z5NLx3oYZq2UxVkaQCALsY9yNHs58ayTonqxHwGTivU63GDMm1aM23qfGsJeCdsYuF5bmi52im3bMFBYHoMjGEZhy"
         }
     }
 }
