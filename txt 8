@@ -1,35 +1,5 @@
-@Bessmark please check our current VC from Hyperledger arise. The did method used here is 'key' which is default from Hyperledger. Can you suggest if there are resolvers available from privado to verify this ?
-{
-    "verifiableCredential": {
-        "@context": [
-            "https://www.w3.org/2018/credentials/v1",
-            "https://w3id.org/citizenship/v1",
-            "https://w3id.org/security/bbs/v1",
-            {
-                "firstname": "https://schema.org/givenName",
-                "lastname": "https://schema.org/familyName",
-                "age": "https://schema.org/age"
-            },
-            "https://w3id.org/security/suites/ed25519-2020/v1"
-        ],
-        "id": "http://example.edu/credentials/1872",
-        "type": [
-            "VerifiableCredential"
-        ],
-        "issuer": "did:key:z6MkrePipzqSx8YvGGsxJ8eYJqzoqBY9zSz4ZQYtZAav1ZG7",
-        "issuanceDate": "2010-01-01T19:23:24Z",
-        "expirationDate": "2010-01-01T19:23:24Z",
-        "credentialSubject": {
-            "firstname": "dhoni1",
-            "lastname": "Kashyap",
-            "age": "20"
-        },
-        "proof": {
-            "type": "Ed25519Signature2020",
-            "proofPurpose": "assertionMethod",
-            "verificationMethod": "did:key:z6MkrePipzqSx8YvGGsxJ8eYJqzoqBY9zSz4ZQYtZAav1ZG7#z6MkrePipzqSx8YvGGsxJ8eYJqzoqBY9zSz4ZQYtZAav1ZG7",
-            "created": "2024-07-31T04:02:35+00:00",
-            "proofValue": "z5DcyhrqF8x43rr1vS5szF5aZHyuG1cYRSKWoJCL5XZtG1tTTbQTkKtHc7TN5NqnLHmHQKyJ3WSkczQeT7ij52SCP"
-        }
-    }
-} 
+Application:
+RSA Authenticator 4.4.0.12 (219) for Android
+
+Binding ID:
+747DDEB7E312203C99B2743A
