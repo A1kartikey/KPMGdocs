@@ -1,0 +1,160 @@
+create schema def id -
+Request Body:
+{
+    "attributes_set":["id","address","dob","faceB64","fullName","gender","idNumber","idType"],
+    "schema_name":"international_travel_v.3.012"
+}
+
+
+Response Body:
+{
+    "credential_definition_id": "Jx4BjDJ43YMWDSrJmC1hvu:3:CL:87:default",
+    "schema_name": "international_travel_v.3.012"
+}
+
+Issue - Credentials - 
+Request body:
+
+{
+    "schema_name": "international_travel_v.3.012",
+    "credential_definition_id":"Jx4BjDJ43YMWDSrJmC1hvu:3:CL:87:default",
+    "credentialSubject":[
+        {
+            "name":"id",
+            "value":"9767R2R"
+        },
+        {
+            "name": "address",
+            "value": "West Bengal"
+        },
+        {
+            "name": "dob",
+            "value": "10-09-1999"
+        },
+        {
+            "name": "faceB64",
+            "value": "true e 3322"
+        },
+        {
+            "name": "fullName",
+            "value": "Prm LasTMlR"
+        },
+        {
+            "name": "gender",
+            "value": "Female"
+        },
+        {
+            "name": "idNumber",
+            "value": "xxxxxxxx8090"
+        },
+        {
+            "name": "idType",
+            "value": "aadhaar"
+        }
+    ]
+}
+
+response body:
+{
+    "verifiableCredential": {
+        "@context": [],
+        "expirationDate": "2100-01-01T19:23:24Z",
+        "id": "8d653411-79f4-4a7e-8276-dbcdbc2bccb4",
+        "issuanceDate": "2100-01-01T19:23:24Z",
+        "issuer": {
+            "id": "",
+            "name": "DigiYatraFoundation"
+        },
+        "proof": {
+            "created": "2024-03-19T19:03:33:407311763Z",
+            "proofPurpose": "assertionMethod",
+            "proofValue": "DigiYatra",
+            "type": "international_travel_v.3.012",
+            "verificationMethod": "Jx4BjDJ43YMWDSrJmC1hvu:3:CL:87:default"
+        },
+        "travel_json": [
+            {
+                "name": "id",
+                "value": "8d653411-79f4-4a7e-8276-dbcdbc2bccb4"
+            },
+            {
+                "name": "address",
+                "value": "fae63f32469bd79aa5a87bef1c9bfd20b4811307c9e89e41df34d19a40fe3b8a"
+            },
+            {
+                "name": "dob",
+                "value": "96b7aa4f8d8ddd818be9acf29ea2b8bd324ae4c3a5449b9eaeada4a27cf3ed33"
+            },
+            {
+                "name": "faceB64",
+                "value": "96219625c2371f8bd6fd4a8e733b85eddda4b14ea220561175f8d907a6ce3b46"
+            },
+            {
+                "name": "fullName",
+                "value": "f9881d7b6e272a2285c400f082c7c9255e6e8f61e6e5526f25930fc2959061ec"
+            },
+            {
+                "name": "gender",
+                "value": "80dde8c0dd31f391c02cf8cd16e073f205a8527146fb12fec8a9b3b71fb921d3"
+            },
+            {
+                "name": "idNumber",
+                "value": "3bc0461e8a7bcefb35337d9036ff7c5f63d333707ffd64080896ada1687e81c1"
+            },
+            {
+                "name": "idType",
+                "value": "390f8a9cef102d272ec8f1b0c67e3a7756525a1256ec5b294c4d03c080ca388f"
+            }
+        ],
+        "type": "VerifiableCredential"
+    }
+}
+Verify creds - 
+request body:
+{
+    "credential": {
+        "verifiableCredential": {
+            "@context": [],
+            "credentialSet": [
+                {
+                    "credentialSubject": [
+  {
+                "name": "id",
+                "value": "8d653411-79f4-4a7e-8276-dbcdbc2bccb4"
+            },
+            {
+                "name": "address",
+                "value": "fae63f32469bd79aa5a87bef1c9bfd20b4811307c9e89e41df34d19a40fe3b8a"
+            }
+                    ],
+                    "schema_name": "international_travel_v.3.012",
+                    "cred_def_id": "Jx4BjDJ43YMWDSrJmC1hvu:3:CL:87:default"
+                }
+            ],
+            "issuer": {
+                "id": "",
+                "name": "DigiYatraFoundation"
+            },
+            "type": "VerifiableCredential"
+        }
+    },
+    "data": {
+        "passangerName": "First Last",
+        "flightNumber": "7072",
+        "DoT": "28 Apr",
+        "STD": "--",
+        "STA": "--",
+        "PNR": "OJWFKB",
+        "seatNumber": "015C",
+        "sequenceNumber": "M1last/first OJWFKB BLRDEL6E 7072 118Y015C0005 151>1181WW3116B6E 000000000000293120000000000 0"
+    },
+    "origin": "BLR"
+}
+
+response body 
+
+{
+    "verification_status": [
+        "true"
+    ]
+}
