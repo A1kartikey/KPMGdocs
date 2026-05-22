@@ -1,1 +1,48 @@
 
+Here's the prompt for Copilot:
+
+---
+
+**Prompt:**
+
+> I need to write test cases for the `chihuahua` service's step functions to achieve at least **95% code coverage**.
+>
+> **Step 1 — Analyze existing tests:**
+> Look at all `*_test.go` files inside `services/chihuahua/` and tell me:
+> - Which step functions already have test files
+> - Which ones have NO test files (I can see `stepfunction` under `balancenotif` is currently failing)
+> - What functions/methods are being tested vs untested
+>
+> **Step 2 — Run coverage and show me the report:**
+> Run these two commands and show me the output:
+> ```
+> go test ./... -coverprofile coverage.out
+> go tool cover -html coverage.out -o coverage.html
+> ```
+> Then tell me which files/functions have LOW coverage (below 95%)
+>
+> **Step 3 — Fix the current build failure first:**
+> I can see this error in the terminal:
+> `cannot use 8 (untyped int constant) as string value in struct literal`
+> in `service/balancenotif/stepfunction/models_test.go` lines 66, 67, 172, 173
+> Fix those type mismatch errors so the build passes before measuring coverage.
+>
+> **Step 4 — Write missing test cases:**
+> For each function/branch that is below 95% coverage, generate the test cases covering:
+> - Happy path
+> - Error/nil cases
+> - All `if/else` branches
+>
+> Start with `balancenotif/stepfunction` since that's currently failing.
+
+---
+
+**What to do right now in terminal:**
+
+```bash
+cd services/chihuahua
+go test -p 1 ./... -coverprofile coverage.out
+go tool cover -html coverage.out -o coverage.html
+```
+
+Then open `coverage.html` in browser — **red = uncovered, green = covered**. That gives you the exact gaps to target.
