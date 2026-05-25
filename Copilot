@@ -1,19 +1,6 @@
-I need to achieve 85% code coverage for every file across these 5 folders:
-service/balancenotif/stepfunction/
-service/check-image/stepfunction/
-service/sendsms/stepFunctions/
-service/stepfunction/
-service/subaccount/
-Step 1 — Audit first, before writing any tests:
-For each folder, run coverage and list every file with its current % so I know exactly where I stand per file per folder.
-
-Step 2 — For each file below 85%:
-Open the file + its coverage output
-Identify uncovered lines/branches
-Write unit tests covering those lines
-Skip ONLY functions that directly require *redis.Client, *payments.Client, *receipts.Client, or real AWS connections
-Re-run coverage after each file to confirm it crossed 85%
-Step 3 — Track progress in a table:
-After each folder is done, show me a summary table.
-
-Work one folder at a time, starting with balancenotif/stepfunction since we already have partial progress there.
+Achieve 85% coverage for every file in services/chihuahua/service/balancenotif/stepfunction/.
+Run: go tool cover -func balancenotif_cov.out — list files below 85%
+For each file below 85%: open it, find uncovered lines, add tests in its _test.go
+Skip functions needing *redis.Client, *payments.Client, *receipts.Client or real AWS
+Re-run coverage after each file to confirm 85% reached
+Only modify _test.go files — no main code changes
