@@ -1,8 +1,13 @@
-I need to reach 85% overall coverage for services/chihuahua/service/balancenotif/stepfunction. Based on the coverage report, help me write tests for these files in priority order:
-handler.go (26.9%) — write tests for all handler entry points
-doubleoptin_handler.go (39.0%) — cover the main if/else branches
-texttopayactivities.go (45.1%) — cover untested activity functions
-feature_enrollment.go (64.2%) — cover remaining branches
-statementnotif_handler.go (63.6%) — cover missing paths
-For each file, open it, identify the uncovered lines from coverage.html, and write the minimum test cases needed to push overall coverage above 85%.
-Skip sfn_starter.go, *adapter.go, and t2padapter.go for now — those require interface refactoring.
+Without any interface refactoring or integration test setup, I want to maximize coverage using only unit tests on the files that are already partially tested. Focus ONLY on these files and push each one higher:
+doubleoptin_handler.go (43.9%) — open the file, find every uncovered if/else branch and write tests for each one
+feature_enrollment.go (70.2%) — cover the remaining 30% branches
+onetimeoptin_enrollment.go (78.0%) — push to 90%+
+onetimeoptin_handler.go (79.5%) — push to 90%+
+texttopayactivities.go (46.2%) — cover all branches that do NOT need Redis or payments client
+activities.go (94.8%) — find the last 5% and cover it
+For each file:
+Open the file and coverage.html together
+Identify exactly which lines/branches are RED (uncovered)
+Write the minimum test cases to cover those lines
+Skip any function that directly requires *redis.Client, *payments.Client or *receipts.Client
+Do one file at a time, re-run coverage after each, and show me the new percentage before moving to the next.
