@@ -1,13 +1,19 @@
-Without any interface refactoring or integration test setup, I want to maximize coverage using only unit tests on the files that are already partially tested. Focus ONLY on these files and push each one higher:
-doubleoptin_handler.go (43.9%) — open the file, find every uncovered if/else branch and write tests for each one
-feature_enrollment.go (70.2%) — cover the remaining 30% branches
-onetimeoptin_enrollment.go (78.0%) — push to 90%+
-onetimeoptin_handler.go (79.5%) — push to 90%+
-texttopayactivities.go (46.2%) — cover all branches that do NOT need Redis or payments client
-activities.go (94.8%) — find the last 5% and cover it
-For each file:
-Open the file and coverage.html together
-Identify exactly which lines/branches are RED (uncovered)
-Write the minimum test cases to cover those lines
-Skip any function that directly requires *redis.Client, *payments.Client or *receipts.Client
-Do one file at a time, re-run coverage after each, and show me the new percentage before moving to the next.
+I need to achieve 85% code coverage for every file across these 5 folders:
+service/balancenotif/stepfunction/
+service/check-image/stepfunction/
+service/sendsms/stepFunctions/
+service/stepfunction/
+service/subaccount/
+Step 1 — Audit first, before writing any tests:
+For each folder, run coverage and list every file with its current % so I know exactly where I stand per file per folder.
+
+Step 2 — For each file below 85%:
+Open the file + its coverage output
+Identify uncovered lines/branches
+Write unit tests covering those lines
+Skip ONLY functions that directly require *redis.Client, *payments.Client, *receipts.Client, or real AWS connections
+Re-run coverage after each file to confirm it crossed 85%
+Step 3 — Track progress in a table:
+After each folder is done, show me a summary table.
+
+Work one folder at a time, starting with balancenotif/stepfunction since we already have partial progress there.
