@@ -1,6 +1,24 @@
-Achieve 85% coverage for every file in services/chihuahua/service/balancenotif/stepfunction/.
-Run: go tool cover -func balancenotif_cov.out — list files below 85%
-For each file below 85%: open it, find uncovered lines, add tests in its _test.go
-Skip functions needing *redis.Client, *payments.Client, *receipts.Client or real AWS
-Re-run coverage after each file to confirm 85% reached
-Only modify _test.go files — no main code changes
+git fetch origin
+git checkout feature/RD-9679-improve-and-validate-test-covera
+git add services/chihuahua/service/stepfunction/
+git status
+
+git commit -m "RD-9679: improve and validate test coverage for stepfunction services"
+git push origin feature/RD-9679-improve-and-validate-test-covera
+
+
+I am on the master branch and have made changes. I need to move to the 
+branch 'feature/RD-9679-improve-and-validate-test-covera' and stage 
+ONLY the files inside:
+
+   services/chihuahua/service/stepfunction/
+
+Do NOT stage anything else — no coverage files, no balancenotif, 
+no check-image, no subaccount, no .tiff files.
+
+Steps needed:
+1. git fetch origin
+2. git checkout feature/RD-9679-improve-and-validate-test-covera
+3. git add services/chihuahua/service/stepfunction/
+4. git commit -m "RD-9679: improve and validate test coverage for stepfunction services"
+5. git push origin feature/RD-9679-improve-and-validate-test-covera
