@@ -122,3 +122,24 @@ RULES:
 - Modify or add ONLY test files (*_test.go)
 - Do NOT touch any non-test .go files
 - Do NOT add any .tiff or coverage files to git
+
+For Jira balancenotif ticket, fix these specific functions 
+below 85% in services/chihuahua/service/balancenotif/stepfunction/
+by adding tests to ONLY test files:
+
+1. activities.go: getActivityLoggerPatient(75%), 
+   getPatientFromCache(61.1%), generateSMSBody(81%)
+2. balancenotifadapter.go: InitializeBalanceNotifAdapter(78.9%)
+3. feature_enrollment.go: updateEstatement(66.7%),
+   startDoubleOptInWorkflow(60%), sendEnrollmentConfirmations(75%),
+   sendDoubleOptInConfirmation(75%)
+4. onetimeoptin_enrollment.go: HandleSendPaymentLink(83.7%)
+5. t2padapter.go: InitializeT2PAdapter(78.9%)
+6. texttopayactivities.go: lookupPatientPhone(80%),
+   lookupOpenBalanceTotalAmount(81.8%)
+
+Focus on critical business logic paths and error scenarios.
+Modify ONLY test files. Do NOT touch non-test files.
+After writing tests re-run:
+go test ./services/chihuahua/service/balancenotif/stepfunction/... -cover
+Confirm all functions reach 85%+
