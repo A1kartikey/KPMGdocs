@@ -76,3 +76,15 @@ For Jira RD-9705, in services/chihuahua/service/check-image/stepfunction/:
    go test ./services/chihuahua/service/check-image/stepfunction/... -coverprofile=check_image_cov.out
    go tool cover -func=check_image_cov.out
 5. Confirm every function is at 85%+ and total is 85%+
+
+
+git fetch origin
+git checkout feature/RD-9705-increase-test-case-coverage-for-check-image
+git add services/chihuahua/service/check-image/stepfunction/activities_test.go
+git add services/chihuahua/service/check-image/stepfunction/checkimage_handler_adapter_test.go
+git add services/chihuahua/service/check-image/stepfunction/image_token_processor_test.go
+git status
+
+git commit -m "RD-9705: increase test case coverage for check-image stepfunction services"
+git push origin feature/RD-9705-increase-test-case-coverage-for-check-image
+git log --oneline -3
