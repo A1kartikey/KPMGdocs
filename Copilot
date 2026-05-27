@@ -35,3 +35,14 @@ critical paths and error scenarios. Use service_impl_test.go
 for exported and service_impl_internal_test.go for unexported 
 functions. Do not modify non-test files. After writing tests, 
 run: go test ./services/chihuahua/service/stepfunction/... -cover
+
+git fetch origin
+git checkout feature/RD-9704-improve-and-validate-test-covera-subaccount
+git branch
+git add services/chihuahua/service/subaccount/stepfunction/service_impl_internal_test.go
+git add services/chihuahua/service/subaccount/stepfunction/service_impl_test.go
+git status
+git commit -m "RD-9704: improve and validate test coverage for subaccount stepfunction services"
+git push origin feature/RD-9704-improve-and-validate-test-covera-subaccount
+git log --oneline -3
+
