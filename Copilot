@@ -88,3 +88,15 @@ git status
 git commit -m "RD-9705: increase test case coverage for check-image stepfunction services"
 git push origin feature/RD-9705-increase-test-case-coverage-for-check-image
 git log --oneline -3
+
+
+For Jira ticket [ADD-TICKET-ID], run coverage for
+services/chihuahua/service/balancenotif/stepfunction/
+and report gaps:
+
+go test ./services/chihuahua/service/balancenotif/stepfunction/... -coverprofile=balancenotif_cov.out
+go tool cover -func=balancenotif_cov.out
+
+List every function below 85% with specific missing
+branches/error paths. Do not write any code yet,
+just report the gaps and total coverage %.
