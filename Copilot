@@ -1,4 +1,4 @@
-git fetch origin
+Igit fetch origin
 git checkout feature/RD-9679-improve-and-validate-test-covera
 git add services/chihuahua/service/stepfunction/
 git status
@@ -45,4 +45,18 @@ git status
 git commit -m "RD-9704: improve and validate test coverage for subaccount stepfunction services"
 git push origin feature/RD-9704-improve-and-validate-test-covera-subaccount
 git log --oneline -3
+
+
+
+Analyze all non-test .go files in
+services/chihuahua/service/check-image/stepfunction/
+(activities.go, checkimagehandler.go, checkimagerequestadapter.go,
+image_token_processor.go, models.go) and run:
+
+go test ./services/chihuahua/service/check-image/stepfunction/... -coverprofile=check_image_cov.out
+go tool cover -func=check_image_cov.out
+
+List each function, its current coverage %, and which specific
+branches/error paths are missing to reach 85%.
+Do not write any code yet, just report the gaps.
 
