@@ -26,3 +26,12 @@ Steps needed:
 
 git add services/chihuahua/service/stepfunction/service_impl_internal_test.go
 git add services/chihuahua/service/stepfunction/service_impl_test.go
+
+
+For Jira RD-9704: Analyze all non-test .go files in 
+services/chihuahua/service/stepfunction/ and write 
+missing unit tests to achieve 85% coverage. Cover all 
+critical paths and error scenarios. Use service_impl_test.go 
+for exported and service_impl_internal_test.go for unexported 
+functions. Do not modify non-test files. After writing tests, 
+run: go test ./services/chihuahua/service/stepfunction/... -cover
