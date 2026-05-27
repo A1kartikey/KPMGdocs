@@ -60,3 +60,19 @@ List each function, its current coverage %, and which specific
 branches/error paths are missing to reach 85%.
 Do not write any code yet, just report the gaps.
 
+
+
+For Jira RD-9705, in services/chihuahua/service/check-image/stepfunction/:
+
+1. Run coverage and identify all functions below 85%
+2. Write missing tests to fix ALL gaps, focusing on:
+   - MakeTransactionNotificationActivity: empty TransactionType, TransactionDetails error, empty slice
+   - getConfigByIndex: repo factory error, out-of-range configIndex
+   - buildPaymentMethodFromDetails: repo factory error, TransactionDetails error, empty slice
+   - unwrapInputData: invalid input type
+   - createAndUpload: back image decode/create/write errors
+3. Add tests to existing test files only. Do NOT create new files or modify non-test files.
+4. After writing tests re-run:
+   go test ./services/chihuahua/service/check-image/stepfunction/... -coverprofile=check_image_cov.out
+   go tool cover -func=check_image_cov.out
+5. Confirm every function is at 85%+ and total is 85%+
