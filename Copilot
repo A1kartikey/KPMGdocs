@@ -143,3 +143,35 @@ Modify ONLY test files. Do NOT touch non-test files.
 After writing tests re-run:
 go test ./services/chihuahua/service/balancenotif/stepfunction/... -cover
 Confirm all functions reach 85%+
+
+I am on branch feature/RD-9680-increase-test-case-coverage-for-balancenotif.
+Push ONLY the test files for balancenotif stepfunction.
+
+Run these commands one by one:
+
+1. git fetch origin
+2. git checkout feature/RD-9680-increase-test-case-coverage-for-balancenotif
+3. git add services/chihuahua/service/balancenotif/stepfunction/activities_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/activities_extra_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/adapter_coverage_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/balancenotif_activities_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/doubleoptin_handler_internal_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/doubleoptin_handler_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/feature_enrollment_internal_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/feature_enrollment_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/handler_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/integration_coverage_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/models_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/onetimeoptin_enrollment_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/onetimeoptin_handler_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/sfn_starter_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/t2p_service_impl_test.go
+   git add services/chihuahua/service/balancenotif/stepfunction/texttopay_activities_test.go
+4. Run git status and STOP if anything other than
+   *_test.go files are staged. Do NOT stage .tiff,
+   coverage files, COVERAGE_JUSTIFICATION.md or
+   any non-test files.
+5. Only if step 4 is clean:
+   git commit -m "RD-9680: increase test case coverage for balancenotif stepfunction services"
+   git push origin feature/RD-9680-increase-test-case-coverage-for-balancenotif
+   git log --oneline -3
