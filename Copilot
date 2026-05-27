@@ -100,3 +100,25 @@ go tool cover -func=balancenotif_cov.out
 List every function below 85% with specific missing
 branches/error paths. Do not write any code yet,
 just report the gaps and total coverage %.
+
+
+For Jira ticket [ADD-TICKET-ID], in ONLY test files under
+services/chihuahua/service/balancenotif/stepfunction/:
+
+1. First fix compile error in integration_coverage_test.go:
+   - bn.CheckPoliteHours called with integers at lines 98,107,117,128,137
+   - Convert integers to strings e.g. 8 to "8", 17 to "17"
+
+2. After fix, run:
+   go test ./services/chihuahua/service/balancenotif/stepfunction/... -coverprofile=balancenotif_cov.out
+   go tool cover -func=balancenotif_cov.out
+
+3. Identify all functions below 85% and write missing 
+   tests to fix ALL gaps to reach 85%+ total coverage.
+
+4. Re-run coverage to confirm 85%+ achieved.
+
+RULES:
+- Modify or add ONLY test files (*_test.go)
+- Do NOT touch any non-test .go files
+- Do NOT add any .tiff or coverage files to git
