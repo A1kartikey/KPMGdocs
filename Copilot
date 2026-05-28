@@ -175,3 +175,37 @@ Run these commands one by one:
    git commit -m "RD-9680: increase test case coverage for balancenotif stepfunction services"
    git push origin feature/RD-9680-increase-test-case-coverage-for-balancenotif
    git log --oneline -3
+
+
+For Jira RD-9707, working on branch 
+feature/RD-9707-increase-test-case-coverage-for-sendsms:
+
+1. First switch branch:
+   git fetch origin
+   git checkout feature/RD-9707-increase-test-case-coverage-for-sendsms
+
+2. Run coverage for sendsms:
+   go test ./services/chihuahua/service/sendsms/... -coverprofile=sendsms_cov.out
+   go tool cover -func=sendsms_cov.out
+
+3. Identify ALL functions below 85% in these files:
+   - services/chihuahua/service/sendsms/stepFunctions/smsrequestadapter.go
+   - services/chihuahua/service/sendsms/stepFunctions/smsrequesthandler.go
+   - services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionActivityRequests.go
+   - services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionService.go
+   - services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionServiceImpl.go
+   - services/chihuahua/service/sendsms/activities.go
+   - services/chihuahua/service/sendsms/workflow.go
+   - services/chihuahua/service/sendsms/sendsms.go
+
+4. Write missing tests in ONLY these existing test files:
+   - services/chihuahua/service/sendsms/stepFunctions/activities_test.go
+   - services/chihuahua/service/sendsms/workflow_test.go
+
+5. Re-run coverage and confirm 85%+ for every 
+   function and 85%+ total.
+
+STRICT RULES:
+- Modify or add ONLY *_test.go files
+- Do NOT touch any non-test .go files
+- Do NOT stage .tiff or coverage files
