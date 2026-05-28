@@ -1,3 +1,13 @@
+Review and commit only RD-9720 related changes to feature/RD-9720-transaction-history-filters-UI-changes.
+Run git diff on each changed file — identify and remove any console.log, debug code, hardcoded values, or unrelated changes
+Use git add -p to stage ONLY RD-9720 changes (Apply Filters button + single API call)
+Show me what's included vs excluded before committing
+Commit:
+Code
+git push origin feature/RD-9720-transaction-history-filters-UI-changes
+Production push — be careful, no unrelated changes.
+
+
 The "Apply Filters" button has 3 issues — fix all:
 Center: button is inside the right column div. Move it OUTSIDE both left and right column divs, into its own full-width row, then center it with margin: 8px auto
 Full solid blue: change background to #1a6dc7 and add opacity: 1 !important
