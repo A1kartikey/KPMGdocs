@@ -293,3 +293,6 @@ STEPS:
 4. Run coverage:
    go test ./services/chihuahua/service/transaction/stepfunction/... -cover
 5. Confirm 85%+ total coverage achieved
+
+
+Move the "Apply Filters" button to span full width below all filter sections (both the left payment type buttons and right Search/Location/User column). Style it as a solid blue primary button (#1a6dc7 or matching Salucro's primary blue), larger height (~38px), with a search icon prefix. It should visually signal "click here after selecting filters" — make it stand out from Reset/Download buttons which should remain secondary/gray. Update the HTML and CSS only.
