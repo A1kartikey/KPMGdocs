@@ -309,3 +309,7 @@ Position: center, same as before
 Width: 50%
 Color: solid blue always — not only on hover, remove hover color change
 Keep same height as other buttons like Reset/Download
+
+Fix the "Apply Filters" button — two changes only:
+Position: center it on its own separate row between the filter buttons and the Reset/Download bar. No changes to width (keep 50%)
+Hover: remove all hover/active/focus color changes — button must stay solid blue #1a6dc7 always, use !important on all states
