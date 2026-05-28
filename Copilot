@@ -1,3 +1,8 @@
+The "Apply Filters" button has 3 issues — fix all:
+Center: button is inside the right column div. Move it OUTSIDE both left and right column divs, into its own full-width row, then center it with margin: 8px auto
+Full solid blue: change background to #1a6dc7 and add opacity: 1 !important
+No hover: override every state:
+
 lIgit fetch origin
 git checkout feature/RD-9679-improve-and-validate-test-covera
 git add services/chihuahua/service/stepfunction/
