@@ -302,3 +302,10 @@ Remove width: 100% — make it auto or a fixed width like 150px
 Reduce height — set padding: 6px 16px to match other buttons
 Align it to the right side, same row or just below the "User" dropdown
 Keep the blue color but match the same font size and height as Reset and Download Excel buttons nearby
+
+
+Fix the "Apply Filters" button:
+Position: center, same as before
+Width: 50%
+Color: solid blue always — not only on hover, remove hover color change
+Keep same height as other buttons like Reset/Download
