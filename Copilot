@@ -1,4 +1,4 @@
-Igit fetch origin
+lIgit fetch origin
 git checkout feature/RD-9679-improve-and-validate-test-covera
 git add services/chihuahua/service/stepfunction/
 git status
@@ -234,3 +234,41 @@ git status
 git commit -m "RD-9707: increase test case coverage for sendsms stepFunctions services"
 git push origin feature/RD-9707-increase-test-case-coverage-for-sendsms
 git log --oneline -3
+
+
+
+For Jira RD-9708, BEFORE writing any tests, carefully 
+analyze services/chihuahua/service/transaction/stepfunction/
+
+NON-TEST files to cover:
+- activities.go
+- models.go
+- transactionnotifactivities.go
+- transactionnotifadapter.go
+- transactionnotificationhandler.go
+- transactionrequestadaper.go
+- transactionrequesthandler.go
+- transactionsfnservice.go
+- transactionsfnserviceimpl.go
+
+EXISTING test files to review:
+- stepfunction/activities_test.go
+- transaction_test.go
+- workflow_test_check_image_notification_test.go
+- workflow_test_refund_notification_payload_test.go
+- workflow_test_transaction_notification_payload_test.go
+- workflow_test_transaction_notification_test.go
+
+ANALYSIS TASKS:
+1. Read every existing test file carefully
+2. List exactly which functions in stepfunction/ 
+   are already tested
+3. List which functions have NO tests yet
+4. Check if any tests outside stepfunction/ folder 
+   are actually testing stepfunction/ functions
+   - If yes, note them - do NOT duplicate
+5. Report coverage gaps ONLY for untested functions
+
+DO NOT write any code yet.
+DO NOT create any files yet.
+Just give me a detailed gap report first.
