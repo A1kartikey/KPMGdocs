@@ -176,36 +176,41 @@ Run these commands one by one:
    git push origin feature/RD-9680-increase-test-case-coverage-for-balancenotif
    git log --oneline -3
 
-
-For Jira RD-9707, working on branch 
+For Jira RD-9707, on branch 
 feature/RD-9707-increase-test-case-coverage-for-sendsms:
 
-1. First switch branch:
+1. Switch branch:
    git fetch origin
    git checkout feature/RD-9707-increase-test-case-coverage-for-sendsms
 
-2. Run coverage for sendsms:
-   go test ./services/chihuahua/service/sendsms/... -coverprofile=sendsms_cov.out
+2. Run coverage ONLY for stepFunctions folder:
+   go test ./services/chihuahua/service/sendsms/stepFunctions/... -coverprofile=sendsms_cov.out
    go tool cover -func=sendsms_cov.out
 
-3. Identify ALL functions below 85% in these files:
-   - services/chihuahua/service/sendsms/stepFunctions/smsrequestadapter.go
-   - services/chihuahua/service/sendsms/stepFunctions/smsrequesthandler.go
-   - services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionActivityRequests.go
-   - services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionService.go
-   - services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionServiceImpl.go
-   - services/chihuahua/service/sendsms/activities.go
-   - services/chihuahua/service/sendsms/workflow.go
-   - services/chihuahua/service/sendsms/sendsms.go
+3. Carefully analyze ONLY these non-test files:
+   - smsrequestadapter.go
+   - smsrequesthandler.go
+   - smsStepFunctionActivityRequests.go
+   - smsStepFunctionService.go
+   - smsStepFunctionServiceImpl.go
 
-4. Write missing tests in ONLY these existing test files:
-   - services/chihuahua/service/sendsms/stepFunctions/activities_test.go
-   - services/chihuahua/service/sendsms/workflow_test.go
+4. For each file above:
+   - Read EVERY function carefully
+   - Understand the business logic completely
+   - Identify ALL missing branches and error paths
+   - Write precise and correct test cases
 
-5. Re-run coverage and confirm 85%+ for every 
-   function and 85%+ total.
+5. Create new test files in stepFunctions folder only.
+   Follow exact same patterns used in:
+   services/chihuahua/service/subaccount/stepfunction/
+   as reference for test structure and style.
 
-STRICT RULES:
-- Modify or add ONLY *_test.go files
+6. Re-run coverage and confirm 85%+ per function
+   and 85%+ total.
+
+CRITICAL RULES:
+- ONLY create/modify *_test.go files
 - Do NOT touch any non-test .go files
-- Do NOT stage .tiff or coverage files
+- Be extremely careful with mock implementations
+- Each test must be accurate to the actual business logic
+- Do NOT guess or assume — read the actual code first
