@@ -23,6 +23,10 @@ Steps needed:
 4. git commit -m "RD-9679: improve and validate test coverage for stepfunction services"
 5. git push origin feature/RD-9679-improve-and-validate-test-covera
 
+git commit -m "RD-9707: increase test case coverage for sendsms stepFunctions services"
+git push origin feature/RD-9707-increase-test-case-coverage-for-sendsms
+git log --oneline -3
+
 
 git add services/chihuahua/service/stepfunction/service_impl_internal_test.go
 git add services/chihuahua/service/stepfunction/service_impl_test.go
