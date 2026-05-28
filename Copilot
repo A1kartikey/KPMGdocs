@@ -272,3 +272,24 @@ ANALYSIS TASKS:
 DO NOT write any code yet.
 DO NOT create any files yet.
 Just give me a detailed gap report first.
+
+
+For Jira RD-9708, write missing tests for
+services/chihuahua/service/transaction/stepfunction/
+
+RULES:
+- 85%+ coverage on all functions
+- ONLY create/modify *_test.go files in stepfunction/ folder
+- Do NOT touch any non-test .go files
+- No duplicates - check activities_test.go first
+- All new test files must be in stepfunction/ folder only
+
+STEPS:
+1. Read ALL existing test files carefully to avoid duplicates
+2. Write missing tests for all untested functions
+3. If any stepfunction tests exist outside stepfunction/
+   folder, move them into stepfunction/ folder and delete
+   the originals
+4. Run coverage:
+   go test ./services/chihuahua/service/transaction/stepfunction/... -cover
+5. Confirm 85%+ total coverage achieved
