@@ -214,3 +214,14 @@ CRITICAL RULES:
 - Be extremely careful with mock implementations
 - Each test must be accurate to the actual business logic
 - Do NOT guess or assume — read the actual code first
+
+cd C:\Users\B138458\dev\salucro.go
+git fetch origin
+git checkout feature/RD-9707-increase-test-case-coverage-for-sendsms
+git add services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionActivityRequests_test.go
+git add services/chihuahua/service/sendsms/stepFunctions/smsStepFunctionServiceImpl_test.go
+git add services/chihuahua/service/sendsms/stepFunctions/smsrequestadapter_test.go
+git add services/chihuahua/service/sendsms/stepFunctions/smsrequesthandler_test.go
+git add services/chihuahua/service/sendsms/stepFunctions/test_helpers_test.go
+git status
+
