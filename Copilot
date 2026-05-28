@@ -296,3 +296,9 @@ STEPS:
 
 
 Move the "Apply Filters" button to span full width below all filter sections (both the left payment type buttons and right Search/Location/User column). Style it as a solid blue primary button (#1a6dc7 or matching Salucro's primary blue), larger height (~38px), with a search icon prefix. It should visually signal "click here after selecting filters" — make it stand out from Reset/Download buttons which should remain secondary/gray. Update the HTML and CSS only.
+
+The "Apply Filters" button is too wide and too tall. Fix it:
+Remove width: 100% — make it auto or a fixed width like 150px
+Reduce height — set padding: 6px 16px to match other buttons
+Align it to the right side, same row or just below the "User" dropdown
+Keep the blue color but match the same font size and height as Reset and Download Excel buttons nearby
