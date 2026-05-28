@@ -229,3 +229,8 @@ git add services/chihuahua/service/sendsms/stepFunctions/smsrequesthandler_test.
 git add services/chihuahua/service/sendsms/stepFunctions/test_helpers_test.go
 git status
 
+
+
+git commit -m "RD-9707: increase test case coverage for sendsms stepFunctions services"
+git push origin feature/RD-9707-increase-test-case-coverage-for-sendsms
+git log --oneline -3
