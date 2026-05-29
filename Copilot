@@ -1,22 +1,17 @@
-For RD-9705, confirm that 92.5% is the true maximum 
-achievable without touching non-test files.
+For RD-9705, improve coverage for these specific 
+functions WITHOUT touching non-test files:
 
-For every function below 100%, specifically:
-- unwrapInputData (75%)
-- getConfigByIndex (90%)
-- MakeTransactionNotificationActivity (87.2%)
-- NotifyEntityProfileDetailsActivity (86%)
-- InitializeCheckImageRequestAdapter (87.5%)
+1. getConfigByIndex (90%):
+   - Add mock test for bnRepo.NotifyEntityProfileDetailsByAction
+     returning error inside getConfigByIndex helper
 
-For each one:
-1. Show me exactly which lines/branches are NOT covered
-2. Explain WHY they cannot be covered without 
-   changing non-test files
-3. Confirm if it's due to:
-   - Unreachable code paths
-   - Hard-coded dependencies
-   - Marshal/unmarshal errors that cannot be injected
-   - External service calls that cannot be mocked
+2. MakeTransactionNotificationActivity (87.2%):
+   - Add test for SendFailure validation path
+     at lines 112.79-114.4
 
-Give me a clear YES or NO for each function:
-"Can this be improved without touching non-test files?"
+3. NotifyEntityProfileDetailsActivity (86%):
+   - Add test for SendFailure validation path
+     at lines 202.79-204.4
+
+Only modify existing *_test.go files.
+Re-run coverage after and report new total.
