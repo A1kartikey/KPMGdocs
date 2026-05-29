@@ -1,3 +1,30 @@
+For Jira [TICKET-ID], improve existing test cases in
+[FOLDER-PATH]
+
+GOAL: Achieve 100% coverage or as high as possible
+on every single function without touching non-test files.
+
+STEPS:
+1. Run current coverage:
+   go test ./[FOLDER-PATH]/... -coverprofile=cov.out
+   go tool cover -func=cov.out
+
+2. For every function below 100%:
+   - Read the actual source code carefully
+   - Understand every branch, condition and error path
+   - Write precise tests for every missing path
+   - Cover: happy path, error cases, edge cases,
+     nil inputs, empty inputs, boundary values
+
+3. Re-run coverage and confirm maximum coverage achieved.
+
+STRICT RULES:
+- ONLY modify existing *_test.go files in same folder
+- Do NOT create files outside the stepfunction folder
+- Do NOT touch any non-test .go files
+- No duplicate test cases
+- Each test must be meaningful and accurate
+
 Review and commit only RD-9720 related changes to feature/RD-9720-transaction-history-filters-UI-changes.
 Run git diff on each changed file — identify and remove any console.log, debug code, hardcoded values, or unrelated changes
 Use git add -p to stage ONLY RD-9720 changes (Apply Filters button + single API call)
