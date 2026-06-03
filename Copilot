@@ -1,17 +1,22 @@
-For RD-9705, improve coverage for these specific 
-functions WITHOUT touching non-test files:
+For Jira RD-9679, improve test coverage for
+services/chihuahua/service/stepfunction/
+to maximum possible without touching non-test files.
 
-1. getConfigByIndex (90%):
-   - Add mock test for bnRepo.NotifyEntityProfileDetailsByAction
-     returning error inside getConfigByIndex helper
+Already existing test files:
+- service_impl_test.go
+- service_impl_internal_test.go
+- service_impl_additional_test.go (newly created)
 
-2. MakeTransactionNotificationActivity (87.2%):
-   - Add test for SendFailure validation path
-     at lines 112.79-114.4
+STEPS:
+1. Check all 3 test files for existing tests
+2. Identify all functions still below 100%
+3. Add missing tests - NO duplicates
+4. Run coverage:
+   go test ./services/chihuahua/service/stepfunction/... -coverprofile=sfn_cov.out
+   go tool cover -func=sfn_cov.out
+5. Report final coverage per function
 
-3. NotifyEntityProfileDetailsActivity (86%):
-   - Add test for SendFailure validation path
-     at lines 202.79-204.4
-
-Only modify existing *_test.go files.
-Re-run coverage after and report new total.
+STRICT RULES:
+- ONLY modify *_test.go files
+- No duplicate test functions
+- Do NOT touch non-test files
