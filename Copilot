@@ -1,22 +1,30 @@
-For Jira RD-9679, improve test coverage for
-services/chihuahua/service/stepfunction/
-to maximum possible without touching non-test files.
+git fetch origin
+git checkout RD-9347-access-control-database-refund_imp
+git merge origin/develop
 
-Already existing test files:
-- service_impl_test.go
-- service_impl_internal_test.go
-- service_impl_additional_test.go (newly created)
 
-STEPS:
-1. Check all 3 test files for existing tests
-2. Identify all functions still below 100%
-3. Add missing tests - NO duplicates
-4. Run coverage:
-   go test ./services/chihuahua/service/stepfunction/... -coverprofile=sfn_cov.out
-   go tool cover -func=sfn_cov.out
-5. Report final coverage per function
+I am working on Jira ticket RD-9347 in the salucro.com repo.
 
-STRICT RULES:
-- ONLY modify *_test.go files
-- No duplicate test functions
-- Do NOT touch non-test files
+CONTEXT:
+Fortify security scan found a critical vulnerability where
+SQL queries use user-controlled primary key values (from
+GET/POST requests) without verifying the requesting user
+owns/has access to that data.
+
+Risk: Unauthorized data access, SQL injection, HIPAA/PCI violation.
+
+The specific file flagged is refund_returned.php
+
+TASK - Analysis only, do NOT change any code yet:
+
+1. Find and read refund_returned.php in the repo
+2. Identify every place where:
+   - GET/POST parameters are used directly in DB queries
+   - No user ownership/access validation exists
+   - String concatenation is used instead of parameter binding
+3. Show me exactly which lines are vulnerable
+4. Explain what each vulnerability does
+5. Suggest the fix approach for each one
+
+DO NOT modify any files yet.
+Just give me a detailed vulnerability report first.
