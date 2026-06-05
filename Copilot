@@ -1,30 +1,23 @@
-git fetch origin
-git checkout RD-9347-access-control-database-refund_imp
-git merge origin/develop
+For RD-9347, now implement the fixes in
+refund_returned.php ONLY.
 
+Make these changes strictly:
 
-I am working on Jira ticket RD-9347 in the salucro.com repo.
+1. Before executing refund_returned(ticketid) at line 19:
+   - Add server-side check: verify current logged-in 
+     user is authorized for this ticketid
+   - Reject with error if not authorized
 
-CONTEXT:
-Fortify security scan found a critical vulnerability where
-SQL queries use user-controlled primary key values (from
-GET/POST requests) without verifying the requesting user
-owns/has access to that data.
+2. Before lookup queries at lines 116 and 120:
+   - Validate AccountNumber belongs to current user
 
-Risk: Unauthorized data access, SQL injection, HIPAA/PCI violation.
+3. Convert ALL SQL concatenation to prepared statements
+   at lines 85,86,90,91,96,97,111,112,116,120
 
-The specific file flagged is refund_returned.php
+4. Validate and sanitize all GET/POST inputs:
+   AccountNumber, Amount, TxnDate, TimeHh, TimeMm,
+   TimeSs, TransactionId
 
-TASK - Analysis only, do NOT change any code yet:
-
-1. Find and read refund_returned.php in the repo
-2. Identify every place where:
-   - GET/POST parameters are used directly in DB queries
-   - No user ownership/access validation exists
-   - String concatenation is used instead of parameter binding
-3. Show me exactly which lines are vulnerable
-4. Explain what each vulnerability does
-5. Suggest the fix approach for each one
-
-DO NOT modify any files yet.
-Just give me a detailed vulnerability report first.
+Follow existing patterns in this codebase only.
+Change ONLY refund_returned.php.
+Show me the diff after changes.
