@@ -1,23 +1,42 @@
-For RD-9347, now implement the fixes in
-refund_returned.php ONLY.
+For RD-9347, review refund_returned.php only.
+Check ONLY these two things:
 
-Make these changes strictly:
+1. Are all ticket requirements implemented:
+   - Authorization before refund_returned(ticketid)
+   - AccountNumber ownership validation
+   - All SQL uses prepared statements
+   - All GET/POST inputs validated/sanitized
 
-1. Before executing refund_returned(ticketid) at line 19:
-   - Add server-side check: verify current logged-in 
-     user is authorized for this ticketid
-   - Reject with error if not authorized
+2. Any duplicates:
+   - Duplicate functions
+   - Duplicate validation logic
+   - Redundant queries
 
-2. Before lookup queries at lines 116 and 120:
-   - Validate AccountNumber belongs to current user
+Report findings only. Do NOT change anything.
 
-3. Convert ALL SQL concatenation to prepared statements
-   at lines 85,86,90,91,96,97,111,112,116,120
 
-4. Validate and sanitize all GET/POST inputs:
-   AccountNumber, Amount, TxnDate, TimeHh, TimeMm,
-   TimeSs, TransactionId
+For RD-9347, review ONLY the SQL queries
+in refund_returned.php:
 
-Follow existing patterns in this codebase only.
-Change ONLY refund_returned.php.
-Show me the diff after changes.
+- Any string concatenation still remaining?
+- All queries use prepared statements + bind_param?
+- No SELECT * unless necessary?
+- No unnecessary joins or subqueries?
+- Queries optimized for production performance?
+
+Report issues only. Do NOT change anything.
+
+
+For RD-9347, compare refund_returned.php against
+other existing PHP files in this codebase:
+
+1. Same DB connection pattern?
+2. Same prepared statement pattern?
+3. Same session/auth pattern?
+4. Same error handling style?
+5. No raw user input reaching any query?
+6. Error messages safe - no DB details exposed?
+7. Auth failures exit cleanly?
+
+Report any mismatches. Do NOT change anything.
+Confirm if production ready.
