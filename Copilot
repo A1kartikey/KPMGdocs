@@ -1,42 +1,41 @@
-For RD-9347, review refund_returned.php only.
-Check ONLY these two things:
-
-1. Are all ticket requirements implemented:
-   - Authorization before refund_returned(ticketid)
-   - AccountNumber ownership validation
-   - All SQL uses prepared statements
-   - All GET/POST inputs validated/sanitized
-
-2. Any duplicates:
-   - Duplicate functions
-   - Duplicate validation logic
-   - Redundant queries
-
-Report findings only. Do NOT change anything.
-
-
-For RD-9347, review ONLY the SQL queries
+For RD-9347, fix ONLY these SQL issues 
 in refund_returned.php:
 
-- Any string concatenation still remaining?
-- All queries use prepared statements + bind_param?
-- No SELECT * unless necessary?
-- No unnecessary joins or subqueries?
-- Queries optimized for production performance?
+1. Line 58: Remove redundant GROUP BY since
+   DISTINCT already ensures uniqueness.
+   Change: SELECT DISTINCT up.EntityId ... GROUP BY up.EntityId
+   To: SELECT DISTINCT up.EntityId ... (no GROUP BY)
 
-Report issues only. Do NOT change anything.
+2. Lines 300, 320: Replace SELECT * with only
+   the specific columns actually used in the
+   display loop at lines 410-413.
+   Read what columns are used then select only those.
+
+Do NOT change anything else.
+Show me the diff after changes.
+
+For RD-9347, fix ONLY the $entityCsv string
+concatenation in refund_returned.php at
+lines 165, 272, 282, 292, 327.
+
+Current pattern uses makeIntCsv() which is
+intval() protected but still concatenated.
+
+Convert to use quoteIntoMany() with bound
+parameters following the same pattern already
+used elsewhere in this file.
+
+Do NOT change anything else.
+Show me the diff after changes.
 
 
-For RD-9347, compare refund_returned.php against
-other existing PHP files in this codebase:
+For RD-9347, do a final check of refund_returned.php:
 
-1. Same DB connection pattern?
-2. Same prepared statement pattern?
-3. Same session/auth pattern?
-4. Same error handling style?
-5. No raw user input reaching any query?
-6. Error messages safe - no DB details exposed?
-7. Auth failures exit cleanly?
+1. Confirm GROUP BY fix is correct
+2. Confirm SELECT * is replaced correctly
+3. Confirm $entityCsv concatenation is fixed
+4. Confirm no new issues introduced
+5. Confirm all original security fixes still intact
 
-Report any mismatches. Do NOT change anything.
-Confirm if production ready.
+Report only. Do NOT change anything.
+Give final production ready verdict.
