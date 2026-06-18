@@ -1,14 +1,17 @@
-I need to test a demo transaction in my local 
-salucro.com environment.
+For RD-9347 in refund_returned.php,
+address these two reviewer comments:
 
-The vantivApiMode in efine_03 database config_env 
-table needs to be set to SANDBOX for local testing.
+1. In validateAccountNumber function:
+   Remove ONLY the preg_match regex condition.
+   Keep: empty check and strlen > 64 check.
+   Reason: account format is configurable,
+   no additional format condition needed.
 
-Please:
-1. Connect to local MySQL database efine_03
-2. Check current value of vantivApiMode in config_env
-3. If not SANDBOX, update it to SANDBOX:
-   UPDATE config_env SET config_value='SANDBOX' 
-   where config_name='vantivApiMode';
-4. Verify the change was successful
-5. Confirm I can now test with card: 5454 5454 5454 5454
+2. Remove the entire block that queries
+   u.username, u.status, up.Status
+   at lines 233-236.
+   Reason: only support users access this page,
+   this extra permission check is not needed.
+
+Do NOT change anything else.
+Show diff after changes.
