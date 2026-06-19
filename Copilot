@@ -1,17 +1,28 @@
-For RD-9347 in refund_returned.php,
-address these two reviewer comments:
+I am working on Jira ticket RD-10031 
+in salucro.com repo.
 
-1. In validateAccountNumber function:
-   Remove ONLY the preg_match regex condition.
-   Keep: empty check and strlen > 64 check.
-   Reason: account format is configurable,
-   no additional format condition needed.
+File to fix: xadmin/master/cback.php
 
-2. Remove the entire block that queries
-   u.username, u.status, up.Status
-   at lines 233-236.
-   Reason: only support users access this page,
-   this extra permission check is not needed.
+CONTEXT:
+Fortify security scan found SQL injection 
+vulnerability where GET/POST input is used 
+directly in SQL queries without:
+- User authorization checks
+- Input sanitization
+- Parameter binding
 
-Do NOT change anything else.
-Show diff after changes.
+TASK - Analysis only, DO NOT change any code yet:
+
+1. Read xadmin/master/cback.php carefully
+2. Find every place where:
+   - GET/POST parameters go directly into queries
+   - No user ownership/authorization check exists
+   - query() used without parameter binding
+   - String concatenation used in SQL
+3. List exact line numbers for each issue
+4. Explain what each vulnerability does
+5. Check what existing DB patterns are used
+   in this file (Salucro_Db or Salucro_DbReader?)
+
+DO NOT modify any files.
+Give me a detailed vulnerability report only.
