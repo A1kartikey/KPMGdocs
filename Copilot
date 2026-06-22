@@ -1,16 +1,6 @@
-For RD-10031 in xadmin/master/cback.php:
-
-Fix ONLY the date validation at line 109:
-- If date format is invalid, reject the 
-  request completely with error message
-- Do NOT silently fall back to today's date
-- Fail closed on invalid date input
-
-Do NOT change anything else.
-Show diff after change.
-
-Can you advise:
-1. What server-side value should we use to 
-   anchor the authorization scope?
-2. For invalid date - should we fail closed 
-   (reject request) or default to today?
+cback.php is showing blank page after changes.
+Check:
+1. Are all required files included for 
+   Salucro_DbReader to work?
+2. Any PHP syntax errors in the file?
+3. Fix without changing security fixes.
