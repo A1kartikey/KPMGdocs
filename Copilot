@@ -1,17 +1,16 @@
-For RD-10031, fix ONLY xadmin/master/cback.php:
+For RD-10031 in xadmin/master/cback.php:
 
-1. Validate tx_id is numeric using intval()
-2. Replace interpolated SQL with 
-   Salucro_DbReader::quoteInto() for binding
-3. Replace getFetchOne() with 
-   Salucro_DbReader::fetchRow()
-4. Validate date format strictly
-5. Replace dbFetchAll() with 
-   Salucro_DbReader::fetchAll()
-6. Remove legacy mysql_connect
-7. Add authorization predicate IN QUERY ONLY
-   to tie tx_id to allowed entity/account scope
+Fix ONLY the date validation at line 109:
+- If date format is invalid, reject the 
+  request completely with error message
+- Do NOT silently fall back to today's date
+- Fail closed on invalid date input
 
-Do NOT add session checks.
-Do NOT change any other files.
-Show diff after changes.
+Do NOT change anything else.
+Show diff after change.
+
+Can you advise:
+1. What server-side value should we use to 
+   anchor the authorization scope?
+2. For invalid date - should we fail closed 
+   (reject request) or default to today?
