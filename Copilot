@@ -1,6 +1,19 @@
-cback.php is showing blank page after changes.
-Check:
-1. Are all required files included for 
-   Salucro_DbReader to work?
-2. Any PHP syntax errors in the file?
-3. Fix without changing security fixes.
+For RD-10031, cback.php still shows HTTP 500 error
+after adding the required include at line 10.
+
+Please:
+1. Run docker logs to find the exact PHP fatal error:
+   - docker logs <php-fpm-container>
+   - docker logs <nginx-container>
+
+2. Check if all require_once includes in cback.php
+   match exactly the same includes used in 
+   refund_returned.php (our reference file)
+
+3. Verify Salucro_DbReader is accessible with
+   the current includes
+
+4. Fix any missing includes or fatal errors found
+
+Do NOT change any security fixes already made.
+Show what was changed and why.
