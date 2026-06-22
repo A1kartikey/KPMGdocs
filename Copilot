@@ -1,42 +1,17 @@
-For RD-10031, fix ONLY xadmin/master/cback.php.
+For RD-10031, fix ONLY xadmin/master/cback.php:
 
-CONFIRMED APPROACH:
-- Replace legacy mysql_connect pattern with 
-  Salucro_DbReader (file only does SELECT/read ops)
-- Follow same patterns used in other modern 
-  files in this codebase
+1. Validate tx_id is numeric using intval()
+2. Replace interpolated SQL with 
+   Salucro_DbReader::quoteInto() for binding
+3. Replace getFetchOne() with 
+   Salucro_DbReader::fetchRow()
+4. Validate date format strictly
+5. Replace dbFetchAll() with 
+   Salucro_DbReader::fetchAll()
+6. Remove legacy mysql_connect
+7. Add authorization predicate IN QUERY ONLY
+   to tie tx_id to allowed entity/account scope
 
-FIXES TO IMPLEMENT:
-
-1. Lines 34-45: Fix tx_id vulnerability:
-   - Validate tx_id is numeric using intval()
-     or is_numeric()
-   - Add user authorization check to verify
-     current session user can access this tx_id
-   - Replace interpolated SQL with 
-     Salucro_DbReader::quoteInto() for binding
-   - Replace getFetchOne() with 
-     Salucro_DbReader::fetchRow()
-
-2. Lines 73-95: Fix date vulnerability:
-   - Validate date format strictly
-   - Replace interpolated date in SQL with
-     Salucro_DbReader::quoteInto()
-   - Replace dbFetchAll() with
-     Salucro_DbReader::fetchAll()
-
-3. Remove legacy mysql_connect at line 10:
-   - Remove $conn = mysqli_connect(...)
-   - Use Salucro_DbReader throughout instead
-
-4. Add session-based authorization:
-   - Verify current logged-in user has access
-     to the requested tx_id record
-   - Reject unauthorized requests cleanly
-
-RULES:
-- Change ONLY cback.php
-- Follow existing Salucro_DbReader patterns
-  from other files in this codebase
-- Do NOT touch any other files
-- Show full diff after changes
+Do NOT add session checks.
+Do NOT change any other files.
+Show diff after changes.
