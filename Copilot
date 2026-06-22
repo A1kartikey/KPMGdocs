@@ -1,19 +1,25 @@
-For RD-10031, cback.php still shows HTTP 500 error
-after adding the required include at line 10.
+For RD-10031, cback.php is now loading correctly.
+Help me verify all functionality works and 
+nothing broke:
 
-Please:
-1. Run docker logs to find the exact PHP fatal error:
-   - docker logs <php-fpm-container>
-   - docker logs <nginx-container>
+1. Test normal flow:
+   - What URL parameters does cback.php expect?
+   - Give me test URLs to verify each scenario:
+     a. Valid tx_id → should return data
+     b. Invalid tx_id (non-numeric) → should reject
+     c. Valid date → should filter correctly
+     d. Invalid date → should fail closed
+     e. No parameters → should show default view
 
-2. Check if all require_once includes in cback.php
-   match exactly the same includes used in 
-   refund_returned.php (our reference file)
+2. Test security fixes:
+   - Confirm tx_id=abc is rejected
+   - Confirm tx_id=1 OR 1=1 is rejected
+   - Confirm date injection is blocked
 
-3. Verify Salucro_DbReader is accessible with
-   the current includes
+3. Check nothing broke:
+   - Page loads ✅ (confirmed)
+   - Chargebacks display correctly
+   - Date filter works
+   - tx_id lookup works
 
-4. Fix any missing includes or fatal errors found
-
-Do NOT change any security fixes already made.
-Show what was changed and why.
+Show me exact test URLs I can use in browser.
