@@ -1,28 +1,42 @@
-I am working on Jira ticket RD-10031 
-in salucro.com repo.
+For RD-10031, fix ONLY xadmin/master/cback.php.
 
-File to fix: xadmin/master/cback.php
+CONFIRMED APPROACH:
+- Replace legacy mysql_connect pattern with 
+  Salucro_DbReader (file only does SELECT/read ops)
+- Follow same patterns used in other modern 
+  files in this codebase
 
-CONTEXT:
-Fortify security scan found SQL injection 
-vulnerability where GET/POST input is used 
-directly in SQL queries without:
-- User authorization checks
-- Input sanitization
-- Parameter binding
+FIXES TO IMPLEMENT:
 
-TASK - Analysis only, DO NOT change any code yet:
+1. Lines 34-45: Fix tx_id vulnerability:
+   - Validate tx_id is numeric using intval()
+     or is_numeric()
+   - Add user authorization check to verify
+     current session user can access this tx_id
+   - Replace interpolated SQL with 
+     Salucro_DbReader::quoteInto() for binding
+   - Replace getFetchOne() with 
+     Salucro_DbReader::fetchRow()
 
-1. Read xadmin/master/cback.php carefully
-2. Find every place where:
-   - GET/POST parameters go directly into queries
-   - No user ownership/authorization check exists
-   - query() used without parameter binding
-   - String concatenation used in SQL
-3. List exact line numbers for each issue
-4. Explain what each vulnerability does
-5. Check what existing DB patterns are used
-   in this file (Salucro_Db or Salucro_DbReader?)
+2. Lines 73-95: Fix date vulnerability:
+   - Validate date format strictly
+   - Replace interpolated date in SQL with
+     Salucro_DbReader::quoteInto()
+   - Replace dbFetchAll() with
+     Salucro_DbReader::fetchAll()
 
-DO NOT modify any files.
-Give me a detailed vulnerability report only.
+3. Remove legacy mysql_connect at line 10:
+   - Remove $conn = mysqli_connect(...)
+   - Use Salucro_DbReader throughout instead
+
+4. Add session-based authorization:
+   - Verify current logged-in user has access
+     to the requested tx_id record
+   - Reject unauthorized requests cleanly
+
+RULES:
+- Change ONLY cback.php
+- Follow existing Salucro_DbReader patterns
+  from other files in this codebase
+- Do NOT touch any other files
+- Show full diff after changes
