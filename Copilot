@@ -1,25 +1,32 @@
-For RD-10031, cback.php is now loading correctly.
-Help me verify all functionality works and 
-nothing broke:
+I am working on Jira ticket RD-9269 in 
+salucro.go repo.
 
-1. Test normal flow:
-   - What URL parameters does cback.php expect?
-   - Give me test URLs to verify each scenario:
-     a. Valid tx_id → should return data
-     b. Invalid tx_id (non-numeric) → should reject
-     c. Valid date → should filter correctly
-     d. Invalid date → should fail closed
-     e. No parameters → should show default view
+File: services/meerkat/generate_report_service.go
 
-2. Test security fixes:
-   - Confirm tx_id=abc is rejected
-   - Confirm tx_id=1 OR 1=1 is rejected
-   - Confirm date injection is blocked
+CONTEXT:
+There are 3 race conditions where concurrent 
+goroutines access a shared Excel file object
+without proper synchronization.
 
-3. Check nothing broke:
-   - Page loads ✅ (confirmed)
-   - Chargebacks display correctly
-   - Date filter works
-   - tx_id lookup works
+Race conditions can be detected by running:
+go test --race ./...
 
-Show me exact test URLs I can use in browser.
+TASK - Analysis only, DO NOT change any code yet:
+
+1. Read generate_report_service.go carefully
+2. Run: go test --race ./services/meerkat/...
+   and show me the race detector output
+3. Identify exactly:
+   - Where are the 3 race conditions?
+   - Which goroutines are racing?
+   - What shared Excel object is being accessed?
+   - What lines are involved?
+4. Suggest the correct synchronization approach:
+   - Mutex?
+   - Channel?
+   - WaitGroup?
+5. Check existing patterns used in this file
+   for concurrency
+
+DO NOT modify any files yet.
+Give me detailed race condition report first.
