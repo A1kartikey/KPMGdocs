@@ -1,48 +1,10 @@
-For RD-9937, do ONLY this one change:
-
-In features.go line 41, remove ONLY this line:
-SendPaymentLinkWfMigration FeatureName = 
-"send-payment-link-wf-migration"
-
-Do not touch any other file.
-Show diff after change.
-Confirm build passes:
-go build ./services/chihuahua/...
-
-For RD-9937, do ONLY this one change:
-
-In handler.go line 749:
-Remove the IsFeatureEnabled(SendPaymentLinkWfMigration)
-branch entirely.
-Keep ONLY the SFN path:
-sfnService.OnSendPaymentLinkNotification(...)
-Keep AllowSMSOptIn check intact.
-
-Do not touch any other file.
-Show diff after change.
-Confirm build passes.
-
-For RD-9937, do ONLY these two changes:
-
-1. service.go line 323:
-   Remove ONLY OnSendPaymentLinkNotification
-   method declaration from interface.
-
-2. service_impl.go line 924:
-   Remove entire OnSendPaymentLinkNotification
-   method body.
-
-Do not touch any other files.
-Show diff after changes.
-Confirm build passes.
-
 For RD-9937, do ONLY these two changes:
 
 1. chihuahua.go line 702:
    Remove from registerWorkflows ONLY:
    - openBalanceWorkflow.SendPaymentLink
    - openBalanceWorkflow.OnetimeOptIn
-   Do NOT remove other registrations.
+   Do NOT remove other workflow registrations.
 
 2. workflow.go line 1343:
    Remove these two functions entirely:
@@ -51,59 +13,25 @@ For RD-9937, do ONLY these two changes:
 
 Do not touch any other files.
 Show diff after changes.
-Confirm build passes.
+Confirm build passes:
+go build ./services/chihuahua/...
 
-For RD-9937, fix SFN poller argument order
-in ONLY these 6 files:
-Change runners, workers → workers, runners
 
-- balancenotifadapter.go:147
-- doubleoptin_handler.go:58
-- doubleoptin_request_adapter.go:89
-- onetimeoptin_handler.go:58
-- onetimeoptin_request_adapter.go:81
-- statementnotif_adapter.go:74
+For RD-9937, before proceeding check:
 
-Do not touch any other files.
-Show diff after changes.
-Confirm build passes.
+1. Search for any remaining references:
+   grep -r "send-payment-link-wf-migration" ./services/chihuahua/
+   grep -r "SendPaymentLinkWfMigration" ./services/chihuahua/
+   grep -r "SendPaymentLink" ./services/chihuahua/service/natshandler/
+   grep -r "OnetimeOptIn" ./services/chihuahua/
 
-For RD-9937, fix SFN poller argument order
-in ONLY these files:
-Change runners, workers → workers, runners
+2. Check if openBalanceWorkflow.SendPaymentLink
+   and OnetimeOptIn still exist in:
+   - chihuahua.go
+   - workflow.go
 
-- t2padapter.go:215
-- checkimagerequestadapter.go:90
-- smsrequestadapter.go:78
-- subAccountRequestAdapter.go:66
-- transactionnotifadapter.go:117
-- transactionrequestadaper.go:58
+3. Check SFN poller argument order is correct
+   in all adapter files
 
-⚠️ For cronscheduleadapter.go:36:
-Read the file first and check variable names
-before making any change. Only change if
-runners/workers are in wrong order.
-
-Do not touch any other files.
-Show diff after changes.
-Confirm build passes.
-
-For RD-9937, do a final check:
-
-1. Confirm send-payment-link-wf-migration
-   does not appear anywhere in codebase:
-   grep -r "send-payment-link-wf-migration" 
-   ./services/chihuahua/
-
-2. Confirm OnSendPaymentLinkNotification
-   is fully removed:
-   grep -r "OnSendPaymentLinkNotification"
-   ./services/chihuahua/
-
-3. Run full build:
-   go build ./services/chihuahua/...
-
-4. Run tests:
-   go test ./services/chihuahua/...
-
-Report any remaining issues.
+Report exactly what is still remaining
+before I decide next steps.
