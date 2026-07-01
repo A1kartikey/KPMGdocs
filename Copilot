@@ -1,32 +1,109 @@
-I am working on Jira ticket RD-9269 in 
-salucro.go repo.
+For RD-9937, do ONLY this one change:
 
-File: services/meerkat/generate_report_service.go
+In features.go line 41, remove ONLY this line:
+SendPaymentLinkWfMigration FeatureName = 
+"send-payment-link-wf-migration"
 
-CONTEXT:
-There are 3 race conditions where concurrent 
-goroutines access a shared Excel file object
-without proper synchronization.
+Do not touch any other file.
+Show diff after change.
+Confirm build passes:
+go build ./services/chihuahua/...
 
-Race conditions can be detected by running:
-go test --race ./...
+For RD-9937, do ONLY this one change:
 
-TASK - Analysis only, DO NOT change any code yet:
+In handler.go line 749:
+Remove the IsFeatureEnabled(SendPaymentLinkWfMigration)
+branch entirely.
+Keep ONLY the SFN path:
+sfnService.OnSendPaymentLinkNotification(...)
+Keep AllowSMSOptIn check intact.
 
-1. Read generate_report_service.go carefully
-2. Run: go test --race ./services/meerkat/...
-   and show me the race detector output
-3. Identify exactly:
-   - Where are the 3 race conditions?
-   - Which goroutines are racing?
-   - What shared Excel object is being accessed?
-   - What lines are involved?
-4. Suggest the correct synchronization approach:
-   - Mutex?
-   - Channel?
-   - WaitGroup?
-5. Check existing patterns used in this file
-   for concurrency
+Do not touch any other file.
+Show diff after change.
+Confirm build passes.
 
-DO NOT modify any files yet.
-Give me detailed race condition report first.
+For RD-9937, do ONLY these two changes:
+
+1. service.go line 323:
+   Remove ONLY OnSendPaymentLinkNotification
+   method declaration from interface.
+
+2. service_impl.go line 924:
+   Remove entire OnSendPaymentLinkNotification
+   method body.
+
+Do not touch any other files.
+Show diff after changes.
+Confirm build passes.
+
+For RD-9937, do ONLY these two changes:
+
+1. chihuahua.go line 702:
+   Remove from registerWorkflows ONLY:
+   - openBalanceWorkflow.SendPaymentLink
+   - openBalanceWorkflow.OnetimeOptIn
+   Do NOT remove other registrations.
+
+2. workflow.go line 1343:
+   Remove these two functions entirely:
+   - func (bnwf *Workflow) SendPaymentLink(...)
+   - func (bnwf *Workflow) OnetimeOptIn(...)
+
+Do not touch any other files.
+Show diff after changes.
+Confirm build passes.
+
+For RD-9937, fix SFN poller argument order
+in ONLY these 6 files:
+Change runners, workers → workers, runners
+
+- balancenotifadapter.go:147
+- doubleoptin_handler.go:58
+- doubleoptin_request_adapter.go:89
+- onetimeoptin_handler.go:58
+- onetimeoptin_request_adapter.go:81
+- statementnotif_adapter.go:74
+
+Do not touch any other files.
+Show diff after changes.
+Confirm build passes.
+
+For RD-9937, fix SFN poller argument order
+in ONLY these files:
+Change runners, workers → workers, runners
+
+- t2padapter.go:215
+- checkimagerequestadapter.go:90
+- smsrequestadapter.go:78
+- subAccountRequestAdapter.go:66
+- transactionnotifadapter.go:117
+- transactionrequestadaper.go:58
+
+⚠️ For cronscheduleadapter.go:36:
+Read the file first and check variable names
+before making any change. Only change if
+runners/workers are in wrong order.
+
+Do not touch any other files.
+Show diff after changes.
+Confirm build passes.
+
+For RD-9937, do a final check:
+
+1. Confirm send-payment-link-wf-migration
+   does not appear anywhere in codebase:
+   grep -r "send-payment-link-wf-migration" 
+   ./services/chihuahua/
+
+2. Confirm OnSendPaymentLinkNotification
+   is fully removed:
+   grep -r "OnSendPaymentLinkNotification"
+   ./services/chihuahua/
+
+3. Run full build:
+   go build ./services/chihuahua/...
+
+4. Run tests:
+   go test ./services/chihuahua/...
+
+Report any remaining issues.
