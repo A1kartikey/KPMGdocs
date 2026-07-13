@@ -1,27 +1,30 @@
-For RD-9937, search ONLY for onetimeoptin code
-related to send-payment-link-wf-migration workflow
-in chihuahua service.
+For RD-9937, after the onetimeoptin cleanup,
+verify no similar issues remain in other
+relevant files:
 
-STEP 1 - Search:
-grep -r "OnetimeOptIn" ./services/chihuahua/
-grep -r "onetimeoptin" ./services/chihuahua/
+1. Run build to confirm no errors:
+   go build ./services/chihuahua/...
 
-STEP 2 - For EVERY result, check if it is:
-- Part of send-payment-link-wf-migration workflow
-- ONLY used by Cadence (not Step Functions)
-- NOT shared with other active workflows
+2. Run tests:
+   go test ./services/chihuahua/...
 
-STEP 3 - Ignore/KEEP these files:
-- Any Step Functions related files
-- Any files shared with other active workflows
-- Any files NOT related to 
-  send-payment-link-wf-migration
+3. Search for any remaining Cadence-only
+   onetimeoptin references:
+   grep -r "OnetimeOptIn" ./services/chihuahua/
+   grep -r "onetimeoptin" ./services/chihuahua/
 
-STEP 4 - Report ONLY:
-List files that contain onetimeoptin code
-exclusively related to 
-send-payment-link-wf-migration Cadence workflow.
+4. For each result found check:
+   - Is it Step Functions related? → KEEP
+   - Is it Cadence-only? → FLAG for removal
+   - Is it the new local helper we just added
+     in onetimeoptin_enrollment.go? → KEEP
 
-Show file name, line number and reason
-why it is safe to remove.
-Do NOT make any changes yet.
+5. Check these specific files that had
+   onetimeoptin references before:
+   - service/natshandler/handler.go
+   - service/balancenotif/opt.go
+   - service/balancenotif/workflow.go
+   - service/balancenotif/patientdetails.go
+
+Report PASS or FAIL for each check.
+Do NOT make changes yet — report only.
