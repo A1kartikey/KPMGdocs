@@ -1,37 +1,27 @@
-For RD-9937, do ONLY these two changes:
+For RD-9937, search ONLY for onetimeoptin code
+related to send-payment-link-wf-migration workflow
+in chihuahua service.
 
-1. chihuahua.go line 702:
-   Remove from registerWorkflows ONLY:
-   - openBalanceWorkflow.SendPaymentLink
-   - openBalanceWorkflow.OnetimeOptIn
-   Do NOT remove other workflow registrations.
+STEP 1 - Search:
+grep -r "OnetimeOptIn" ./services/chihuahua/
+grep -r "onetimeoptin" ./services/chihuahua/
 
-2. workflow.go line 1343:
-   Remove these two functions entirely:
-   - func (bnwf *Workflow) SendPaymentLink(...)
-   - func (bnwf *Workflow) OnetimeOptIn(...)
+STEP 2 - For EVERY result, check if it is:
+- Part of send-payment-link-wf-migration workflow
+- ONLY used by Cadence (not Step Functions)
+- NOT shared with other active workflows
 
-Do not touch any other files.
-Show diff after changes.
-Confirm build passes:
-go build ./services/chihuahua/...
+STEP 3 - Ignore/KEEP these files:
+- Any Step Functions related files
+- Any files shared with other active workflows
+- Any files NOT related to 
+  send-payment-link-wf-migration
 
+STEP 4 - Report ONLY:
+List files that contain onetimeoptin code
+exclusively related to 
+send-payment-link-wf-migration Cadence workflow.
 
-For RD-9937, before proceeding check:
-
-1. Search for any remaining references:
-   grep -r "send-payment-link-wf-migration" ./services/chihuahua/
-   grep -r "SendPaymentLinkWfMigration" ./services/chihuahua/
-   grep -r "SendPaymentLink" ./services/chihuahua/service/natshandler/
-   grep -r "OnetimeOptIn" ./services/chihuahua/
-
-2. Check if openBalanceWorkflow.SendPaymentLink
-   and OnetimeOptIn still exist in:
-   - chihuahua.go
-   - workflow.go
-
-3. Check SFN poller argument order is correct
-   in all adapter files
-
-Report exactly what is still remaining
-before I decide next steps.
+Show file name, line number and reason
+why it is safe to remove.
+Do NOT make any changes yet.
