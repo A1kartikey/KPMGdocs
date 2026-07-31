@@ -1,30 +1,59 @@
-For RD-9937, after the onetimeoptin cleanup,
-verify no similar issues remain in other
-relevant files:
+Ticket RD-8976 in the salucro.pti (PISTL) repo asks for outdated 
+dependencies to be updated, each in its own PR (or a tightly-coupled 
+group), with a changelog link and breaking changes highlighted.
 
-1. Run build to confirm no errors:
-   go build ./services/chihuahua/...
+A merged PR #157 reportedly already updated the Go version and some 
+libraries together. Before I raise anything, clarify the actual state:
 
-2. Run tests:
-   go test ./services/chihuahua/...
+1. Show me exactly which dependencies PR #157 changed (diff its go.mod 
+   and go.sum against their state before that PR).
+2. Run `go list -u -m all` and list every dependency that is STILL 
+   outdated after #157.
+3. For each still-outdated dependency, give me: current version, latest 
+   stable version, and whether it's a direct or indirect dependency.
+4. Tell me plainly: is there remaining per-dependency work to do, or did 
+   #157 already cover everything (meaning this ticket is now about 
+   documenting those updates rather than raising new PRs)?
 
-3. Search for any remaining Cadence-only
-   onetimeoptin references:
-   grep -r "OnetimeOptIn" ./services/chihuahua/
-   grep -r "onetimeoptin" ./services/chihuahua/
+Do not change any files. This is investigation only.
 
-4. For each result found check:
-   - Is it Step Functions related? → KEEP
-   - Is it Cadence-only? → FLAG for removal
-   - Is it the new local helper we just added
-     in onetimeoptin_enrollment.go? → KEEP
+In the salucro.pti repo, help me update ONE dependency for RD-8976: 
+<DEPENDENCY_NAME> to <TARGET_VERSION>. 
 
-5. Check these specific files that had
-   onetimeoptin references before:
-   - service/natshandler/handler.go
-   - service/balancenotif/opt.go
-   - service/balancenotif/workflow.go
-   - service/balancenotif/patientdetails.go
+I run all git commands myself — you propose and explain, I execute.
 
-Report PASS or FAIL for each check.
-Do NOT make changes yet — report only.
+1. Confirm I'm starting from a clean branch cut off the latest develop 
+   (I'll have already run: git checkout develop && git pull && 
+   git checkout -b RD-8976-update-<dep>). If go.mod shows unexpected 
+   pending changes, stop and tell me.
+2. Tell me the exact commands: go get <module>@<version>, then go mod tidy.
+3. After I run them, show me the resulting go.mod / go.sum diff and 
+   explain what changed — including any indirect dependencies that moved 
+   as a side effect, so I know the real blast radius.
+4. Check the official changelog/release notes for this version range and 
+   summarize: new features I can ignore, deprecations, and — most 
+   importantly — any BREAKING changes. Give me the changelog URL.
+5. If there are breaking changes, tell me specifically whether our code 
+   uses the affected APIs (grep the repo), and draft the description, 
+   impact analysis, and suggested mitigation for the separate issue the 
+   ticket requires.
+6. Tell me to run `go build ./...` and `go test ./...`, and wait for the 
+   output before we call this done.
+
+Do not run git add, commit, or push. Do not touch any other dependency.
+
+
+Draft the PR description for RD-8976-update-<dependency>. It must include, 
+per the ticket's acceptance criteria:
+- Which single dependency (or tightly-coupled group) this PR updates, 
+  old version -> new version
+- A link to the official changelog for this version
+- Breaking changes clearly highlighted (or an explicit "no breaking 
+  changes" if the changelog and our usage confirm that)
+- If breaking: a link to the separate issue I created with impact and 
+  mitigation
+- Confirmation that go build and go test pass (I'll paste the actual 
+  output)
+
+Keep it factual — no claims we haven't verified. If you're unsure whether 
+something is a breaking change, say so rather than asserting it's safe.
