@@ -1,59 +1,67 @@
-Ticket RD-8976 in the salucro.pti (PISTL) repo asks for outdated 
-dependencies to be updated, each in its own PR (or a tightly-coupled 
-group), with a changelog link and breaking changes highlighted.
+In the salucro.pti (PISTL) repo, help me update the AWS SDK v2 family for 
+RD-8976 as ONE tightly-coupled group in a single PR (the ticket's "related 
+group" clause allows this). I run all git commands myself — you propose and 
+explain, I execute.
 
-A merged PR #157 reportedly already updated the Go version and some 
-libraries together. Before I raise anything, clarify the actual state:
+DIRECT packages to update to latest stable:
+- github.com/aws/aws-sdk-go-v2/config
+- github.com/aws/aws-sdk-go-v2/service/secretsmanager
+- github.com/aws/aws-sdk-go-v2/service/ssm
+- github.com/aws/smithy-go
+Let their transitive AWS indirect deps (aws-sdk-go-v2 core, credentials, 
+feature/ec2/imds, internal/configsources, internal/endpoints/v2, 
+service/sso, service/ssooidc, service/sts, etc.) move together as part of 
+the same update.
 
-1. Show me exactly which dependencies PR #157 changed (diff its go.mod 
-   and go.sum against their state before that PR).
-2. Run `go list -u -m all` and list every dependency that is STILL 
-   outdated after #157.
-3. For each still-outdated dependency, give me: current version, latest 
-   stable version, and whether it's a direct or indirect dependency.
-4. Tell me plainly: is there remaining per-dependency work to do, or did 
-   #157 already cover everything (meaning this ticket is now about 
-   documenting those updates rather than raising new PRs)?
+Do NOT modify filippo.io/edwards25519 — it's handled in PR #164 (RD-10499) 
+already on develop. Do NOT touch any non-AWS dependency in this PR.
 
-Do not change any files. This is investigation only.
+STEP 0 — network check first. This network has blocked the Go module proxy 
+(403). Before anything, have me confirm module access:
+  go env GOPROXY
+  GOPROXY=direct go get github.com/aws/aws-sdk-go-v2/config@latest
+If that fails, STOP and tell me — I'll need proxy access or an internal 
+GOPROXY before we can proceed.
 
-In the salucro.pti repo, help me update ONE dependency for RD-8976: 
-<DEPENDENCY_NAME> to <TARGET_VERSION>. 
+Once access is confirmed:
+1. Give me the exact go get commands for the four direct packages 
+   (@latest, or a specific stable version if you know it), then go mod tidy.
+2. After I run them, show me the go.mod / go.sum diff and explain what 
+   moved — especially which indirect AWS deps changed and whether anything 
+   NON-AWS shifted unexpectedly (flag it if so).
+3. Check the AWS SDK release notes / changelog for these version ranges and 
+   summarize breaking changes. Give me the changelog URL(s). If our code 
+   uses any changed APIs, grep for them and tell me where.
+4. If there are breaking changes, draft the description, impact analysis, 
+   and suggested mitigation for the separate issue the ticket requires.
+5. Tell me to run `go build ./...` and `go test ./...`, and wait for the 
+   actual output before we call it done.
 
-I run all git commands myself — you propose and explain, I execute.
-
-1. Confirm I'm starting from a clean branch cut off the latest develop 
-   (I'll have already run: git checkout develop && git pull && 
-   git checkout -b RD-8976-update-<dep>). If go.mod shows unexpected 
-   pending changes, stop and tell me.
-2. Tell me the exact commands: go get <module>@<version>, then go mod tidy.
-3. After I run them, show me the resulting go.mod / go.sum diff and 
-   explain what changed — including any indirect dependencies that moved 
-   as a side effect, so I know the real blast radius.
-4. Check the official changelog/release notes for this version range and 
-   summarize: new features I can ignore, deprecations, and — most 
-   importantly — any BREAKING changes. Give me the changelog URL.
-5. If there are breaking changes, tell me specifically whether our code 
-   uses the affected APIs (grep the repo), and draft the description, 
-   impact analysis, and suggested mitigation for the separate issue the 
-   ticket requires.
-6. Tell me to run `go build ./...` and `go test ./...`, and wait for the 
-   output before we call this done.
-
-Do not run git add, commit, or push. Do not touch any other dependency.
+Do not run git add, commit, or push.
 
 
-Draft the PR description for RD-8976-update-<dependency>. It must include, 
-per the ticket's acceptance criteria:
-- Which single dependency (or tightly-coupled group) this PR updates, 
-  old version -> new version
-- A link to the official changelog for this version
-- Breaking changes clearly highlighted (or an explicit "no breaking 
-  changes" if the changelog and our usage confirm that)
-- If breaking: a link to the separate issue I created with impact and 
-  mitigation
-- Confirmation that go build and go test pass (I'll paste the actual 
-  output)
 
-Keep it factual — no claims we haven't verified. If you're unsure whether 
-something is a breaking change, say so rather than asserting it's safe.
+
+
+In the salucro.pti (PISTL) repo, help me update ONE dependency for 
+RD-8976: <DEPENDENCY_NAME> to <TARGET_VERSION>. I run all git commands 
+myself — you propose and explain, I execute.
+
+Do NOT modify filippo.io/edwards25519 (handled in PR #164). Do NOT touch 
+any dependency other than the one named above.
+
+STEP 0 — confirm module proxy access first (this network has 403'd the Go 
+proxy):
+  GOPROXY=direct go get <module>@<version>
+If it fails, STOP and tell me.
+
+Then:
+1. Confirm I'm on a clean branch cut from the latest develop 
+   (git checkout develop && git pull && git checkout -b 
+   RD-8976-update-<dep>). If go.mod shows unexpected pending changes, stop.
+2. Give me the exact commands: go get <module>@<version>, then go mod tidy.
+3. Show me the go.mod / go.sum diff and explain what changed, including any 
+   indirect deps that moved as a side effect.
+4. Check the official changelog for this version range and summarize 
+   breaking changes, with the URL. If our code uses affected APIs, grep and 
+   show me where. If breaking, draft the
