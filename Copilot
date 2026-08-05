@@ -1,67 +1,12 @@
-In the salucro.pti (PISTL) repo, help me update the AWS SDK v2 family for 
-RD-8976 as ONE tightly-coupled group in a single PR (the ticket's "related 
-group" clause allows this). I run all git commands myself — you propose and 
-explain, I execute.
+git checkout <branch>
+git pull origin <branch>
 
-DIRECT packages to update to latest stable:
-- github.com/aws/aws-sdk-go-v2/config
-- github.com/aws/aws-sdk-go-v2/service/secretsmanager
-- github.com/aws/aws-sdk-go-v2/service/ssm
-- github.com/aws/smithy-go
-Let their transitive AWS indirect deps (aws-sdk-go-v2 core, credentials, 
-feature/ec2/imds, internal/configsources, internal/endpoints/v2, 
-service/sso, service/ssooidc, service/sts, etc.) move together as part of 
-the same update.
+# make go.mod + vendor consistent
+go mod tidy
+GOPROXY=direct go mod vendor      # or your USBank proxy if that's what works
 
-Do NOT modify filippo.io/edwards25519 — it's handled in PR #164 (RD-10499) 
-already on develop. Do NOT touch any non-AWS dependency in this PR.
-
-STEP 0 — network check first. This network has blocked the Go module proxy 
-(403). Before anything, have me confirm module access:
-  go env GOPROXY
-  GOPROXY=direct go get github.com/aws/aws-sdk-go-v2/config@latest
-If that fails, STOP and tell me — I'll need proxy access or an internal 
-GOPROXY before we can proceed.
-
-Once access is confirmed:
-1. Give me the exact go get commands for the four direct packages 
-   (@latest, or a specific stable version if you know it), then go mod tidy.
-2. After I run them, show me the go.mod / go.sum diff and explain what 
-   moved — especially which indirect AWS deps changed and whether anything 
-   NON-AWS shifted unexpectedly (flag it if so).
-3. Check the AWS SDK release notes / changelog for these version ranges and 
-   summarize breaking changes. Give me the changelog URL(s). If our code 
-   uses any changed APIs, grep for them and tell me where.
-4. If there are breaking changes, draft the description, impact analysis, 
-   and suggested mitigation for the separate issue the ticket requires.
-5. Tell me to run `go build ./...` and `go test ./...`, and wait for the 
-   actual output before we call it done.
-
-Do not run git add, commit, or push.
-
-
-
-
-
-In the salucro.pti (PISTL) repo, help me update ONE dependency for 
-RD-8976: <DEPENDENCY_NAME> to <TARGET_VERSION>. I run all git commands 
-myself — you propose and explain, I execute.
-
-Do NOT modify filippo.io/edwards25519 (handled in PR #164). Do NOT touch 
-any dependency other than the one named above.
-
-STEP 0 — confirm module proxy access first (this network has 403'd the Go 
-proxy):
-  GOPROXY=direct go get <module>@<version>
-If it fails, STOP and tell me.
-
-Then:
-1. Confirm I'm on a clean branch cut from the latest develop 
-   (git checkout develop && git pull && git checkout -b 
-   RD-8976-update-<dep>). If go.mod shows unexpected pending changes, stop.
-2. Give me the exact commands: go get <module>@<version>, then go mod tidy.
-3. Show me the go.mod / go.sum diff and explain what changed, including any 
-   indirect deps that moved as a side effect.
-4. Check the official changelog for this version range and summarize 
-   breaking changes, with the URL. If our code uses affected APIs, grep and 
-   show me where. If breaking, draft the
+# confirm vendor actually changed and is staged
+git status                         # expect vendor/modules.txt + vendor/... changes
+git add go.mod go.sum vendor/
+git commit -m "<TICKET>: sync vendor directory with go.mod dependency update"
+git push
