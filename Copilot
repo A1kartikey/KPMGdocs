@@ -1,12 +1,62 @@
-git checkout <branch>
-git pull origin <branch>
+I'm assigned RD-10887 in the salucro.com PHP repo (PISTL service). Three 
+High-risk findings from a Mythos AI model scan, all in epic/payment.php. 
+Analysis only — do NOT change any code in this pass.
 
-# make go.mod + vendor consistent
-go mod tidy
-GOPROXY=direct go mod vendor      # or your USBank proxy if that's what works
+THE FINDINGS:
 
-# confirm vendor actually changed and is staged
-git status                         # expect vendor/modules.txt + vendor/... changes
-git add go.mod go.sum vendor/
-git commit -m "<TICKET>: sync vendor directory with go.mod dependency update"
-git push
+1. AVIT6799379 — CWE-489, active debug code with no auth
+   - No $login check, so site_inc requires nothing; CSRF token is minted 
+     for anonymous sessions
+   - Check21::convertCheckImage() does base64_decode then readImageBlob 
+     with no validation — every other caller gates it with 
+     isImageFormatValid() (TIFF only); this endpoint is the oversight
+   - Reachability: epic/payment.php:40
+
+2. AVIT6799405 — CWE-502, deserialization of untrusted sessiondata
+   - encrypt_decrypt() (lines 137-154) uses AES-256-CBC with a hardcoded 
+     secret key and static IV (there's a @TODO admitting it)
+   - Encrypted sessiondata hidden field emitted to client (line 1567) and 
+     accepted back from unauthenticated MyChart users (line 645)
+   - After decryption: unserialize($sessionData['clientAuth']) (line 680), 
+     and clientSessionData drives payment processing and Epic result 
+     reporting
+
+3. AVIT6799380 — CWE-502, credential exposure via deserialization
+   - Credentials at lines 11-35; TransactionID/m_paypalemail unencoded into 
+     the SOAP body; return=1 echoes the parsed response; line 147 print_r's 
+     everything; no check_access, though sibling pages require it
+   - Reachability: epic/payment.php:644
+
+ANALYSIS TASKS — evidence from the actual code for each:
+
+1. Read epic/payment.php and walk me through the flow at each cited line 
+   number. I want to understand what the file actually does before I touch 
+   anything.
+2. For each finding, confirm whether the described condition is actually 
+   present in the current code (the scan may be stale or partially wrong) — 
+   quote the relevant lines.
+3. Map the relationships: do findings 2 and 3 share the same encrypt/ 
+   decrypt/unserialize path? The ticket wants one PR per vulnerability, but 
+   these may not be cleanly separable. Tell me which can be isolated and 
+   which are entangled.
+4. Who calls this endpoint? Search the repo for references to 
+   epic/payment.php — is it live, and what depends on it?
+5. How do SIBLING pages handle these same concerns? The findings mention 
+   other callers gate convertCheckImage() with isImageFormatValid(), and 
+   other pages require check_access. Show me those existing patterns — any 
+   fix should match repo conventions, not invent new ones.
+6. For the CWE-502 issues specifically: is the encrypted-blob-to-client 
+   pattern used elsewhere in the codebase, or is this file unique? That 
+   changes whether a fix here is local or systemic.
+7. List the open DESIGN questions a human needs to decide — e.g. whether 
+   to replace client-side session state with server-side storage vs. 
+   harden the existing pattern. Do not pick one; just surface the choices 
+   with tradeoffs.
+
+RULES:
+- No code changes in this pass.
+- Do not propose "just sanitize the input" for the unserialize issues — 
+  tell me honestly if a given finding needs an architectural change rather 
+  than a patch.
+- Flag anything where the scan's description doesn't match what you find 
+  in the code.
