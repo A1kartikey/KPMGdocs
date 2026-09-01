@@ -1,62 +1,49 @@
-I'm assigned RD-10887 in the salucro.com PHP repo (PISTL service). Three 
-High-risk findings from a Mythos AI model scan, all in epic/payment.php. 
-Analysis only — do NOT change any code in this pass.
+RD-10887, finding AVIT6799405 (CWE-502) in the salucro.com PHP repo. I want 
+to fix the deserialization sink in epic/payment.php. Investigate repo-wide 
+FIRST, then we decide the fix together. Do not change code until I confirm 
+the approach.
 
-THE FINDINGS:
+PHASE 1 — SCOPE (read-only, report findings):
 
-1. AVIT6799379 — CWE-489, active debug code with no auth
-   - No $login check, so site_inc requires nothing; CSRF token is minted 
-     for anonymous sessions
-   - Check21::convertCheckImage() does base64_decode then readImageBlob 
-     with no validation — every other caller gates it with 
-     isImageFormatValid() (TIFF only); this endpoint is the oversight
-   - Reachability: epic/payment.php:40
+1. clientAuth: grep the ENTIRE repo (not just payment.php) for "clientAuth". 
+   Show every hit with file:line. Specifically: is clientAuth ever WRITTEN 
+   into the session payload anywhere, and is it ever READ downstream? Also 
+   check git history — was it populated in the past? A previously-rendered 
+   browser form could still POST the old shape during deployment.
 
-2. AVIT6799405 — CWE-502, deserialization of untrusted sessiondata
-   - encrypt_decrypt() (lines 137-154) uses AES-256-CBC with a hardcoded 
-     secret key and static IV (there's a @TODO admitting it)
-   - Encrypted sessiondata hidden field emitted to client (line 1567) and 
-     accepted back from unauthenticated MyChart users (line 645)
-   - After decryption: unserialize($sessionData['clientAuth']) (line 680), 
-     and clientSessionData drives payment processing and Epic result 
-     reporting
+2. encrypt_decrypt(): find where it's DEFINED. Is it local to payment.php or 
+   a shared helper (site_inc.php or another common include)? List every 
+   caller across the repo. This decides whether the hardcoded key / static 
+   IV is a payment.php problem or a repo-wide one.
 
-3. AVIT6799380 — CWE-502, credential exposure via deserialization
-   - Credentials at lines 11-35; TransactionID/m_paypalemail unencoded into 
-     the SOAP body; return=1 echoes the parsed response; line 147 print_r's 
-     everything; no check_access, though sibling pages require it
-   - Reachability: epic/payment.php:644
+3. The encrypted-hidden-field pattern: do other pages emit an encrypted blob 
+   to the browser and accept it back? Grep for "sessiondata" and for hidden 
+   inputs carrying encrypted state. Tell me if this is unique to payment.php 
+   or systemic.
 
-ANALYSIS TASKS — evidence from the actual code for each:
+4. Other CWE-502 sinks: grep for unserialize() anywhere it touches request 
+   data — $_POST, $_GET, cookies, or anything decrypted from a client blob. 
+   List them with file:line.
 
-1. Read epic/payment.php and walk me through the flow at each cited line 
-   number. I want to understand what the file actually does before I touch 
-   anything.
-2. For each finding, confirm whether the described condition is actually 
-   present in the current code (the scan may be stale or partially wrong) — 
-   quote the relevant lines.
-3. Map the relationships: do findings 2 and 3 share the same encrypt/ 
-   decrypt/unserialize path? The ticket wants one PR per vulnerability, but 
-   these may not be cleanly separable. Tell me which can be isolated and 
-   which are entangled.
-4. Who calls this endpoint? Search the repo for references to 
-   epic/payment.php — is it live, and what depends on it?
-5. How do SIBLING pages handle these same concerns? The findings mention 
-   other callers gate convertCheckImage() with isImageFormatValid(), and 
-   other pages require check_access. Show me those existing patterns — any 
-   fix should match repo conventions, not invent new ones.
-6. For the CWE-502 issues specifically: is the encrypted-blob-to-client 
-   pattern used elsewhere in the codebase, or is this file unique? That 
-   changes whether a fix here is local or systemic.
-7. List the open DESIGN questions a human needs to decide — e.g. whether 
-   to replace client-side session state with server-side storage vs. 
-   harden the existing pattern. Do not pick one; just surface the choices 
-   with tradeoffs.
+5. Is the secret key committed in source and present in git history? Do NOT 
+   print the key value — just tell me yes/no and where it's defined.
+
+PHASE 2 — RECOMMENDATION (still no code changes):
+
+Based on Phase 1, tell me which of these applies, with evidence:
+ (a) NARROW — clientAuth is genuinely dead repo-wide: delete the 
+     unserialize call. One file, no behavior change.
+ (b) MEDIUM — clientAuth IS consumed: replace unserialize with 
+     json_decode($x, true) plus an allow-list of expected keys, so no PHP 
+     object instantiation is possible. Show me exactly what consumes it and 
+     what the allow-list should contain.
+ (c) WIDE — the crypto weakness (hardcoded key, static IV, no integrity 
+     check) needs fixing too. Flag this as likely a SEPARATE ticket rather 
+     than folding it into this PR.
 
 RULES:
-- No code changes in this pass.
-- Do not propose "just sanitize the input" for the unserialize issues — 
-  tell me honestly if a given finding needs an architectural change rather 
-  than a patch.
-- Flag anything where the scan's description doesn't match what you find 
-  in the code.
+- Do not "sanitize the input" as a fix for unserialize — that does not work.
+- If the scan's description doesn't match what's actually in the code, say so.
+- Do not modify anything until I confirm which option to take.
+- Note: php -l can't run in this environment (PHP not on PATH), so tell me 
+  what I need to lint elsewhere before this can go in a PR.
