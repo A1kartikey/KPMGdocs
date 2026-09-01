@@ -1,49 +1,76 @@
-RD-10887, finding AVIT6799405 (CWE-502) in the salucro.com PHP repo. I want 
-to fix the deserialization sink in epic/payment.php. Investigate repo-wide 
-FIRST, then we decide the fix together. Do not change code until I confirm 
-the approach.
+RD-10887, finding AVIT6799379 (CWE-489, "Active debug code with no auth") in 
+the salucro.com PHP repo, epic/payment.php.
 
-PHASE 1 — SCOPE (read-only, report findings):
+BRANCH SETUP FIRST:
+This ticket requires one PR per vulnerability, so this needs its OWN branch, 
+separate from the AVIT6799405 branch I already have 
+(bugfix/RD-10887-project-mortar-salucro.com---ep).
 
-1. clientAuth: grep the ENTIRE repo (not just payment.php) for "clientAuth". 
-   Show every hit with file:line. Specifically: is clientAuth ever WRITTEN 
-   into the session payload anywhere, and is it ever READ downstream? Also 
-   check git history — was it populated in the past? A previously-rendered 
-   browser form could still POST the old shape during deployment.
+Tell me the commands to:
+1. Check my current branch and confirm my working tree is clean — if the 
+   #2 (AVIT6799405) change is still uncommitted, STOP and tell me, so I 
+   don't drag it into this branch.
+2. Cut a fresh branch from the correct base for salucro.com. Confirm what 
+   that base is (develop or main) by checking what my existing bugfix 
+   branch was cut from — do not assume.
+3. Name it consistently with the existing branch, distinguishing the 
+   finding (e.g. bugfix/RD-10887-AVIT6799379-debug-code-auth).
 
-2. encrypt_decrypt(): find where it's DEFINED. Is it local to payment.php or 
-   a shared helper (site_inc.php or another common include)? List every 
-   caller across the repo. This decides whether the hardcoded key / static 
-   IV is a payment.php problem or a repo-wide one.
+I run all git commands myself. Do not commit, push, or change code until 
+I confirm the approach.
 
-3. The encrypted-hidden-field pattern: do other pages emit an encrypted blob 
-   to the browser and accept it back? Grep for "sessiondata" and for hidden 
-   inputs carrying encrypted state. Tell me if this is unique to payment.php 
-   or systemic.
+THE FINDING:
+- CWE-489, Risk: 2-High
+- No $login check, so site_inc requires nothing; the CSRF token is minted 
+  for anonymous sessions
+- Check21::convertCheckImage() does base64_decode then readImageBlob with 
+  NO validation — every other caller gates it with isImageFormatValid() 
+  (TIFF only); this endpoint is described as "the one oversight"
+- Reachability evidence: epic/payment.php:40
+- Exploit path: fetch any v2.1 page for a session+CSRF token, POST an 
+  MVG/label:@/etc/passwd payload in fid; on permissive policies the 
+  returned PNG embeds the file contents
 
-4. Other CWE-502 sinks: grep for unserialize() anywhere it touches request 
-   data — $_POST, $_GET, cookies, or anything decrypted from a client blob. 
-   List them with file:line.
+CRITICAL CONSTRAINT (established in earlier analysis):
+This endpoint is INTENTIONALLY unauthenticated at the application-session 
+level because Epic/MyChart is the external caller. Adding a normal login 
+gate would likely break the embedded payment flow. Do NOT propose adding 
+$login/session auth as the fix without flagging that risk explicitly.
 
-5. Is the secret key committed in source and present in git history? Do NOT 
-   print the key value — just tell me yes/no and where it's defined.
+PHASE 1 — INVESTIGATE (read-only, report findings):
 
-PHASE 2 — RECOMMENDATION (still no code changes):
+1. Read epic/payment.php around line 40 and walk me through exactly what 
+   executes there. Is there a debug/test block that shouldn't be in 
+   production at all?
+2. Find Check21::convertCheckImage() — show me its body, what it does with 
+   base64_decode and readImageBlob, and what validation (if any) it performs 
+   internally.
+3. Find EVERY caller of convertCheckImage() across the repo. For each, show 
+   whether it gates the call with isImageFormatValid() or an equivalent 
+   check. I want to see the convention this endpoint deviates from.
+4. Show me isImageFormatValid() — what it accepts, what it rejects, and 
+   whether it would work unchanged at this call site.
+5. Trace the "fid" parameter from request to convertCheckImage(). What 
+   sanitization exists between them?
+6. Confirm or refute the exploit path: can an MVG/label:@ payload actually 
+   reach readImageBlob here? Note whether this depends on ImageMagick 
+   policy configuration (policy.xml) that may already be locked down in 
+   deployed environments.
 
-Based on Phase 1, tell me which of these applies, with evidence:
- (a) NARROW — clientAuth is genuinely dead repo-wide: delete the 
-     unserialize call. One file, no behavior change.
- (b) MEDIUM — clientAuth IS consumed: replace unserialize with 
-     json_decode($x, true) plus an allow-list of expected keys, so no PHP 
-     object instantiation is possible. Show me exactly what consumes it and 
-     what the allow-list should contain.
- (c) WIDE — the crypto weakness (hardcoded key, static IV, no integrity 
-     check) needs fixing too. Flag this as likely a SEPARATE ticket rather 
-     than folding it into this PR.
+PHASE 2 — RECOMMEND (still no code changes):
+
+Tell me which applies, with evidence:
+ (a) DEAD CODE — the block at line 40 is debug/test code with no production 
+     consumer: delete it.
+ (b) MISSING GUARD — apply isImageFormatValid() (or the sibling convention) 
+     before the decode, matching how every other caller does it. Show me 
+     the exact change.
+ (c) NEEDS DESIGN DECISION — the fix requires auth or architectural change 
+     that conflicts with the Epic/MyChart unauthenticated constraint. Say 
+     so plainly and list what a human needs to decide.
 
 RULES:
-- Do not "sanitize the input" as a fix for unserialize — that does not work.
-- If the scan's description doesn't match what's actually in the code, say so.
+- Match existing repo conventions; do not invent a new validation mechanism.
+- PHP is not on my PATH, so tell me what needs validating elsewhere / in CI.
+- If the scan description doesn't match what's actually in the code, say so.
 - Do not modify anything until I confirm which option to take.
-- Note: php -l can't run in this environment (PHP not on PATH), so tell me 
-  what I need to lint elsewhere before this can go in a PR.
