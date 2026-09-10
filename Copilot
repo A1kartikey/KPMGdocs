@@ -1,29 +1,31 @@
-Continue on the AVIT6799379 branch (bugfix/RD-10887-AVIT6799379-debug-code-auth) 
-in salucro.com. I want to complete everything that CAN be fixed in code, and 
-leave only the infrastructure work for a child ticket.
+On branch bugfix/RD-10887-AVIT6799380-paypal-transaction-details 
+(salucro.com), implement ONLY the change that is safe without the pending 
+auth design decision. I run all git commands myself.
 
-VERIFY FIRST — do not proceed past this until you answer:
+DO:
+1. Delete both print_r() debug outputs in xadmin/master/GetTransactionDetails.php 
+   (including the final print_r($_xml)). Show me each one in context first, 
+   and confirm nothing parses that output — check whether any caller scrapes 
+   the response body rather than using the JSON.
+2. Show me the diff before I commit.
 
-1. You added $login to v2.1/convert_scan_image.php. Did you actually verify 
-   nothing calls this endpoint anonymously? Show me:
-   - Every caller of convert_scan_image.php across the repo (forms, JS/AJAX, 
-     links, config)
-   - Whether any of them run in an unauthenticated context
-   - The exact $login value you set, and whether it matches the convention 
-     used in v2.1/payments.php line 7
-   If you have NOT verified this, do it now and report before continuing. 
-   Adding auth to an endpoint that legitimately serves anonymous callers 
-   would break the scanner flow in production.
+DO NOT (blocked on design decision):
+- Add $login or any auth guard — paypal_transactions.php:72 calls this 
+  server-to-server with curl, no session; a login gate would break the 
+  PayPal Here import.
+- Narrow or remove the return=1 response — that is the exact shape the 
+  importer consumes.
+- Change SOAP request construction to DOMDocument — it alters the PayPal 
+  wire format and needs integration testing alongside the auth change.
+- Touch credentials — rotation is an ops task, not a code change.
 
-2. Show me `git status` and `git diff` on this branch so I can see exactly 
-   what's currently changed and which commits exist.
+THEN:
+3. Summarize precisely what this PR does and does not address, for the PR 
+   description.
+4. Draft a short, factual statement of the design question for my seniors: 
+   the three options (shared service, service-to-service credentials, 
+   retire the importer) with the trade-off of each. Do not recommend one.
+5. Commit message must contain the standalone token _SCAN_.
 
-THEN IMPLEMENT (after I confirm step 1 is clean):
-
-3. Add the isImageFormatValid() gate before BOTH convertCheckImage() calls 
-   in v2.1/convert_scan_image.php, matching the sibling-caller convention. 
-   Show me the sibling implementation you're matching — do not invent a new 
-   pattern.
-
-4. Tell me whether v2.1/payments.php (reads $_POST['frontCheckImageBase64'] 
-   at line 301, calls convertCheckImage() at 2498-2499 with no format ga
+Do not commit or push. PHP is not on my PATH — tell me what needs linting 
+in CI.
