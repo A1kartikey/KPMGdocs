@@ -1,66 +1,8 @@
-Read-only investigation in the salucro.com PHP repo. Do NOT change any code.
-
-I need evidence about whether epic/payment.php and its hardcoded-secret 
-crypto path are actually in use. A senior has stated that files containing 
-hardcoded secrets are not in use. I need to verify or refute that with 
-evidence, not assumption.
-
-1. Is epic/payment.php reachable in production? Find every route, link, 
-   form action, redirect, config entry, or external integration that targets 
-   it. Note specifically whether Epic/MyChart calls it as an external caller.
-2. Trace encrypt_decrypt() (lines ~137-154): show me its definition, the 
-   hardcoded key and static IV, and EVERY caller of it in the repo.
-3. Is the encrypted sessiondata hidden field still emitted (around line 1582) 
-   and accepted back (around line 644)? Show me the current code at both.
-4. Does clientSessionData still flow into processClientForm() (~line 697) and 
-   into the amount used to build the charge (~line 549)? Show the chain.
-5. Git history: when was this file last modified, by whom, and for what? Has 
-   the MyChart payment flow been superseded by anything newer in the repo?
-6. Search for any NEWER replacement implementation of this payment flow that 
-   would make epic/payment.php dead.
-
-CRITICAL: repository evidence alone cannot prove a file is unused — it can 
-only prove it IS used. If you find no in-repo caller, say so explicitly and 
-list what runtime evidence would be needed (web server access logs, 
-application logs, Epic integration configuration) rather than concluding it 
-is inactive.
-
-Give me a clear verdict: IN USE (with evidence), or NO IN-REPO EVIDENCE OF 
-USE (with what still needs checking at runtime).
-
-
-Read-only investigation in the salucro.com PHP repo. Do NOT change any code.
-
-I need to establish whether xadmin/master/GetTransactionDetails.php and its 
-hardcoded PayPal credentials are actually in use. A senior has stated such 
-files are not in use. Earlier analysis found the opposite — that 
-xadmin/master/paypal_transactions.php contains a complete, recently 
-maintained PayPal Here import that calls it. Resolve this with evidence.
-
-1. Show me the hardcoded PayPal credentials in GetTransactionDetails.php 
-   (lines ~11-35) — describe what they are and where they're defined. Do NOT 
-   print the secret values.
-2. List all six callers of GetTransactionDetails.php with file:line, and for 
-   each state whether it is a browser page or a server-to-server call.
-3. For xadmin/master/paypal_transactions.php: confirm whether it is a 
-   complete working import (loads provider env, cURL client, queries active 
-   PayPal Here accounts, inserts into transaction/ticket/patient/payment 
-   tables). Show its git history — last modified when, and what for.
-4. Search the ENTIRE repo for anything that invokes paypal_transactions.php: 
-   cron definitions, Jenkins/pipeline files, deployment scripts, systemd 
-   units, scheduled task config, admin UI links, .htaccess rules, anything.
-5. Are the PayPal Here accounts it queries still active in any config or 
-   seed data in the repo?
-6. Is there a newer PayPal integration elsewhere in the repo that supersedes 
-   this legacy SOAP path?
-
-CRITICAL: absence of an in-repo invoker does NOT prove the script is 
-inactive — scripts like this are typically triggered by server cron, systemd 
-timers, Jenkins jobs, deployment scripts, or manual URL access, none of 
-which live in the repo. If you find no invoker, say so explicitly and list 
-exactly what runtime evidence would settle it (deployment server 
-cron/systemd schedules, Jenkins job definitions, web server access logs, 
-application/database insert logs).
-
-Give me a clear verdict, and a short list of specific questions I should put 
-to DevOps to close the gap.
+usage assessment for xadmin/master/GetTransactionDetails.php
+Repository evidence shows the endpoint is in use, not dead code:
+Four tracked call sites target this exact file: get_detail.php and get_detail_experiment.php (browser links), refunds.php (browser AJAX), and paypal_transactions.php (server-to-server cURL with return=1).
+The hardcoded PayPal credentials are on a live path — one of two credential sets is always selected and interpolated into the SOAP RequesterCredentials header, with the certificate passed to cURL, whenever the endpoint executes.
+paypal_transactions.php is a complete, maintained import (last modified 2024 for PHP 8.1 compatibility, earlier fix for duplicate transactions), writing to six operational tables.
+No newer PayPal implementation in the repo supersedes this flow.
+What I could not determine from the repository: whether the import is currently scheduled. No in-repo invoker exists for paypal_transactions.php — but cron entries, systemd timers, and Jenkins jobs live outside the repo, so absence there is not evidence of disuse.
+Outstanding — needs runtime confirmation: count of Active pp_here_account rows; access-log hits on the endpoint in the last 12 months; any schedule invoking the importer.
