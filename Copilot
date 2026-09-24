@@ -1,58 +1,57 @@
-# Task: verify RD-11688 branch runs and emits DogStatsD metrics correctly
+# Task: check out RD-11688 and get it running against my local Datadog agent
 
-Branch: feature/RD-11688-integ-auth-api-v1/integ/auth  (repo: Salucro/PartnerIntegrations/POG)
-I am peer-reviewing this. A Datadog agent container is running locally.
-Goal for THIS turn: confirm it builds, runs, and actually emits metrics. Do not refactor.
+Branch: feature/RD-11688-integ-auth-api-v1/integ/auth
+Repo: Salucro/PartnerIntegrations/POG
 
-## Step 1 — Build and vet
-Run and report output verbatim:
+My previous run analysed the wrong checkout. Start by confirming which branch is
+actually active, then switch.
+
+Goal for THIS turn: the service starts and stays up. Nothing else. Do not refactor,
+do not fix findings, do not review code quality.
+
+## Step 1 — Check out the branch
+  git status
+  git stash list
+Report anything uncommitted before you switch — do not discard my work.
+Then:
+  git fetch origin
+  git checkout feature/RD-11688-integ-auth-api-v1/integ/auth
+  git log --oneline -3
+Confirm HEAD is at f51728e. Report the actual output.
+
+## Step 2 — Build
   go build ./...
-  go vet ./...
-  go test ./... 2>&1 | tail -40
-Flag any failure with the file:line and what it means.
+If it fails, show the full error and stop. Tell me what is missing (dependency,
+generated code, go version) and the command to fix it — do not fix it yourself.
 
-## Step 2 — Map the Datadog wiring
-Read these and summarise the actual runtime path:
-  - app/gen/restapi/configure_partner_orchestration_gateway_api_server.go  (initDatadog, ~:214)
-  - app/src/config/  (DatadogConfig, MetricsNamespace(), GlobalTags())
-Report:
-  - which env vars are read, and each one's default
-  - what MetricsNamespace() returns for CarID="8328", Service="pog", Env="qa"
-  - what happens when cfg.CarID is empty — does it still emit, or noop?
-  - what happens when MetricsEnabled is false
-  - where the returned MetricsService is threaded to, and whether anything actually
-    calls it to emit a counter yet
+## Step 3 — Work out how to start it
+Read, do not guess:
+  - the main entrypoint (cmd/ or app/cmd/)
+  - app/src/config/ for every env var the service requires to boot, not just DD_*
+  - any Makefile, docker-compose.yml, .env.example, or README run instructions in the repo
+Report: the exact run command, and the complete list of required env vars with the
+value each one needs. Mark which ones I must supply (DB, secrets, upstream URLs) versus
+which have working defaults.
 
-## Step 3 — Namespace change review
-Commit f51728e removes the domain suffix: Custom.8328_pog -> Custom.8328.
-Show me every place the namespace is constructed or asserted, before and after this commit:
-  git log -p -2 -- app/src/config/
-Tell me whether the removal is complete and consistent, or whether any string,
-test, comment, doc or dashboard reference still expects the _pog form.
+## Step 4 — Confirm my Datadog agent
+  docker ps
+Identify the Datadog agent container, its name, and which ports it publishes.
+Confirm the DogStatsD UDP port (normally 8125) is actually mapped to the host.
+If DogStatsD is not exposed, say so and give me the docker run/compose change needed.
 
-## Step 4 — Exact run instructions
-Give me the precise commands to run this service locally against my Datadog agent
-container, including every DD_* env var with a concrete value. Read the config
-package for the real variable names — do not guess them. Include how to point it at
-the agent's DogStatsD UDP port.
+## Step 5 — Start it
+Give me one copy-pasteable command with all env vars inline, pointing DD_AGENT_HOST
+and the DogStatsD port at my container. Use PowerShell syntax — I am on Windows/pwsh.
+Run it. Report the startup log verbatim.
 
-## Step 5 — How to prove metrics actually leave the process
-DogStatsD is fire-and-forget UDP, so a clean run proves nothing. Give me at least two
-independent verification methods, with exact commands:
-  (a) capture the UDP packets on the host (tcpdump/socat/netcat on the dogstatsd port)
-  (b) read the Datadog agent container's own view (`docker exec ... agent status`,
-      dogstatsd stats, or agent logs at debug level)
-For each, tell me exactly what a correct metric line should look like, including the
-full expected metric name and the tag set.
+## Step 6 — Confirm it is up
+Tell me how to prove the process is serving: the port it listens on, and a curl or
+Invoke-WebRequest against a health endpoint (find the real path in the routes, do not
+assume /health). Run it and show the response.
 
-## Step 6 — Report
-List, separately:
-  - BLOCKERS: it does not build / does not run / emits nothing
-  - CORRECTNESS: metric name or tags that do not match
-    Custom.{CAR_ID}[_domain].{workflow_name}.{action}.count with tags
-    application, workflow_name, tenant_id, location_id
-  - RISKS: anything that would fail silently in production (missing env var handling,
-    no noop fallback, high-cardinality tag values, emission that could panic or block)
-  - QUESTIONS: things only the author can answer
+## Report
+Exactly two things:
+  1. RUNNING: yes/no
+  2. If no: the single blocking error, verbatim, and what I need to supply to clear it
 
-Do not modify any files. Read, run, and report.
+Do not analyse metric names, tags, or correctness in this turn.
