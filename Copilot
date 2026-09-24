@@ -1,8 +1,58 @@
-usage assessment for xadmin/master/GetTransactionDetails.php
-Repository evidence shows the endpoint is in use, not dead code:
-Four tracked call sites target this exact file: get_detail.php and get_detail_experiment.php (browser links), refunds.php (browser AJAX), and paypal_transactions.php (server-to-server cURL with return=1).
-The hardcoded PayPal credentials are on a live path — one of two credential sets is always selected and interpolated into the SOAP RequesterCredentials header, with the certificate passed to cURL, whenever the endpoint executes.
-paypal_transactions.php is a complete, maintained import (last modified 2024 for PHP 8.1 compatibility, earlier fix for duplicate transactions), writing to six operational tables.
-No newer PayPal implementation in the repo supersedes this flow.
-What I could not determine from the repository: whether the import is currently scheduled. No in-repo invoker exists for paypal_transactions.php — but cron entries, systemd timers, and Jenkins jobs live outside the repo, so absence there is not evidence of disuse.
-Outstanding — needs runtime confirmation: count of Active pp_here_account rows; access-log hits on the endpoint in the last 12 months; any schedule invoking the importer.
+# Task: verify RD-11688 branch runs and emits DogStatsD metrics correctly
+
+Branch: feature/RD-11688-integ-auth-api-v1/integ/auth  (repo: Salucro/PartnerIntegrations/POG)
+I am peer-reviewing this. A Datadog agent container is running locally.
+Goal for THIS turn: confirm it builds, runs, and actually emits metrics. Do not refactor.
+
+## Step 1 — Build and vet
+Run and report output verbatim:
+  go build ./...
+  go vet ./...
+  go test ./... 2>&1 | tail -40
+Flag any failure with the file:line and what it means.
+
+## Step 2 — Map the Datadog wiring
+Read these and summarise the actual runtime path:
+  - app/gen/restapi/configure_partner_orchestration_gateway_api_server.go  (initDatadog, ~:214)
+  - app/src/config/  (DatadogConfig, MetricsNamespace(), GlobalTags())
+Report:
+  - which env vars are read, and each one's default
+  - what MetricsNamespace() returns for CarID="8328", Service="pog", Env="qa"
+  - what happens when cfg.CarID is empty — does it still emit, or noop?
+  - what happens when MetricsEnabled is false
+  - where the returned MetricsService is threaded to, and whether anything actually
+    calls it to emit a counter yet
+
+## Step 3 — Namespace change review
+Commit f51728e removes the domain suffix: Custom.8328_pog -> Custom.8328.
+Show me every place the namespace is constructed or asserted, before and after this commit:
+  git log -p -2 -- app/src/config/
+Tell me whether the removal is complete and consistent, or whether any string,
+test, comment, doc or dashboard reference still expects the _pog form.
+
+## Step 4 — Exact run instructions
+Give me the precise commands to run this service locally against my Datadog agent
+container, including every DD_* env var with a concrete value. Read the config
+package for the real variable names — do not guess them. Include how to point it at
+the agent's DogStatsD UDP port.
+
+## Step 5 — How to prove metrics actually leave the process
+DogStatsD is fire-and-forget UDP, so a clean run proves nothing. Give me at least two
+independent verification methods, with exact commands:
+  (a) capture the UDP packets on the host (tcpdump/socat/netcat on the dogstatsd port)
+  (b) read the Datadog agent container's own view (`docker exec ... agent status`,
+      dogstatsd stats, or agent logs at debug level)
+For each, tell me exactly what a correct metric line should look like, including the
+full expected metric name and the tag set.
+
+## Step 6 — Report
+List, separately:
+  - BLOCKERS: it does not build / does not run / emits nothing
+  - CORRECTNESS: metric name or tags that do not match
+    Custom.{CAR_ID}[_domain].{workflow_name}.{action}.count with tags
+    application, workflow_name, tenant_id, location_id
+  - RISKS: anything that would fail silently in production (missing env var handling,
+    no noop fallback, high-cardinality tag values, emission that could panic or block)
+  - QUESTIONS: things only the author can answer
+
+Do not modify any files. Read, run, and report.
