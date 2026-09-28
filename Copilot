@@ -1,57 +1,97 @@
-# Task: check out RD-11688 and get it running against my local Datadog agent
+# RD-11676: audit current state before implementation
 
-Branch: feature/RD-11688-integ-auth-api-v1/integ/auth
-Repo: Salucro/PartnerIntegrations/POG
+Read-only turn. Do not edit any file.
 
-My previous run analysed the wrong checkout. Start by confirming which branch is
-actually active, then switch.
-
-Goal for THIS turn: the service starts and stays up. Nothing else. Do not refactor,
-do not fix findings, do not review code quality.
-
-## Step 1 — Check out the branch
+Run and report verbatim:
   git status
-  git stash list
-Report anything uncommitted before you switch — do not discard my work.
-Then:
-  git fetch origin
-  git checkout feature/RD-11688-integ-auth-api-v1/integ/auth
-  git log --oneline -3
-Confirm HEAD is at f51728e. Report the actual output.
-
-## Step 2 — Build
+  git diff --stat
+  git log --oneline -5
   go build ./...
-If it fails, show the full error and stop. Tell me what is missing (dependency,
-generated code, go version) and the command to fix it — do not fix it yourself.
+  go vet ./...
 
-## Step 3 — Work out how to start it
-Read, do not guess:
-  - the main entrypoint (cmd/ or app/cmd/)
-  - app/src/config/ for every env var the service requires to boot, not just DD_*
-  - any Makefile, docker-compose.yml, .env.example, or README run instructions in the repo
-Report: the exact run command, and the complete list of required env vars with the
-value each one needs. Mark which ones I must supply (DB, secrets, upstream URLs) versus
-which have working defaults.
+Then read and report the ACTUAL current contents of:
+  - pkg/util/telemetry/datadog.go
+  - pkg/hedgehog/telemetry/datadog.go
+  - pkg/badger/telemetry/datadog.go
+  - cmd/hedgehog/main.go (the telemetry wiring section)
+  - every emission call site in epicHandlers.go
 
-## Step 4 — Confirm my Datadog agent
-  docker ps
-Identify the Datadog agent container, its name, and which ports it publishes.
-Confirm the DogStatsD UDP port (normally 8125) is actually mapped to the host.
-If DogStatsD is not exposed, say so and give me the docker run/compose change needed.
+For each file: does it exist, does it compile, and what is actually in it right now?
+Distinguish clearly between (a) code that exists on disk and (b) code that was
+described in an earlier chat turn but is not pr
 
-## Step 5 — Start it
-Give me one copy-pasteable command with all env vars inline, pointing DD_AGENT_HOST
-and the DogStatsD port at my container. Use PowerShell syntax — I am on Windows/pwsh.
-Run it. Report the startup log verbatim.
 
-## Step 6 — Confirm it is up
-Tell me how to prove the process is serving: the port it listens on, and a curl or
-Invoke-WebRequest against a health endpoint (find the real path in the routes, do not
-assume /health). Run it and show the response.
+# RD-11676: verify the exactly-one-terminal invariant
 
-## Report
-Exactly two things:
-  1. RUNNING: yes/no
-  2. If no: the single blocking error, verbatim, and what I need to supply to clear it
+Read-only turn. Do not edit.
 
-Do not analyse metric names, tags, or correctness in this turn.
+ACCEPTANCE CRITERION: every workflow that emits workflow_init must emit EXACTLY ONE
+terminal metric (workflow_success | workflow_cancel | workflow_failure). Never two,
+never zero.
+
+Using the branch table from the previous turn, walk ProcessInitializeRequest and
+ProcessTransactionRequest line by line and answer:
+
+1. Is workflow_init emitted BEFORE the defer that emits the terminal is registered?
+   If the defer registers first and the function returns between the two, we get a
+   terminal with no init. Confirm the act
+
+
+
+# RD-11676: table-driven invariant test
+
+Write ONE Go test file covering the workflow lifecycle emission in epicHandlers.go.
+
+Requirements:
+- Table-driven. One table row per outcome branch identified in the branch table —
+  all guard returns, both terminal dispatches, the no-seir paths (:141, :289), and
+  the cancel path (:325).
+- Use a mock metrics.MetricsService that records every (metric name, tag set) it
+  receives.
+- Each row asserts:
+    (a) exactly one workflow_init was emitted
+    (b) exactly ONE terminal metric was emitted — assert the count, not just presence
+    (c) the terminal is the CORRECT one for that branch
+    (d) the full metric name matches Custom.{CAR_ID}_pd.{workflow_name}.{action}.count
+    (e) tags are exactly application, workflow_name, tenant_id, location_id
+    (f) trace_id is NOT present as a tag
+- One additional case: metricsSvc is nil → NewNoopMetrics fallback, no panic,
+  no emission.
+
+Follow the existing test conventions in this repo — read a neighbouring _test.go
+file first and match its mocking style and assertion library. Do not introduce a
+new test framework.
+
+Write only the test file. Do not modify non-test code. If a test reveals a defect,
+report it — do not fix it.
+
+
+
+# RD-11676: run hedgehog and capture actual DogStatsD packets
+
+Goal: prove metrics leave the process with correct names and tags.
+PowerShell syntax — I am on Windows.
+
+1. Confirm the Datadog agent container and that DogStatsD UDP is mapped to the host:
+   docker ps
+   Report the container name and port mapping.
+
+2. Read cmd/hedgehog/main.go and the config package for EVERY env var needed to boot
+   hedgehog — not just DD_*. Report which I must supply versus which have defaults.
+
+3. Give me one copy-pasteable pwsh command starting hedgehog with:
+   DD_CAR_ID=8328, DD_METRICS_ENABLED=true, DD_AGENT_HOST and DogStatsD port pointed
+   at my container.
+
+4. Give me a UDP capture command on the DogStatsD port so I can see raw packets
+   independent of the agent.
+
+5. Give me the exact requests to fire through BOTH workflows, covering:
+   - edi_device_capability: success, and one guard failure
+   - edi_payment: success, one guard failure, and the :325 cancel
+   Real payload shapes — read the handlers for what they accept.
+
+6. For each, state the EXACT packet string I should expect, e.g.
+   Custom.8328_pd.edi_payment.workflow_init:1|c|#application:Legacy EDI,workflow_name:edi_payment,tenant_id:...,location_id:...
+
+Run steps 1-2 now and report. Give me 3-6 as commands I execute myself.
