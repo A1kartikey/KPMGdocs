@@ -1,38 +1,152 @@
-# RD-11676: consolidate hedgehog onto the shared telemetry package
+Run these **one at a time** in Copilot (Agent mode), in the **salucro.com** repo. Each one checks first and only changes things after showing you. Credentials (#6) have no prompt; ask your senior.
 
-GROUND TRUTH: pkg/util/telemetry/datadog.go (the badger-derived shared package) is
-CORRECT. Where pkg/hedgehog/ediTelemetry.go diverges from it, ediTelemetry.go is wrong.
+---
 
-Target state:
-  - hedgehog's live bootstrap uses the shared package
-  - namespace resolves to Custom.{CAR_ID}_pd.  (domain "pd", NOT "pti")
-  - CarID defaults to 8328 when DD_CAR_ID is unset
-  - DogStatsD port default 8125
-  - noop fallback when the agent is unreachable, emission never throws
+## Prompt 1 — Correct code (develop with RD-11638)
 
-## Step 1 — read, do not edit
-Report the full current contents of:
-  - pkg/util/telemetry/datadog.go
-  - pkg/hedgehog/ediTelemetry.go
-  - cmd/hedgehog/main.go around :181
-  - pkg/hedgehog/telemetry/ (the constants imported at epicHandlers.go:22)
+````markdown
+# Prereq 1: get salucro.com onto develop with RD-11638
 
-Tell me exactly what ediTelemetry.go does that the shared package does not, and
-whether anything in it is hedgehog-specific and must be preserved rather than dropped.
+PowerShell, Windows. Do not discard any work.
 
-## Step 2 — plan the migration
-Propose the minimal change that puts cmd/hedgehog/main.go:181 on the shared package.
-Cover:
-  - what pkg/hedgehog/telemetry/datadog.go should contain (per the ticket it is a thin
-    wrapper supplying Service / Domain / DefaultCarID to the shared package)
-  - what happens to ediTelemetry.go — deleted, or reduced to a shim?
-  - whether the constants imported at epicHandlers.go:22 move or stay
-  - anything that breaks: other callers, tests, config references to "pti" or 8127
+1. Run `git status` and `git branch --show-current`. Report verbatim.
+2. If there are uncommitted changes, STOP and show me the list. Ask whether to
+   stash them (`git stash push -m "<branch> wip"`) or commit them. Do nothing until I answer.
+3. After I confirm:
+     git fetch origin
+     git checkout develop
+     git pull origin develop
+4. Prove RD-11638 is present: show the file and line where egg workflow_init is emitted
+   in src/Pti/Services/GenericGateway/EggWorkflowMeter.php, and
+   `git log --oneline -5 -- src/Pti/Services/GenericGateway/EggWorkflowMeter.php`.
 
-Flag anything that would change behaviour beyond the namespace and port.
+Report: current branch, latest commit, and yes/no "RD-11638 emission code present".
+````
 
-## Step 3 — open questions
-List anything a human must decide. In particular: is hedgehog's deployed Datadog agent
-actually listening on 8125, given ediTelemetry.go's comment cites DEVOPS-10036 for 8127?
+---
 
-Report only. Do not edit any file in this turn.
+## Prompt 2 — Local stack running and reachable
+
+````markdown
+# Prereq 2: local salucro.com stack up and https://salucro.localhost reachable
+
+PowerShell, Windows. Read first, change nothing without asking.
+
+1. Find how this repo runs locally: README, docker-compose*.yml, Laradock config, Makefile.
+   Quote the documented start command.
+2. Run `docker ps` and report which salucro containers are running (php, nginx/apache,
+   db, redis). List any required ones that are missing.
+3. Give me the exact command to start the missing containers. Do not run it — I will.
+4. Check C:\Windows\System32\drivers\etc\hosts (read only) for salucro.localhost.
+   If missing, show me the exact line to add (I will add it as Administrator).
+5. Test reachability:
+     curl.exe -sk -o NUL -w "%{http_code}" https://salucro.localhost/
+     curl.exe -sk -o NUL -w "%{http_code}" https://salucro.localhost/api/epic_generic_gateway_epic2016.php
+   Report the HTTP codes. Anything other than connection refused / DNS failure means
+   the endpoint is reachable.
+
+Report: RUNNING yes/no, and the single blocking issue if no.
+````
+
+---
+
+## Prompt 3 — Metrics env vars in the PHP container
+
+````markdown
+# Prereq 3: CAR_ID=8328 and DD_METRICS_ENABLED=true in the running PHP container
+
+Read first. Do not edit any file until I confirm.
+
+1. From src/Metrics/DatadogMetrics.php and config, list EVERY env var the metrics wrapper
+   reads (CAR_ID, DD_METRICS_ENABLED, agent host, DogStatsD port, ENV/ENV_CLASS, etc.)
+   with file:line and default value.
+2. Identify the PHP container name from `docker ps`, then run:
+     docker exec <php-container> printenv | findstr /I "CAR_ID DD_ ENV"
+   Report what is actually set inside the running container.
+3. Compare 1 vs 2. For each missing or wrong value, tell me:
+   - which file sets it for the local stack (.env, docker-compose env, Laradock .env)
+   - the exact line to add/change
+   - that DD agent host must point at the Datadog agent container (not 127.0.0.1 if the
+     agent runs in a separate container — explain which hostname to use)
+4. Give me the command to restart only the PHP container so the change takes effect.
+
+Do not apply changes. Show me the edits; I will confirm.
+````
+
+---
+
+## Prompt 4 — Local Datadog agent
+
+````markdown
+# Prereq 4: local Datadog agent receiving DogStatsD and forwarding to our org
+
+PowerShell, Windows. Do not print or log any API key value.
+
+1. `docker ps` — is a Datadog agent container running? Report name, image, and port
+   mappings. Confirm 8125/udp is exposed.
+2. Is it on the same Docker network as the salucro PHP container?
+     docker inspect <agent> --format "{{json .NetworkSettings.Networks}}"
+     docker inspect <php>   --format "{{json .NetworkSettings.Networks}}"
+3. Check its config WITHOUT revealing secrets:
+     docker exec <agent> agent status
+   Report only: API key valid yes/no, DogStatsD listening yes/no, packets received count,
+   site (datadoghq.com etc.), and any env tag.
+4. If the agent is missing, not on the shared network, or has no valid key: give me the
+   docker run / compose snippet needed, with DD_API_KEY=<ASK SENIOR> as a placeholder,
+   DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true, DD_ENV=local, and the correct network.
+   Do not run it.
+
+Report: agent ready yes/no, and what I must ask my senior for (API key, site, env tag).
+````
+
+---
+
+## Prompt 5 — Bruno collection
+
+````markdown
+# Prereq 5: Bruno collection for EGG ready
+
+Look in the salucro/bruno repo (clone path: <your path>). Read only.
+
+1. Confirm the collection folder PISTL/EGG (Legacy) exists. List its .bru request files.
+2. Show the LOCALHOST environment file for this collection. Report which variables it
+   defines (legacy-egg-url, username, password, ccSaleTransId, ccAuthTransId, ccTokenId,
+   achPaymentTransId) and which are empty. Do NOT print the password value.
+3. Confirm legacy-egg-url = https://salucro.localhost/api/epic_generic_gateway_epic2016.php
+4. For CC Payment - Sale.bru and CC Payment - Auth.bru, show the post-response script that
+   stores the transaction id, so I know the chaining works.
+5. Map each runbook step (1–13 in RD-11638) to its .bru file name.
+
+Report what I need to fill in manually before sending requests.
+````
+
+---
+
+## Prompt 6 — Final preflight (run last)
+
+````markdown
+# Preflight: confirm everything before firing EGG requests
+
+Run these checks and give me a single PASS/FAIL table, no explanations unless FAIL:
+
+| Check | Command |
+|---|---|
+| On develop with RD-11638 | git branch --show-current ; grep for egg workflow_init in EggWorkflowMeter.php |
+| PHP container running | docker ps |
+| Endpoint reachable | curl.exe -sk -o NUL -w "%{http_code}" https://salucro.localhost/api/epic_generic_gateway_epic2016.php |
+| CAR_ID=8328 in PHP container | docker exec <php> printenv CAR_ID |
+| DD_METRICS_ENABLED=true | docker exec <php> printenv DD_METRICS_ENABLED |
+| Agent running, 8125/udp | docker ps |
+| Agent API key valid | docker exec <agent> agent status (report yes/no only) |
+| PHP can reach agent | docker exec <php> sh -c "echo test.metric:1|c | nc -u -w1 <agent-host> 8125" then agent status packet count increased |
+
+For each FAIL: the one command or question that fixes it.
+````
+
+---
+
+## Ask your senior (no prompt can do these)
+
+> "To run the RD-11638 QA steps locally I need: the `elavon_master` test password, and the Datadog API key / site / `env` tag the team uses for local agents. Is it OK to send local test metrics to our Datadog org with `env:local`?"
+
+The last question matters: test data in a shared org should be clearly tagged so nobody mistakes it for real traffic.
