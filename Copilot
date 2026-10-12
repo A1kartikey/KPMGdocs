@@ -1,29 +1,49 @@
-Create a new dashboard named "8328_Salucro_EGG_Payment_DRAFT" (layout: Dashboard),
-team Salucro, default time range Past 2 Weeks.
+Audit dashboard "8328_Salucro_EGG_Payment_DRAFT" against Jira ticket RD-11641.
+PHASE 1 = REPORT ONLY. Do not modify anything until I reply "apply".
 
-Use ONLY existing metrics under Custom.8328.egg_payment.*. Before building, list
-the metrics you found and the tags on each (env, tenant_id, location_id, processor,
-reason, type, level). Add template variables only for tags that actually exist.
+TICKET REQUIREMENTS
+R1. Per-workflow dashboards exist for: egg_payment, egg_capture, egg_reversal,
+    egg_tokenize, egg_removetoken, egg_legacy, egg_inquire.
+R2. Each dashboard shows: workflow starts, success, cancel, failure,
+    transaction outcomes, and issue counts.
+R3. Monitors exist for: abnormal workflow_failure rate, transaction error
+    spikes, timeout/auto reversals, critical/fatal issues.
+R4. Dashboards can be filtered by: workflow_name, application, tenant_id,
+    location_id, processor, reason, type.
+R5. Dashboards and monitors query the emitted per-type metric names
+    (Custom.8328.egg_<workflow>.<action>.count).
+R6. Every dashboard, monitor and object name follows the CAR-ID naming
+    convention (8328_...).
 
-Widgets:
-1. Note at top: "DRAFT RD-11641. Completed = workflow finished (approved or
-   declined). Failure rate uses success+failure as denominator because
-   workflow_init has no tenant/location tags."
-2. Group "Lifecycle":
-   - Query Value "Started": sum of workflow_init.count, filtered by $env ONLY
-     (do NOT apply tenant_id/location_id to workflow_init).
-   - Query Value "Completed": sum of workflow_success.count
-   - Query Value "Failed": sum of workflow_failure.count
-   - Query Value "Failure rate %": formula failure / (success + failure) * 100
-   - Timeseries bars: success and failure over time
-3. Group "Payment outcomes":
-   - Stacked timeseries: payment_success, payment_decline, payment_error
-   - Query Value "Decline rate %": payment_decline / payment_init * 100
-   - Query Value "Error rate %": payment_error / payment_init * 100
-   - Query Value "Auto reversals": payment_auto_reversal.count
-   - Top list: payment_error by processor (only if processor tag exists)
-4. Group "Issues": timeseries of issue.count (by level if that tag exists)
+TASKS
+1. For ALL 7 workflows, list every metric that exists under
+   Custom.8328.egg_<workflow>.* in the last 30 days, with its tags.
+   Explicitly report: does any workflow_cancel metric exist? Does any
+   payment_tor / timeout reversal metric exist? Do egg_legacy and egg_inquire
+   exist as metric prefixes at all?
+2. For each tag in R4, report which metrics carry it (workflow_name,
+   application, tenant_id, location_id, processor, reason, type, env, source).
+3. For the existing dashboard, list every widget with its exact query and
+   check:
+   - every count query uses sum: and .as_count()
+   - workflow_init is NOT filtered by tenant_id/location_id
+   - failure rate = failure / (success + failure)
+   - decline/error rate denominators are payment_init
+   - no widget shows "No data" for the last 30 days
+4. Reconcile: for the last 14 days and 30 days, compare workflow_init vs
+   workflow_success + workflow_failure (+ workflow_cancel if it exists).
+   If they differ, show the daily breakdown and the dates where they differ.
+5. List existing monitors whose name or query contains "egg" or 8328 EGG metrics.
 
-All count queries must use sum: and .as_count().
-Do not invent metrics. If a metric or tag doesn't exist, skip that widget and
-tell me.
+OUTPUT
+A. Table: requirement (R1–R6) | status (DONE / PARTIAL / BLOCKED / NOT DONE)
+   | evidence | what is missing | blocked by (metric/tag that does not exist).
+B. Coverage matrix: workflow × [init, success, cancel, failure, outcomes,
+   issue] showing which metrics exist.
+C. List of fixes YOU can safely make on this dashboard, e.g.:
+   - rename "Started" to "Started (all tenants)"
+   - add workflow_name / application template variables if those tags exist
+   - update the note widget with known gaps
+D. List of gaps that need code or another ticket (missing tags/metrics),
+   stated as facts with evidence, not guesses.
+Do not invent metrics or tags. If something can't be checked, say so.
