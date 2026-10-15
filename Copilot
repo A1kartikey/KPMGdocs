@@ -1,28 +1,12 @@
-You are independently verifying a Git revert in this repo (Go service, 
-Bitbucket repo salucro/pog). Do NOT trust any earlier review or summary. 
-Run every command yourself and paste the raw output. Do not modify, commit, 
-or push anything.
-
-Branch under test: origin/feature/RD-11688-revert-on-release-14.3
-Base: origin/release/14.3
-
-Steps:
-1. git fetch origin. Create a temporary worktree of the revert branch 
-   (outside the repo directory) and work only there.
-2. Run these separately and show the full raw output and exit code of each:
-   - go build ./...
-   - go vet ./...
-   - go test ./...
-3. Run the same go build ./... and go vet ./... in a second temporary 
-   worktree of origin/release/14.3, so we can tell which errors already 
-   exist on release and which are caused by the revert.
-4. In the revert worktree, run git grep -n for "service/metrics", 
-   "MetricsService" and "MetricsSvc" in *.go files. Show file and line 
-   number for each match. Is the service/metrics import present in every 
-   file that uses metrics.MetricsService?
-5. Run git diff --stat origin/release/14.3...HEAD and list every file 
-   changed.
-6. Check config.go and its test: show the function that builds the 
-   "Custom.%s_pog" string, the test's expected value, and run that test 
-   alone with go test -run <TestName> -v.
-7. For any Windows file-lock error, say whether it is an environment iss
+Do not commit or push. Temporary edits only, reverted at the end.
+1. Show handler_tokenize.go lines 25-65 and the test file lines 190-200, 
+   420-430, 505-515 verbatim.
+2. Run go vet ./app/src/feature/integration/... on origin/release/14.3 in 
+   a temp worktree. Does time.Since fail there too?
+3. In the tokenize handler, temporarily add one extra metric call with 
+   wrong tags on the success path. Run go test ./app/src/feature/
+   integration/... -run TestIntegrationApiTokenizeHandler -v. Report 
+   pass/fail, then git checkout the change and show a clean git status.
+4. List every tag key and value source added to metrics in this PR.
+5. Which files in this PR are deleted by 
+   origin/feature/RD-11688-revert-on-release-14.3?
