@@ -1,11 +1,28 @@
-Revise the capability_result logic from the last two changes:
+You are independently verifying a Git revert in this repo (Go service, 
+Bitbucket repo salucro/pog). Do NOT trust any earlier review or summary. 
+Run every command yourself and paste the raw output. Do not modify, commit, 
+or push anything.
 
-1. Make capability_result single-valued and set in ONE place only. Remove any other append site. Add a test asserting the terminal success metric has exactly one capability_result tag in every branch.
-2. Change semantics: capability_result reflects credit-card capability, since "no credit card terminal found" is the key signal:
-   - CreditCard supported -> credit_card_supported
-   - CreditCard NOT supported, check supported -> no_pos_device (check support stays visible via the response, not this tag)
-   - Neither -> no_pos_device
-   If you think a separate check_supported value is still needed, propose it as a second bounded tag (e.g. check_supported:true|false) instead of overloading capability_result, and do not implement it without saying so.
-3. device_type = the badger.* constant of the device that set the credit-card capability. If none, device_type:unknown. Remove the lexicographic selection.
-4. Response bodies and Success=true must stay byte-identical. Keep the existing response assertions.
-Show the diff, then run go test ./pkg/hedgehog/...
+Branch under test: origin/feature/RD-11688-revert-on-release-14.3
+Base: origin/release/14.3
+
+Steps:
+1. git fetch origin. Create a temporary worktree of the revert branch 
+   (outside the repo directory) and work only there.
+2. Run these separately and show the full raw output and exit code of each:
+   - go build ./...
+   - go vet ./...
+   - go test ./...
+3. Run the same go build ./... and go vet ./... in a second temporary 
+   worktree of origin/release/14.3, so we can tell which errors already 
+   exist on release and which are caused by the revert.
+4. In the revert worktree, run git grep -n for "service/metrics", 
+   "MetricsService" and "MetricsSvc" in *.go files. Show file and line 
+   number for each match. Is the service/metrics import present in every 
+   file that uses metrics.MetricsService?
+5. Run git diff --stat origin/release/14.3...HEAD and list every file 
+   changed.
+6. Check config.go and its test: show the function that builds the 
+   "Custom.%s_pog" string, the test's expected value, and run that test 
+   alone with go test -run <TestName> -v.
+7. For any Windows file-lock error, say whether it is an environment iss
