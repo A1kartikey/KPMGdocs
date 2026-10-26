@@ -1,76 +1,70 @@
-Run these **one at a time in Copilot Agent mode**. Approve each command when it asks. Open the right repo folder in VS Code before each prompt.
+Follow these in order. Each step is either a **Copilot prompt** (Agent mode, approve the commands) or a **click in Bruno**.
 
-## Prompt 1: bruno repo (get the requests)
+### Step 1: Open the bruno repo in VS Code
+**File → Open Folder** → choose your **bruno** repo folder.
+(If you don't have it, ask your senior for the Bitbucket link and clone it first.)
 
+### Step 2: Copilot prompt (switch to the branch)
 ```
-In this bruno repo, do the following step by step and show me each command's output:
-1. git status. If there are uncommitted changes, run:
-   git stash push -u -m "wip before RD-11640 bruno"
-2. git fetch --all --prune
-3. Find the branch: git branch -r and look for "11640".
-   If feature/RD-11640-egg-metrics-coverage-bruno does not exist, STOP and tell me.
-4. git checkout feature/RD-11640-egg-metrics-coverage-bruno && git pull
-5. git branch --show-current
-6. List all request files in folders whose name contains "Metric Coverage",
-   plus "Invalid Payment Method", with their file paths.
-7. Show the LOCALHOST environment variables (hide any password value).
-Do not commit, push or delete anything.
-```
-
-Then in the **Bruno app**, close and reopen the collection. The "Metric Coverage" folders should appear.
-
-## Prompt 2: salucro.com (run the right code)
-
-```
-In this salucro.com repo, step by step, showing output:
-1. git status. If there are uncommitted changes:
-   git stash push -u -m "wip before RD-11640 test"
-2. git fetch --all --prune
-3. git checkout feat/RD-11640 && git pull && git branch --show-current
-4. Check the local env/config used by laradock for CAR_ID and
-   DD_METRICS_ENABLED. Tell me their values and the file. Do not change them.
-5. Run: docker ps. Tell me if the Datadog agent container and the
-   laradock web/php containers are running.
-6. Tell me if I need to restart any container for the new code to load.
-Do not commit, push or delete anything.
+In this repo, run step by step and show output:
+1. git status. If there are changes: git stash push -u -m "wip"
+2. git fetch --all
+3. git checkout feature/RD-11640-egg-metrics-coverage-bruno
+4. git branch --show-current
+5. git ls-files | grep -i "metric coverage"
+6. git ls-files | grep bruno.json
+Then tell me in one line: the full Windows path of the folder that
+contains bruno.json. If step 3 or 5 fails, stop and tell me why.
+Do not commit or delete anything.
 ```
 
-Restart laradock if Copilot says to.
+👉 **Copy the folder path** Copilot gives you.
 
-## Prompt 3: fire the requests (using the Bruno CLI, faster than clicking)
+### Step 3: Open it in Bruno (clicks)
+1. Open the **Bruno** app.
+2. If **PISTL** (or a similar collection) is already open: **right-click it → Close**.
+3. Click **Open Collection**, paste or browse to the **path from Step 2**, and click **Select Folder**.
+4. Expand **EGG (Legacy)**. You should see the **"Metric Coverage…"** folders ✅
 
+### Step 4: Set up the environment (clicks)
+1. Top right, set the environment dropdown to **LOCALHOST**.
+2. Click ⚙️ next to it and set **`password`** to the value your senior gives you. Tick **Secret**, then **Save**.
+
+### Step 5: Copilot prompt (run the right code locally)
+Open the **salucro.com** folder in VS Code, then:
 ```
-In the bruno repo (branch feature/RD-11640-egg-metrics-coverage-bruno):
-1. Check if the Bruno CLI is installed (bru --version). If not:
-   npm install -g @usebruno/cli
-2. Using environment LOCALHOST, run these requests ONE BY ONE in this exact
-   order with "bru run <path> --env LOCALHOST --env-var password=<I will type it>".
-   Ask me for the password once and do not print or save it.
-   A. Metric Coverage - Live gaps (RD-11638): 1, 2, 3, 4 in order
-   B. Metric Coverage - RD-11638 failure paths: 1, 2, 3
-   C. Metric Coverage - RD-11640: 1 (Reversal - Disabled Type), then 3 (epic2015)
-   D. Metric Coverage - RD-11639: 1 (CC Sale - Declined)
-   E. Invalid Payment Method
-   After A1, confirm the token/transaction ID variable was set before running A2.
-3. For request C2 (Reversal - Duplicate Lock): generate the equivalent curl
-   command and run it TWICE IN PARALLEL (cmd & cmd & wait). Show both responses.
-4. Give me a results table:
-   request | HTTP status | key response field (result/status/message) |
-   metric expected per the request name
-5. If any request fails with auth, SSL or a missing variable, stop and tell me why.
-Do not modify any request files and do not commit anything.
-```
-
-## Prompt 4: what to check on the dashboard (paste the results table from Prompt 3)
-
-```
-Here is my Bruno results table: <paste>.
-For each request, tell me exactly which widget and which row/column on the
-EGG Datadog dashboard should increase (local data shows in the env "N/A"
-row), and what should NOT change. Highlight "Reversal - Disabled Type":
-expected Cancel +1 with Failure unchanged. Present it as a checklist.
+In this repo, run step by step and show output:
+1. git status. If there are changes: git stash push -u -m "wip"
+2. git fetch --all
+3. git checkout feat/RD-11640 && git pull
+4. git branch --show-current
+5. docker ps  -> tell me if the Datadog agent and laradock containers are running
+6. Tell me the values of CAR_ID and DD_METRICS_ENABLED in the local env file
+   (do not change anything).
+Do not commit or delete anything.
 ```
 
-**On the dashboard:** set **Past 15 minutes** and **env = `*`**, wait about 2 minutes after the run, then tick off the checklist. Screenshot the **reversal row** (Cancel vs Failure). That's the key result for your lead.
+### Step 6: Dashboard ready (clicks)
+Open the EGG dashboard, set **Past 15 minutes** and **env = `*`**, and screenshot the **N/A** rows.
 
-**When you're done:** in each repo, run `git checkout <previous branch> && git stash pop`.
+### Step 7: Fire the requests in Bruno (click each one, then **Send**)
+1. **Live gaps (RD-11638):** 1 → 2 → 3 → 4
+2. **RD-11638 failure paths:** 1 → 2 → 3
+3. **RD-11640:** 1 *(Reversal – Disabled Type)* → 3 *(epic2015)*
+4. **RD-11639:** 1 *(CC Sale – Declined)*
+5. **Invalid Payment Method**
+
+Skip **"Duplicate Lock"** for now. It needs two requests at the same time.
+
+### Step 8: Check the dashboard
+Wait **2 minutes**, refresh, and compare with your screenshot from Step 6.
+The key check: in the **Reversal N/A row**, **Cancel +1** and **Failure unchanged** ⭐
+
+### Step 9: Copilot prompt (if anything fails)
+```
+I ran Bruno request "<name>" on LOCALHOST and got: <paste response/error>.
+Using this repo, tell me in simple words why and how to fix it.
+```
+
+### Step 10: Restore when done
+In each repo, run `git checkout develop` and then `git stash pop`.
