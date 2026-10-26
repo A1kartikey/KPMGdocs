@@ -1,131 +1,76 @@
-Now that you have the full EPP picture, the goal is clear: **copy its structure (sections, tables, charts with legend tables) and swap the log data for our EGG metrics.**
+Run these **one at a time in Copilot Agent mode**. Approve each command when it asks. Open the right repo folder in VS Code before each prompt.
 
-## 1. How each EPP section maps to EGG
-
-| EPP section | What it shows | EGG equivalent |
-|---|---|---|
-| **Workflow Lifecycle** (purple) | Global table (init, success, incomplete, success %, incomplete %), tenant table, charts: Initialize / Success / Incomplete / Success vs Errors | Same, **per workflow**. Tables group **by `env`** instead of tenant, because `workflow_init` has no `tenant_id`. Incomplete = init − success − failure. Charts: Started / Completed / Failed per workflow. |
-| **Auth** (green) | Tenant table plus one chart per action | Replace with **Capture**, **Reversal**, **Tokenize & RemoveToken** and **Inquire** sections, each with a tenant table plus one chart per outcome metric |
-| **Issues** (orange) | Error by Type, Payment Failures by Type, Issues by Tenant (error/critical/warning), Warning/Critical charts, Error trend | `issue` metrics by `error_code` (payment, reversal) and `error_context` (inquire), by `level`, by tenant. Warning and Critical charts get a "(pending RD-11640)" label. |
-| **Payments** (blue) | Tenant table (init, success, decline, error, %), "payment_success" total tile, Init/Success/Decline/Error charts by entity | Exactly the same using `egg_payment.payment_*`, plus Auto reversal. Charts by `tenant_id`. |
-| **Service Calls** (yellow) | Epic Interconnect GetSessionData and TransactionResult | **No EGG metric exists for this.** Turn it into **Processor Calls**: capture and reversal by `processor` (fusebox, freedompay). |
-| Filters: env, log.tenant_id, log.root_entity_id, log.context.tenant_id | | Our 8: env, workflow_name, application, tenant_id, location_id, processor, reason, type |
-
-## 2. Files (scratch folder outside the repo)
-
-| File | What |
-|---|---|
-| `epp-clone.json` | The EPP JSON you just took (layout template) |
-| `egg-combined-current.json` | Export of our current combined EGG dashboard (working metric queries) |
-
-Keep both untouched as backups.
-
-## 3. Copilot, in two passes (safer for a big file)
-
-### Pass 1: Inventory and mapping only (no file created)
+## Prompt 1: bruno repo (get the requests)
 
 ```
-#file:epp-clone.json #file:egg-combined-current.json
-
-READ-ONLY. Do not create or modify files.
-
-epp-clone.json is a LOG-based Datadog dashboard (EPP). I will rebuild it
-for EGG using METRIC queries, in the same metric query format as
-egg-combined-current.json.
-
-Produce a table of EVERY widget in epp-clone.json, in order:
-section (group title) | widget title | widget type | display/legend
-settings (e.g. legend table with SUM) | current log query (short) |
-PROPOSED EGG replacement (title + metric query) | keep / replace / drop.
-
-Mapping rules:
-- Workflow Lifecycle -> one block per EGG workflow (payment, capture,
-  reversal, tokenize, removetoken, inquire). Tables grouped by {env}
-  (workflow_init has no tenant_id). Columns: Init, Success, Failure,
-  Incomplete = init - success - failure, Success % = success/init*100,
-  Failure % = failure/(success+failure)*100.
-  Charts: workflow_init, workflow_success, workflow_failure over time.
-- Auth -> replace with sections EGG Capture, EGG Reversal,
-  EGG Tokenize & RemoveToken, EGG Inquire: tenant table + one timeseries
-  per outcome metric grouped by {tenant_id}, same chart style as the
-  EPP Auth charts.
-- Issues -> EGG issue metrics grouped by error_code (payment, reversal),
-  error_context (inquire), level, tenant_id. Warning/Critical charts
-  query level:warning / level:critical, titled "(pending RD-11640)".
-- Payments -> egg_payment payment_init/success/decline/error/
-  auto_reversal, tenant table + charts by {tenant_id}; keep the
-  "payment_success" total tile.
-- Service Calls -> "EGG Processor Calls": capture and reversal outcomes
-  grouped by {processor}. Drop the Epic Interconnect widgets (no EGG
-  metric exists).
-Use ONLY metric names that appear in egg-combined-current.json.
-Flag any EPP widget you cannot map, with the reason.
+In this bruno repo, do the following step by step and show me each command's output:
+1. git status. If there are uncommitted changes, run:
+   git stash push -u -m "wip before RD-11640 bruno"
+2. git fetch --all --prune
+3. Find the branch: git branch -r and look for "11640".
+   If feature/RD-11640-egg-metrics-coverage-bruno does not exist, STOP and tell me.
+4. git checkout feature/RD-11640-egg-metrics-coverage-bruno && git pull
+5. git branch --show-current
+6. List all request files in folders whose name contains "Metric Coverage",
+   plus "Invalid Payment Method", with their file paths.
+7. Show the LOCALHOST environment variables (hide any password value).
+Do not commit, push or delete anything.
 ```
 
-**Check the table.** The proposed metrics must all be real `Custom.8328.egg_*` names, and anything dropped should make sense. Paste it here if you want me to review it.
+Then in the **Bruno app**, close and reopen the collection. The "Metric Coverage" folders should appear.
 
-### Pass 2: Generate the file
+## Prompt 2: salucro.com (run the right code)
 
 ```
-Using the mapping table you just produced (with my corrections:
-[none / list]), create a NEW file "egg-epp-style.json".
-Do not modify epp-clone.json or egg-combined-current.json.
-
-Rules:
-1. Keep EPP's layout: same group order, group colours, widget sizes,
-   legend settings (legend table with SUM), table styling and bar
-   displays. Rename "EPP" to "EGG" in every title.
-2. EVERY query must be a metric query in the format used in
-   egg-combined-current.json (data_source "metrics",
-   "sum:Custom.8328.egg_<wf>.<action>.count{FILTERS} by {...}.as_count()").
-   No log queries may remain.
-3. FILTERS = {$env,$workflow_name,$application,$tenant_id,$location_id,$processor,$reason,$type}
-4. template_variables = exactly these 8 (prefix = name, default "*"):
-   env, workflow_name, application, tenant_id, location_id, processor,
-   reason, type. Remove the log.* variables.
-5. Add a yellow note widget at the top, copying the note text from
-   egg-combined-current.json.
-6. Add Cancelled placeholders per workflow in the Lifecycle tables or
-   charts: workflow_cancel, labelled "(pending RD-11640)".
-7. Title: "8328_Salucro_MedEpay_EGG_Epic_Generic_Gateway_Metrics_DRAFT".
-   Remove id, url, author_handle, author_name, created_at, modified_at.
-8. Never use trace_id. Use only metric names that exist in
-   egg-combined-current.json (plus the workflow_cancel placeholders).
-
-Validation (print at the end):
-A. Valid JSON.
-B. Count of "@log", "data_source\": \"logs\"" and "EPP" = 0 each.
-C. Every distinct metric name used: IN egg-combined-current.json, or
-   "placeholder (cancel)". Nothing else.
-D. Number of queries vs number containing $env (must be equal).
-E. Widget count per section, compared with EPP's.
-F. Confirm the input files are unchanged.
+In this salucro.com repo, step by step, showing output:
+1. git status. If there are uncommitted changes:
+   git stash push -u -m "wip before RD-11640 test"
+2. git fetch --all --prune
+3. git checkout feat/RD-11640 && git pull && git branch --show-current
+4. Check the local env/config used by laradock for CAR_ID and
+   DD_METRICS_ENABLED. Tell me their values and the file. Do not change them.
+5. Run: docker ps. Tell me if the Datadog agent container and the
+   laradock web/php containers are running.
+6. Tell me if I need to restart any container for the new code to load.
+Do not commit, push or delete anything.
 ```
 
-## 4. Check before importing
+Restart laradock if Copilot says to.
 
-| Check | How |
-|---|---|
-| No log leftovers | `Ctrl+F` for `@log`, `"logs"` and `EPP`, all **0** |
-| Real metrics only | Validation (C) has no unknown names |
-| Valid JSON | No red squiggles |
+## Prompt 3: fire the requests (using the Bruno CLI, faster than clicking)
 
-## 5. Import into your EPP clone
+```
+In the bruno repo (branch feature/RD-11640-egg-metrics-coverage-bruno):
+1. Check if the Bruno CLI is installed (bru --version). If not:
+   npm install -g @usebruno/cli
+2. Using environment LOCALHOST, run these requests ONE BY ONE in this exact
+   order with "bru run <path> --env LOCALHOST --env-var password=<I will type it>".
+   Ask me for the password once and do not print or save it.
+   A. Metric Coverage - Live gaps (RD-11638): 1, 2, 3, 4 in order
+   B. Metric Coverage - RD-11638 failure paths: 1, 2, 3
+   C. Metric Coverage - RD-11640: 1 (Reversal - Disabled Type), then 3 (epic2015)
+   D. Metric Coverage - RD-11639: 1 (CC Sale - Declined)
+   E. Invalid Payment Method
+   After A1, confirm the token/transaction ID variable was set before running A2.
+3. For request C2 (Reversal - Duplicate Lock): generate the equivalent curl
+   command and run it TWICE IN PARALLEL (cmd & cmd & wait). Show both responses.
+4. Give me a results table:
+   request | HTTP status | key response field (result/status/message) |
+   metric expected per the request name
+5. If any request fails with auth, SSL or a missing variable, stop and tell me why.
+Do not modify any request files and do not commit anything.
+```
 
-1. Open the **cloned** dashboard. **Not the original EPP.** Check the title says "Clone of…" or your name before you continue.
-2. ⚙️ → **Import dashboard JSON** → paste `egg-epp-style.json`.
-3. Confirm the title is `8328_Salucro_MedEpay_EGG_Epic_Generic_Gateway_Metrics_DRAFT` and Team is Salucro.
-4. Set the time to **Past 1 Month**.
+## Prompt 4: what to check on the dashboard (paste the results table from Prompt 3)
 
-## 6. Verify against the combined dashboard you already checked
+```
+Here is my Bruno results table: <paste>.
+For each request, tell me exactly which widget and which row/column on the
+EGG Datadog dashboard should increase (local data shows in the env "N/A"
+row), and what should NOT change. Highlight "Reversal - Disabled Type":
+expected Cancel +1 with Failure unchanged. Present it as a checklist.
+```
 
-| Compare | Expected |
-|---|---|
-| Payment Init / Success / Failure (env `*`) | 821 / 639 / 163, the same as before |
-| Payments by tenant 2550 | Init 82, Decline % 25.6, Error % 8.54 |
-| Reversal Failure % | 35.29% |
-| Pick `env = qa` | The Lifecycle tables show only the QA row |
+**On the dashboard:** set **Past 15 minutes** and **env = `*`**, wait about 2 minutes after the run, then tick off the checklist. Screenshot the **reversal row** (Cancel vs Failure). That's the key result for your lead.
 
-If all of these match, delete the older combined draft so there's only one EGG dashboard. Do that only after your lead has confirmed which dashboards RD-11641 should keep.
-
-Two limits to know about. Our version will have **fewer charts than EPP in Service Calls and Auth**, because EGG doesn't emit those signals. And tenant tables can't exist for lifecycle, because `workflow_init` has no `tenant_id`. If your lead wants tenant-level lifecycle, the emitting code (RD-11638) would need that tag added.
+**When you're done:** in each repo, run `git checkout <previous branch> && git stash pop`.
