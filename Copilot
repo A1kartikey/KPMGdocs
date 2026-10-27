@@ -1,78 +1,28 @@
-**Yes, most likely.** Rovo says RD-11871's only hard dependency is **RD-11676, and all 3 of its PRs are merged**. Rovo just couldn't confirm they went into **`develop`**. Do two quick checks, then start.
+Use PowerShell commands only. Show the output of every command.
+Docker Desktop is already running.
 
-## Check 1: Is RD-11676's code on `develop`? (2 minutes)
+Goal: start the full salucro.com local environment (laradock) in Docker.
 
-In VS Code, in the **hedgehog / salucro.go repo**, Copilot Agent mode:
-```
-Use PowerShell commands only. Show output. Do not change files.
-1. git fetch --all
-2. git checkout develop
-3. git pull
-4. git log --oneline -n 50 | Select-String "11676"
-5. In pkg/hedgehog/epicHandlers.go, show where workflow_init,
-   workflow_success, workflow_cancel and workflow_failure are emitted
-   for edi_payment and edi_device_capability (file:line).
-6. Show which metrics service the legacy handler uses
-   (metrics.MetricsService / DogStatsD) and where it is created (file:line).
-Tell me in one line: is RD-11676 merged into develop? yes/no.
-```
+1. Read WINDOWS-SETUP-GUIDE.md, README files, and any laradock/ or docker
+   folder in this repo. Summarise in 5 lines: where the laradock/docker-compose
+   setup lives, which services must be started, and the exact start command
+   the docs use.
+2. Run: docker version   and   docker ps -a
+   Show which salucro/laradock containers already exist and their status.
+3. Go to the laradock/docker-compose folder and check that the .env file
+   exists. If it is missing, STOP and tell me (do not create one).
+   Show (do not change) these values if present: CAR_ID, DD_METRICS_ENABLED,
+   DD_AGENT_HOST / Datadog settings, PHP version, project path.
+4. Start the services exactly as the docs say (e.g. docker compose up -d
+   <services>). Include the Datadog agent container if the docs define one.
+5. Run docker ps and show each container's name, status and ports.
+   If any container is "Exited" or "Restarting", show its last 50 log lines
+   (docker logs --tail 50 <name>) and explain the error simply.
+6. Check the Windows hosts file (C:\Windows\System32\drivers\etc\hosts)
+   for salucro.localhost (and pog.salucro.local). Only show it, do not edit.
+7. Test the app: Invoke-WebRequest https://salucro.localhost -SkipCertificateCheck
+   (or curl.exe -k https://salucro.localhost) and show the status code.
 
-- **Yes** → you're unblocked.
-- **No** → ask your lead which branch it went into.
-
-## Check 2: The tenant lookup (RD-11872)
-
-RD-11871 says to resolve `tenant_id` and `location_id` **from the JWT token with a database fallback**. That's exactly what **RD-11872** does, and it's **in Peer Review**. Ask your lead or the RD-11872 owner one line:
-> "For RD-11871, should I reuse RD-11872's tenant/location lookup once it merges, or build it inside RD-11871?"
-
-**This doesn't stop you starting.** You can build all the lifecycle counters now and plug in the tenant lookup at the end.
-
-## Then start
-
-1. **Jira:** move RD-11871 to **In Progress**.
-2. **Branch** from up-to-date `develop`:
-   ```
-   git checkout develop
-   git pull
-   git checkout -b feature/RD-11871-edi-v1-lifecycle-metrics
-   ```
-   (Use your team's branch naming if it's different.)
-3. **First Copilot prompt (Plan mode, no code yet):**
-
-```
-Plan only, do not write code yet.
-
-Ticket RD-11871: instrument the EDI v1 request path in hedgehog with the
-SAME lifecycle counters RD-11676 added to the legacy handler.
-
-Contract (must match legacy exactly):
-- Series: Custom.{CAR_ID}.{workflow_name}.{action}.count
-- Workflows: edi_payment (POST /sale, /auth, /tokenize, /checkscan via
-  Handler.handleTransactionRequest), edi_device_capability (GET via
-  Handler.HandleDeviceCapabilities)
-- Actions: exactly one workflow_init when a valid request is accepted,
-  then exactly one terminal: edi_payment -> success | cancel | failure;
-  edi_device_capability -> success | failure (no cancel)
-- Tags: application:EDI, workflow_name, tenant_id, location_id.
-  NEVER tag PAN, PHI, MRN, payloads, tokens, workstation keys, trace_id.
-- v1 returns 202 Accepted and finishes in a detached goroutine: the
-  terminal metric must be emitted exactly once after async processing.
-- Observability-only: no change to routes, payloads, HTTP statuses.
-
-Tasks:
-1. Show how legacy (epicHandlers.go) emits these metrics and which
-   helper/metrics service it uses (file:line).
-2. Trace v1: handler -> service/payment and service/device. Mark where
-   validation passes (emit init), and where success/cancel/failure are
-   finally known, including inside the goroutine (file:line).
-3. Show how to give the v1 Handler/services the same DogStatsD
-   metrics.MetricsService (v1 currently holds an OTel MeterService).
-4. Tenant/location: what JWT claims exist in v1? Is there an existing
-   lookup (RD-11872) to reuse? Until then, what is emitted (unknown)?
-5. Propose the exact code changes (files, functions) and a list of
-   table-driven unit tests proving exactly-one init and exactly-one
-   terminal per request, including the async path.
-Cite file:line for everything. Mark unknowns "unsure".
-```
-
-Send me Copilot's plan and I'll check it against the ticket before you write any code.
+Rules: do NOT run "docker compose down -v", "docker system prune", or delete
+volumes/containers/images. Do NOT commit or change tracked files. If a step
+fails, stop and tell me the exact error and the likely fix.
