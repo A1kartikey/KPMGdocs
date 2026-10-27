@@ -1,70 +1,20 @@
-Follow these in order. Each step is either a **Copilot prompt** (Agent mode, approve the commands) or a **click in Bruno**.
+The branch step worked. You're on `feature/RD-11640-egg-metrics-coverage-bruno`, up to date, with no changes. Only the search failed, because the terminal is **PowerShell**, which doesn't have `grep`.
 
-### Step 1: Open the bruno repo in VS Code
-**File → Open Folder** → choose your **bruno** repo folder.
-(If you don't have it, ask your senior for the Bitbucket link and clone it first.)
+**Next Copilot prompt** (PowerShell version):
 
-### Step 2: Copilot prompt (switch to the branch)
 ```
-In this repo, run step by step and show output:
-1. git status. If there are changes: git stash push -u -m "wip"
-2. git fetch --all
-3. git checkout feature/RD-11640-egg-metrics-coverage-bruno
-4. git branch --show-current
-5. git ls-files | grep -i "metric coverage"
-6. git ls-files | grep bruno.json
-Then tell me in one line: the full Windows path of the folder that
-contains bruno.json. If step 3 or 5 fails, stop and tell me why.
-Do not commit or delete anything.
+Use PowerShell commands only. Show output.
+1. git ls-files | Select-String -Pattern "metric coverage"
+2. git ls-files | Select-String -Pattern "bruno.json"
+3. Get-Location
+Then tell me in one line the FULL Windows path of the folder that contains
+the bruno.json for the collection that has the "EGG (Legacy)" folder
+(e.g. C:\...\bruno\PISTL). Do not change anything.
 ```
 
-👉 **Copy the folder path** Copilot gives you.
+**After that, in Bruno:**
+1. Right-click the old **PISTL** collection (if it's open) and choose **Close**.
+2. **Open Collection**, choose the **path Copilot gave you**, and click **Select Folder**.
+3. Expand **EGG (Legacy)** and look for the **"Metric Coverage…"** folders ✅
 
-### Step 3: Open it in Bruno (clicks)
-1. Open the **Bruno** app.
-2. If **PISTL** (or a similar collection) is already open: **right-click it → Close**.
-3. Click **Open Collection**, paste or browse to the **path from Step 2**, and click **Select Folder**.
-4. Expand **EGG (Legacy)**. You should see the **"Metric Coverage…"** folders ✅
-
-### Step 4: Set up the environment (clicks)
-1. Top right, set the environment dropdown to **LOCALHOST**.
-2. Click ⚙️ next to it and set **`password`** to the value your senior gives you. Tick **Secret**, then **Save**.
-
-### Step 5: Copilot prompt (run the right code locally)
-Open the **salucro.com** folder in VS Code, then:
-```
-In this repo, run step by step and show output:
-1. git status. If there are changes: git stash push -u -m "wip"
-2. git fetch --all
-3. git checkout feat/RD-11640 && git pull
-4. git branch --show-current
-5. docker ps  -> tell me if the Datadog agent and laradock containers are running
-6. Tell me the values of CAR_ID and DD_METRICS_ENABLED in the local env file
-   (do not change anything).
-Do not commit or delete anything.
-```
-
-### Step 6: Dashboard ready (clicks)
-Open the EGG dashboard, set **Past 15 minutes** and **env = `*`**, and screenshot the **N/A** rows.
-
-### Step 7: Fire the requests in Bruno (click each one, then **Send**)
-1. **Live gaps (RD-11638):** 1 → 2 → 3 → 4
-2. **RD-11638 failure paths:** 1 → 2 → 3
-3. **RD-11640:** 1 *(Reversal – Disabled Type)* → 3 *(epic2015)*
-4. **RD-11639:** 1 *(CC Sale – Declined)*
-5. **Invalid Payment Method**
-
-Skip **"Duplicate Lock"** for now. It needs two requests at the same time.
-
-### Step 8: Check the dashboard
-Wait **2 minutes**, refresh, and compare with your screenshot from Step 6.
-The key check: in the **Reversal N/A row**, **Cancel +1** and **Failure unchanged** ⭐
-
-### Step 9: Copilot prompt (if anything fails)
-```
-I ran Bruno request "<name>" on LOCALHOST and got: <paste response/error>.
-Using this repo, tell me in simple words why and how to fix it.
-```
-
-### Step 10: Restore when done
-In each repo, run `git checkout develop` and then `git stash pop`.
+If step 1 returns nothing, send me the output. It would mean the requests sit under a different folder name.
