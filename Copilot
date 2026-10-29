@@ -1,117 +1,26 @@
-RD-11676's code is **already merged into `develop`** (PR #2849 and the earlier PRs). So "finishing" it means **proving every acceptance criterion is met**, fixing any gaps, verifying in Datadog, and closing the ticket. Here are the prompts in order.
+#file:edi-current.json #file:egg-combined.json
 
-**Before you start:** open the **hedgehog / salucro.go** repo in VS Code and copy the **RD-11676 description and acceptance criteria** from Jira. Copilot can't read Jira, so you'll paste them in.
+Create a NEW file "edi-fixed.json". Do not modify the inputs.
+Problem: many widgets show "Invalid Formula in Query Object - Formulas must
+be defined in the 'formulas' field".
 
-## Prompt 1: Audit: is every acceptance criterion done on develop? (Ask mode, read-only)
+Rule (Datadog formulas & functions format): every request that has a
+"queries" array MUST also have a non-empty "formulas" array whose entries
+reference existing query names, e.g. {"formula": "query1", "alias": "Init"},
+and "response_format" must be "scalar" for query_table, toplist,
+query_value, treemap and sunburst widgets, and "timeseries" for timeseries.
 
-```
-READ-ONLY. Do not change files. Use origin/develop as the source of truth
-(git fetch --all first; read files from origin/develop, e.g. git show
-origin/develop:<path>, so my current branch does not matter).
+1. List every widget (title + type) with: queries but missing/empty
+   formulas; formulas referencing a query name that doesn't exist; a
+   misplaced "formula" key; or a missing/wrong response_format.
+2. Fix each by copying the EXACT request structure (keys and nesting) of
+   the same widget type in egg-combined.json. Keep the same metric
+   queries, aliases, conditional formats, titles and layout.
+3. Change nothing else: no metric names, filters, titles or positions.
 
-Here is ticket RD-11676 (EDI DogStatsD bootstrap + lifecycle metrics):
-<PASTE RD-11676 DESCRIPTION + ACCEPTANCE CRITERIA HERE>
-
-For EVERY acceptance criterion, give a table:
-criterion | DONE / PARTIAL / MISSING | evidence (file:line on origin/develop) | what is left
-
-Also check these specifically:
-1. Bootstrap: hedgehog uses the shared pkg/util/telemetry/datadog.go; final
-   metric prefix (Custom.8328.* vs _pd vs _pti), DogStatsD port (8125 vs 8127),
-   CAR_ID default. Show the exact values in code.
-2. Dead duplicates: do pkg/hedgehog/telemetry and pkg/badger/telemetry still
-   contain unused datadogOptionsFromEnv copies?
-3. Workflows: edi_payment and edi_device_capability emit exactly one
-   workflow_init and exactly one terminal (deferred, default failure) on
-   every path, including early returns and panics. List any path that could
-   emit zero or two terminals.
-4. Classification: success rule (strings.EqualFold(response.Result,"success")?)
-   and the cancel case (epicHandlers.go ~:504). Quote the code.
-5. Tags: application:EDI, workflow_name, tenant_id (from HospitalID?),
-   location_id. Confirm NO PAN/PHI/MRN/payload/token/trace_id tags.
-6. httpListener.go must NOT emit workflow metrics. Confirm.
-7. Tests: are there table-driven tests proving init == success + cancel +
-   failure per request? File names + what they cover.
-8. Docs: is there an observability doc for EDI metrics (names, tags, source
-   lines)? Path + gaps.
-Finish with: "Remaining work for RD-11676" as a short numbered list.
-Cite file:line for every claim. Mark unknowns "unsure".
-```
-
-**Send me the result.** If everything is DONE, skip to Prompt 4.
-
-## Prompt 2: Fix the gaps (Agent mode, only if Prompt 1 found any)
-
-Ask your lead first whether follow-up changes go under RD-11676 or a new ticket, since the PRs are already merged. Then:
-```
-Create a branch from up-to-date develop:
-git checkout develop; git pull; git checkout -b feature/RD-11676-followup
-(PowerShell only, show output.)
-
-Fix ONLY these remaining items from the audit:
-<PASTE THE "Remaining work" LIST>
-
-Rules:
-- Observability-only: no change to request/response payloads, routes or
-  HTTP statuses.
-- Keep metric names and tags exactly as already on develop unless an item
-  says otherwise.
-- Remove dead code only if it is unreferenced (show the search proving it).
-- Add/extend table-driven tests for every change.
-- Show me the full diff before committing. Do NOT commit or push.
-```
-
-## Prompt 3: Run the tests (Agent mode)
-
-```
-PowerShell only. Show output.
-1. go build ./...
-2. go vet ./pkg/hedgehog/... ./pkg/util/telemetry/...
-3. go test ./pkg/hedgehog/... ./pkg/util/telemetry/... -race -cover
-Summarise: build OK? vet OK? tests pass/fail (names of failures)?
-coverage % for pkg/hedgehog. If anything fails, explain simply and propose
-a fix, but do not change files without asking.
-```
-
-## Prompt 4: Verify in Datadog (manual, no Bits needed)
-
-First ask Copilot for the exact names:
-```
-READ-ONLY. From origin/develop code, list the EXACT full Datadog metric
-names hedgehog emits for edi_payment and edi_device_capability (all actions),
-including the prefix/domain and CAR_ID as configured for QA, and the tags.
-Give me ready-to-paste Datadog Metrics Explorer queries like:
-sum:<metric>{env:qa} by {tenant_id}.as_count()
-```
-
-Then in Datadog:
-1. **Metrics → Summary**, Past 1 Month: search the prefix Copilot gave (for example `edi_payment`). Do the metrics exist? Which `env` values?
-2. **Metrics → Explorer**: paste the queries. Check for each env:
-   - init ≈ success + cancel + failure
-   - tags present: `application:EDI`, `workflow_name`, `tenant_id`, `location_id`
-   - **no** `trace_id` or card data in the tag list
-
-If there's **no EDI data in QA**, that's a deployment question (is the hedgehog build with RD-11676 in QA?), not a code problem. Note it for your lead.
-
-## Prompt 5: Jira closing comment (Ask mode)
-
-```
-Write a short Jira closing comment for RD-11676 using this information:
-- Merged PRs: <list PR numbers/links, e.g. #2849>
-- Audit result: <paste table summary>
-- Test result: <paste Prompt 3 summary>
-- Datadog verification: <what you saw: metric names, envs, counts>
-- Open items handed over: v1 path -> RD-11871; tenant/location lookup for v1
-  -> RD-11872; <any decisions still open>
-Format: Summary, What was delivered, Evidence, Follow-ups. Max 15 lines.
-```
-
-Paste it into RD-11676 and move the ticket to the next status (for example **QA** or **Done**, depending on your team's flow).
-
-## Order
-
-1. **Prompt 1** (audit), and send me the result
-2. **Prompt 2**, only if there are gaps
-3. **Prompt 3**: tests
-4. **Prompt 4**: Datadog check
-5. **Prompt 5**: close the ticket
+Validation (print):
+A. Valid JSON.
+B. Number of requests with queries but no formulas = 0.
+C. Every formula references an existing query name.
+D. response_format correct for every widget type.
+E. List of widgets fixed. Confirm the inputs are unchanged.
