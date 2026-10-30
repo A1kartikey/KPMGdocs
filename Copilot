@@ -1,26 +1,35 @@
-#file:edi-current.json #file:egg-combined.json
+READ-ONLY. PowerShell only. Show output. Do NOT checkout over, pull into,
+commit or push any branch.
 
-Create a NEW file "edi-fixed.json". Do not modify the inputs.
-Problem: many widgets show "Invalid Formula in Query Object - Formulas must
-be defined in the 'formulas' field".
+1. git fetch --all --prune
+2. git branch -r | Select-String "11640|11682"   (find the exact branch names)
+For EACH branch (RD-11640 and RD-11682), report:
 
-Rule (Datadog formulas & functions format): every request that has a
-"queries" array MUST also have a non-empty "formulas" array whose entries
-reference existing query names, e.g. {"formula": "query1", "alias": "Init"},
-and "response_format" must be "scalar" for query_table, toplist,
-query_value, treemap and sunburst widgets, and "timeseries" for timeseries.
-
-1. List every widget (title + type) with: queries but missing/empty
-   formulas; formulas referencing a query name that doesn't exist; a
-   misplaced "formula" key; or a missing/wrong response_format.
-2. Fix each by copying the EXACT request structure (keys and nesting) of
-   the same widget type in egg-combined.json. Keep the same metric
-   queries, aliases, conditional formats, titles and layout.
-3. Change nothing else: no metric names, filters, titles or positions.
-
-Validation (print):
-A. Valid JSON.
-B. Number of requests with queries but no formulas = 0.
-C. Every formula references an existing query name.
-D. response_format correct for every widget type.
-E. List of widgets fixed. Confirm the inputs are unchanged.
+3. BASED ON LATEST DEVELOP?
+   git merge-base --is-ancestor origin/develop <branch>; echo $LASTEXITCODE
+   (0 = contains current develop). Also: git rev-list --count <branch>..origin/develop
+   (commits behind develop - should be 0 or only commits added after the rebase).
+4. ONLY ITS OWN COMMITS?
+   git log --oneline --no-merges origin/develop..<branch>
+   Flag commits that belong to other tickets, duplicates (same message twice),
+   or merge commits.
+5. CONFLICT LEFTOVERS?
+   git grep -n -E "^(<<<<<<<|>>>>>>>)" <branch>   (must be empty)
+6. SCOPE:
+   git diff --stat origin/develop...<branch>
+   Flag any file not related to EGG metrics (EggWorkflowMeter, DatadogMetrics,
+   epic_generic_gateway*, observability docs, tests).
+7. NOTHING LOST IN THE REBASE:
+   If I have an older local copy of the branch (git branch --list "*11640*"),
+   run: git range-diff <local-old-branch>...<branch>
+   Explain in simple words any commit whose CONTENT changed (not just line
+   numbers/context). If no old copy exists, compare against the PR's old
+   commit IDs from Bitbucket if available, otherwise say "not possible".
+8. RD-11640 vs RD-11682: do they still touch the same files/lines?
+   git diff --name-only origin/develop...<11640 branch> and the same for 11682;
+   list the overlapping files and whether they would conflict with each other
+   (git merge-tree --write-tree <11640 branch> <11682 branch>).
+9. PHP syntax on changed .php files (only if the php container is running):
+   docker exec <php-container> php -l <file>
+Final table: branch | on latest develop | own commits only | conflict markers |
+scope OK | content changed by rebase | conflicts with the other branch.
