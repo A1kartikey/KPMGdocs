@@ -1,157 +1,19 @@
-Here's a safe way to do both. These are **other people's branches** and rebasing ends in a **force-push**, so the safety steps (asking first, making a backup, using `--force-with-lease`) matter.
+Task: commit and push the test-only fix for PR #7888 (RD-11682). Be careful; STOP on anything unexpected.
 
-## Plan
-
-| Order | Branch | Rebase onto | Expected difficulty |
-|---|---|---|---|
-| 1 | RD-11640 (`origin/Feat/RD-11640`) | latest `develop` | Easy (60 behind, was rebased recently) |
-| 2 | RD-11682 (`origin/feature/RD-11682-egg-epic-inquire-pay`) | latest `develop` | Harder (458 behind, has a merge commit) |
-
-Rebase **each onto develop separately**. That removes their conflicts with develop. The **3-file conflict between the two branches** (`egg-datadog-metrics.md`, `ActionEnumeration.php`, `EggWorkflowMeter.php`) only matters when the second one merges. Whichever merges second will need a quick re-rebase at that point.
-
-## Step 0: Before touching anything, post in the team chat
-
-> "I'm going to rebase RD-11640 and RD-11682 onto the latest develop and force-push (with lease). Please don't push to these branches for the next hour. @Austin, OK with you? Who owns RD-11682?"
-
-**Wait for an OK.** A force-push while someone else is pushing can lose their work.
-
-## Step 1: Rebase RD-11640 (Copilot Agent mode, salucro.com repo)
-
-```
-PowerShell only. Show output of every command. STOP and show me on any conflict
-or error. Do NOT push until I say "push".
-
-1. git status. If there are changes: git stash push -u -m "wip before rebase"
-2. git fetch --all --prune
-3. Record the current remote tip: git rev-parse origin/Feat/RD-11640
-   (call it OLD_TIP; show it to me)
-4. Backup: git branch backup/RD-11640-before-rebase origin/Feat/RD-11640
-5. Work on a NEW local branch (avoid my stale local feat/RD-11640 and Windows
-   case clashes between "feat" and "Feat"):
-   git checkout -b rebase/RD-11640 origin/Feat/RD-11640
-6. git rebase origin/develop
-7. If there is a conflict: STOP. For each conflicted file show both sides,
-   explain in simple words what develop changed vs what RD-11640 changed, and
-   propose a resolution that KEEPS BOTH intents. Wait for my approval before
-   editing. After I approve: git add <file>; git rebase --continue.
-8. When the rebase finishes, verify:
-   a) git log --oneline origin/develop..HEAD   (only RD-11640 commits, no duplicates)
-   b) git rev-list --count HEAD..origin/develop   (must be 0)
-   c) git range-diff backup/RD-11640-before-rebase...HEAD
-      Explain any commit whose CONTENT changed (not just context).
-   d) git diff --name-only origin/develop...HEAD | ForEach-Object { git grep -n -E "^(<<<<<<<|=======$|>>>>>>>)" HEAD -- $_ }
-      (must be empty: no conflict markers in the changed files)
-   e) git diff --stat origin/develop...HEAD   (same EGG files as before)
-9. Summarise in a table and wait for me to say "push".
-```
-
-When you're happy with the summary, say **"push"** and have Copilot run:
-```
-git push --force-with-lease=Feat/RD-11640:<OLD_TIP> origin rebase/RD-11640:Feat/RD-11640
-```
-`--force-with-lease` **refuses to push if someone else pushed in the meantime**, which is your safety net. If it refuses, stop and ask the team.
-
-## Step 2: Rebase RD-11682 (same prompt, different branch)
-
-Use the Step 1 prompt with these changes:
-- Branch: `origin/feature/RD-11682-egg-epic-inquire-pay`
-- Backup: `backup/RD-11682-before-rebase`
-- New local branch: `rebase/RD-11682`
-- Add this line to the prompt:
-  ```
-  Note: this branch contains a "Merged develop into ..." merge commit. A plain
-  "git rebase origin/develop" drops merge commits and replays only the 5
-  RD-11682 commits. That is intended. Confirm the 5 commits are all replayed.
-  ```
-- Push with:
-  ```
-  git push --force-with-lease=feature/RD-11682-egg-epic-inquire-pay:<OLD_TIP> origin rebase/RD-11682:feature/RD-11682-egg-epic-inquire-pay
-  ```
-
-Expect **more conflicts** here, because it's 458 commits behind. Take them one at a time and keep both sides' intent.
-
-## How to resolve conflicts safely
-
-| Type of conflict | Usual resolution |
-|---|---|
-| **Docs** (`egg-datadog-metrics.md`) | Keep **both** sections. Don't delete develop's text. |
-| **Enumerations** (`ActionEnumeration.php`, `ComponentEnumeration.php`) | Keep develop's new values **and** the branch's new values. Watch for duplicate constants. |
-| **Same function changed on both sides** (`EggWorkflowMeter.php`) | Read both intents. Combine them. If unsure, **stop and ask the branch owner**. |
-| **Tests** | Keep both sets of tests |
-
-Never resolve by blindly choosing "ours" or "theirs" for a whole file.
-
-## Step 3: After both pushes
-
-1. **Bitbucket:** open both PRs. There should be **no conflict banner**, the **commits** list should show only that ticket's commits, and the **Jenkins build** should be green. (You can't run PHP tests locally, so CI is your test run.)
-2. **Optional check between the two branches:**
-   ```
-   git fetch --all
-   git merge-tree --write-tree origin/Feat/RD-11640 origin/feature/RD-11682-egg-epic-inquire-pay
-   ```
-   The 3 known files will still conflict between the two branches. That's expected.
-3. **Post in the team chat:**
-   > "Rebased RD-11640 and RD-11682 onto the latest develop and force-pushed with lease. Both are now 0 commits behind develop, contain only their own commits, and range-diff shows no content changes. CI is <green / running>. Note: RD-11640 and RD-11682 still overlap in 3 files, so whichever merges second needs a quick re-rebase. Suggest merging RD-11640 first. Anyone with a local copy: please `git fetch` and `git reset --hard origin/<branch>` instead of `git pull`."
-4. **Clean up** once the PRs are merged: `git branch -D backup/RD-11640-before-rebase backup/RD-11682-before-rebase rebase/RD-11640 rebase/RD-11682`
-
-## If something goes wrong
-
-| Situation | Fix |
-|---|---|
-| Rebase gets messy mid-way | `git rebase --abort`. Everything goes back to how it was. |
-| Pushed but it's wrong | Restore from the backup: `git push --force-with-lease origin backup/RD-11640-before-rebase:Feat/RD-11640` |
-| `--force-with-lease` rejected | Someone pushed in the meantime. **Stop**, fetch, and talk to them. |
-
-When you get the first conflict, send me Copilot's explanation and I'll help you decide the resolution.
-
-
-
-
-push. Skip any CI lookup. Run exactly:
-git push --force-with-lease=Feat/RD-11640:71363507163fccf17b5e211a108a3d383b6bd492 origin rebase/RD-11640:Feat/RD-11640
-Then show:
-git fetch origin
-git rev-parse HEAD
-git rev-parse origin/Feat/RD-11640        (must match HEAD)
-git rev-list --count origin/Feat/RD-11640..origin/develop   (must be 0)
-If the push is rejected, STOP and show me. Never use plain --force.
-
-
-READ-ONLY. Do not edit, commit or push.
-1. Docs check:
-   git diff origin/develop...rebase/RD-11682 -- observability/egg-datadog-metrics.md --stat
-   git diff origin/develop...rebase/RD-11682 -- observability/egg-datadog-metrics.md
-   Confirm: only ADDED lines (the INQUIRE section). List any line of develop's
-   text that was removed or changed (should be none, apart from whitespace).
-2. One-shot tags check:
-   a) git diff backup/RD-11682-before-rebase rebase/RD-11682 -- <path>/EggWorkflowMeter.php
-      Explain in simple words what the rebased file now does differently from
-      RD-11682's original version.
-   b) List every EggWorkflowMeter method that RD-11682 code calls (Worker.php,
-      payments.php, ComponentEnumeration/ActionEnumeration usage, WorkerTest.php,
-      EggWorkflowMeterTest.php) and confirm each exists on rebase/RD-11682 with a
-      matching name and parameters. Flag any mismatch.
-3. If php is available locally (php -v), run php -l on the 8 changed PHP files.
-   If not, say "php not available".
-Give a final verdict: SAFE TO PUSH / NOT SAFE (with reasons).
-
-
-push. Run exactly:
-git push --force-with-lease=feature/RD-11682-egg-epic-inquire-pay:46ef41ec8aa8d3bbce0e39bdb064f67b1e52cfbe origin rebase/RD-11682:feature/RD-11682-egg-epic-inquire-pay
-Then show: git fetch origin; git rev-parse HEAD;
-git rev-parse origin/feature/RD-11682-egg-epic-inquire-pay (must match);
-git rev-list --count origin/feature/RD-11682-egg-epic-inquire-pay..origin/develop (must be 0).
-If rejected, STOP. Never use plain --force.
-
-
-READ-ONLY. Show the 10 lines around the resolved comment in EggWorkflowMeter.php
-on rebase/RD-11682 and confirm the docblock is intact (opens with /** and closes
-with */, no stray characters). Do not edit.
-
-
-push. Run exactly:
-git push --force-with-lease=feature/RD-11682-egg-epic-inquire-pay:46ef41ec8aa8d3bbce0e39bdb064f67b1e52cfbe origin rebase/RD-11682:feature/RD-11682-egg-epic-inquire-pay
-Then show: git fetch origin; git rev-parse HEAD;
-git rev-parse origin/feature/RD-11682-egg-epic-inquire-pay (must match);
-git rev-list --count origin/feature/RD-11682-egg-epic-inquire-pay..origin/develop (must be 0).
-If rejected, STOP. Never use plain --force.
+1. Guard: run `git rev-parse --show-toplevel` and `git remote -v`. Must be the salucro.com repo. Otherwise STOP.
+2. Run `git branch --show-current` and `git status`.
+   - Branch must be rebase/RD-11682 or feature/RD-11682-egg-epic-inquire-pay. If not, STOP and tell me.
+   - The ONLY modified file must be tests/unit/src/Pti/Services/GenericGateway/EggWorkflowMeterTest.php. If anything else is modified, STOP and list it. Do not commit scripts/ or hosts.dummy.
+3. Show me `git diff` and confirm it only changes how tags are read in assertions (tagsForEmit(...)) and the repeated-issue test. No production code.
+4. `git fetch origin`, then confirm `git rev-parse HEAD` equals `git rev-parse origin/feature/RD-11682-egg-epic-inquire-pay` (should be 9a9c765...). If different, STOP (someone else pushed).
+5. Try to run the tests (if Docker/PHP is available):
+   php vendor/bin/phpunit tests/unit/src/Pti/Services/GenericGateway/EggWorkflowMeterTest.php
+   php vendor/bin/phpunit tests/unit/src/Pti/Services/GenericGateway/WorkerTest.php
+   If PHP/Docker is unavailable, say so and continue. If tests FAIL, STOP.
+6. Commit only that file:
+   git add tests/unit/src/Pti/Services/GenericGateway/EggWorkflowMeterTest.php
+   git commit -m "RD-11682: read emitted tags via tagsForEmit() in EggWorkflowMeterTest after rebase onto develop"
+7. Normal push, NO force:
+   git push origin HEAD:feature/RD-11682-egg-epic-inquire-pay
+   If rejected, STOP. Never use --force.
+8. Verify: git fetch origin; HEAD must equal origin/feature/RD-11682-egg-epic-inquire-pay. Show the new commit hash.
