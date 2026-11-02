@@ -115,3 +115,30 @@ git rev-parse HEAD
 git rev-parse origin/Feat/RD-11640        (must match HEAD)
 git rev-list --count origin/Feat/RD-11640..origin/develop   (must be 0)
 If the push is rejected, STOP and show me. Never use plain --force.
+
+
+READ-ONLY. Do not edit, commit or push.
+1. Docs check:
+   git diff origin/develop...rebase/RD-11682 -- observability/egg-datadog-metrics.md --stat
+   git diff origin/develop...rebase/RD-11682 -- observability/egg-datadog-metrics.md
+   Confirm: only ADDED lines (the INQUIRE section). List any line of develop's
+   text that was removed or changed (should be none, apart from whitespace).
+2. One-shot tags check:
+   a) git diff backup/RD-11682-before-rebase rebase/RD-11682 -- <path>/EggWorkflowMeter.php
+      Explain in simple words what the rebased file now does differently from
+      RD-11682's original version.
+   b) List every EggWorkflowMeter method that RD-11682 code calls (Worker.php,
+      payments.php, ComponentEnumeration/ActionEnumeration usage, WorkerTest.php,
+      EggWorkflowMeterTest.php) and confirm each exists on rebase/RD-11682 with a
+      matching name and parameters. Flag any mismatch.
+3. If php is available locally (php -v), run php -l on the 8 changed PHP files.
+   If not, say "php not available".
+Give a final verdict: SAFE TO PUSH / NOT SAFE (with reasons).
+
+
+push. Run exactly:
+git push --force-with-lease=feature/RD-11682-egg-epic-inquire-pay:46ef41ec8aa8d3bbce0e39bdb064f67b1e52cfbe origin rebase/RD-11682:feature/RD-11682-egg-epic-inquire-pay
+Then show: git fetch origin; git rev-parse HEAD;
+git rev-parse origin/feature/RD-11682-egg-epic-inquire-pay (must match);
+git rev-list --count origin/feature/RD-11682-egg-epic-inquire-pay..origin/develop (must be 0).
+If rejected, STOP. Never use plain --force.
