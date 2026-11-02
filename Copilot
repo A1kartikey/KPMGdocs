@@ -103,3 +103,15 @@ Never resolve by blindly choosing "ours" or "theirs" for a whole file.
 | `--force-with-lease` rejected | Someone pushed in the meantime. **Stop**, fetch, and talk to them. |
 
 When you get the first conflict, send me Copilot's explanation and I'll help you decide the resolution.
+
+
+
+
+push. Skip any CI lookup. Run exactly:
+git push --force-with-lease=Feat/RD-11640:71363507163fccf17b5e211a108a3d383b6bd492 origin rebase/RD-11640:Feat/RD-11640
+Then show:
+git fetch origin
+git rev-parse HEAD
+git rev-parse origin/Feat/RD-11640        (must match HEAD)
+git rev-list --count origin/Feat/RD-11640..origin/develop   (must be 0)
+If the push is rejected, STOP and show me. Never use plain --force.
