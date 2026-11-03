@@ -1,15 +1,13 @@
-Continue Phase A. The repo-wide conflict-marker grep was my mistake: vendor/ matches are expected, ignore them.
+Continue Phase A. If one of YOUR commands has a syntax error, fix it and rerun once. Only STOP for real problems (markers found, tests failing, unexpected files).
 
-1. Scoped conflict check, ONLY on files changed by this merge (not vendor/):
-   git diff --name-only HEAD
-   git diff --name-only --diff-filter=U        (list still-unmerged files)
-   git grep -n -E "^(<<<<<<<|>>>>>>>)( |$)" -- <each file from the first list>
-   Must be empty. Also show any line that is exactly "=======" in those files (OK in Markdown only if it's a heading underline; explain each).
-2. Finish the remaining Phase A checks and show results:
-   - Exactly one `function issue(` in EggWorkflowMeter.php and exactly one ISSUE constant in ActionEnumeration.php
-   - All ->issue( callers (git grep -n "issue(" -- "*.php" ":!vendor"): arg 2 int or null, arg 3 string or absent. List any misfit.
-   - Duplicate test method names in EggWorkflowMeterTest.php (list them, flag duplicates)
-   - php -l on each changed PHP file, then phpunit for EggWorkflowMeterTest.php, WorkerTest.php and any test touching EggWorkflowMeter/epic_generic_gateway (use Docker/laradock if local PHP is missing; if it can't run, say so clearly)
-   - git diff --stat origin/develop...HEAD (should be only RD-11682's files)
-3. Stage only the resolved files: git add <the 4 files>. Then show git status (must say "All conflicts fixed but you are still merging"; no other files staged; scripts/ and hosts.dummy NOT staged).
-4. Show me the final issue() method, the ISSUE constant and a one-line summary per file. Then STOP and wait for "go". Do not commit or push.
+1. Separator check on the changed non-vendor files only:
+   git grep -n -E '^=======$' -- <the changed files>
+   Explain each hit (OK only if it's a Markdown heading underline in the docs file).
+2. Remaining checks, showing each result:
+   - Exactly one `function issue(` in EggWorkflowMeter.php and one ISSUE constant in ActionEnumeration.php
+   - All ->issue( callers outside vendor: arg 2 int or null, arg 3 string or absent. List any misfit.
+   - Duplicate test method names in EggWorkflowMeterTest.php
+   - php -l on each changed PHP file, then phpunit for EggWorkflowMeterTest.php and WorkerTest.php (Docker/laradock if local PHP is missing; if it can't run, say so clearly)
+   - git diff --stat origin/develop...HEAD
+3. Stage ONLY the 4 resolved files with git add, then show git status (must say "All conflicts fixed but you are still merging"; scripts/ and hosts.dummy NOT staged).
+4. Show the final issue() method, the ISSUE constant and a one-line summary per file. STOP and wait for "go". No commit, no push.
