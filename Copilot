@@ -1,19 +1,39 @@
-Task: commit and push the test-only fix for PR #7888 (RD-11682). Be careful; STOP on anything unexpected.
+Task: resolve PR #7888 (RD-11682) conflicts by MERGING origin/develop into the PR branch. Two phases. STOP on anything unexpected. Never use --force. Do not commit scripts/ or hosts.dummy.
 
-1. Guard: run `git rev-parse --show-toplevel` and `git remote -v`. Must be the salucro.com repo. Otherwise STOP.
-2. Run `git branch --show-current` and `git status`.
-   - Branch must be rebase/RD-11682 or feature/RD-11682-egg-epic-inquire-pay. If not, STOP and tell me.
-   - The ONLY modified file must be tests/unit/src/Pti/Services/GenericGateway/EggWorkflowMeterTest.php. If anything else is modified, STOP and list it. Do not commit scripts/ or hosts.dummy.
-3. Show me `git diff` and confirm it only changes how tags are read in assertions (tagsForEmit(...)) and the repeated-issue test. No production code.
-4. `git fetch origin`, then confirm `git rev-parse HEAD` equals `git rev-parse origin/feature/RD-11682-egg-epic-inquire-pay` (should be 9a9c765...). If different, STOP (someone else pushed).
-5. Try to run the tests (if Docker/PHP is available):
-   php vendor/bin/phpunit tests/unit/src/Pti/Services/GenericGateway/EggWorkflowMeterTest.php
-   php vendor/bin/phpunit tests/unit/src/Pti/Services/GenericGateway/WorkerTest.php
-   If PHP/Docker is unavailable, say so and continue. If tests FAIL, STOP.
-6. Commit only that file:
-   git add tests/unit/src/Pti/Services/GenericGateway/EggWorkflowMeterTest.php
-   git commit -m "RD-11682: read emitted tags via tagsForEmit() in EggWorkflowMeterTest after rebase onto develop"
-7. Normal push, NO force:
-   git push origin HEAD:feature/RD-11682-egg-epic-inquire-pay
-   If rejected, STOP. Never use --force.
-8. Verify: git fetch origin; HEAD must equal origin/feature/RD-11682-egg-epic-inquire-pay. Show the new commit hash.
+PHASE A: prepare and resolve (no commit, no push)
+1. Guard: `git rev-parse --show-toplevel` and `git remote -v` must show the salucro.com repo. `git status` must be clean (apart from untracked scripts/ or hosts.dummy). Otherwise STOP.
+2. git fetch origin
+   Record: PR_TIP = git rev-parse origin/feature/RD-11682-egg-epic-inquire-pay (expect f15bc3be...)
+           DEV_TIP = git rev-parse origin/develop (expect 3631dbd5...)
+   Show: git log --oneline origin/develop..origin/feature/RD-11682-egg-epic-inquire-pay
+3. Backup and work branch:
+   git branch backup/RD-11682-before-develop-merge origin/feature/RD-11682-egg-epic-inquire-pay
+   git switch -c merge/RD-11682-develop origin/feature/RD-11682-egg-epic-inquire-pay
+4. git merge --no-ff --no-commit origin/develop
+5. Resolve, keeping BOTH tickets' intent:
+   a) observability/egg-datadog-metrics.md: keep develop's RD-11640 section AND RD-11682's INQUIRE section. No duplicated headings.
+   b) ActionEnumeration.php: keep WORKFLOW_CANCEL and exactly ONE ISSUE = 'issue'. Its doc comment covers both numeric error codes and string error contexts.
+   c) EggWorkflowMeter.php (auto-merged but broken): keep exactly ONE issue() method, the unified one:
+      issue(string $level, ?int $errorCode = null, ?string $errorContext = null): void
+      Preserve RD-11640 behaviour: tag names 'level' and 'error_code', one-shot tags that never persist on the meter, non-idempotent, does not block the terminal emit.
+      Preserve RD-11682 behaviour: level lowercased and trimmed, optional 'error_context' tag.
+      Keep develop's cancel(), setSource(), workflowName() and all outcome methods. Merge the two docblocks into one.
+   d) EggWorkflowMeterTest.php: keep BOTH test groups with balanced braces. All tag assertions use tagsForEmit(...), never $this->metrics->tags. No duplicate test method names.
+6. Verify, showing me each result:
+   - No conflict markers: git diff --check, and git grep -n -e "<<<<<<<" -e ">>>>>>>" (must be empty)
+   - Exactly one `function issue(` in EggWorkflowMeter.php, and exactly one ISSUE constant in ActionEnumeration.php
+   - Every ->issue( caller across the repo: git grep -n "issue(" -- "*.php". Arg 2 must be int or null, arg 3 a string or absent. List any caller that doesn't fit.
+   - Duplicate test names: list every `function test` in EggWorkflowMeterTest.php and flag duplicates.
+   - PHP (via Docker/laradock if local PHP is missing):
+     php -l on every changed PHP file
+     php vendor/bin/phpunit tests/unit/src/Pti/Services/GenericGateway/EggWorkflowMeterTest.php
+     php vendor/bin/phpunit on WorkerTest.php and on any other test touching EggWorkflowMeter or epic_generic_gateway
+     If PHP can't run, say so clearly.
+   - git diff --stat origin/develop...HEAD: the PR diff vs develop should be only RD-11682's files.
+7. Show me the final issue() method, the ISSUE constant and a summary per file. Then STOP and wait for me to say "go".
+
+PHASE B: only after I say "go"
+8. git commit (keep the default merge message, ending with "; resolved RD-11640 overlap: single unified issue()")
+9. git fetch origin. If origin/feature/RD-11682-egg-epic-inquire-pay is no longer PR_TIP, STOP.
+10. git push origin HEAD:feature/RD-11682-egg-epic-inquire-pay   (normal push, NO force)
+11. Verify: git fetch origin; HEAD == origin/feature/RD-11682-egg-epic-inquire-pay; git rev-list --count HEAD..origin/develop must be 0. Show the new hash.
