@@ -1,89 +1,85 @@
-Here are the prompts with strict minimum-lines rules built in. Prompt 1 (read only) stays the same. Prompt 2 replaces the earlier fix prompt, and there's a new **shrink pass** for the existing diff of about +954 lines.
+When Bitbucket says a PR "has merge conflicts", it means `develop` moved on since your branch was made, and some of the same lines changed on both sides. The fix is the same as for #7888: **merge `develop` into your branch, resolve the conflicts, then do a normal push.** Don't rebase this time, because the PR is already under review.
 
-## Rules block (reused in every prompt)
+## Two things to watch first
+
+1. **Your local branch may already be mid-merge.** Last time, RD-11678 still had an uncommitted merge of develop and some fixes in progress. Prompt 1 checks for this before doing anything.
+2. **RD-11678 and RD-11871 overlap.** Your two tickets change the same v1 code in different ways:
+
+| Point | RD-11678 (this PR) | RD-11871 (new branch) |
+|---|---|---|
+| v1 device-capabilities `workflow_init` | At handler entry | Only after validation succeeds |
+| Validation error (`locationId` not numeric, etc.) | `workflow_failure` | No metrics |
+| `tenant_id` | `unknown`; the bearer-token TODO at `:26` **stays** | Resolved from the entity; the TODO is **removed** |
+| Device unavailable on transactions | `edi_payment workflow_cancel` | Pre-acceptance, so no metrics |
+
+They will conflict with each other later, and the rules contradict each other. Fix RD-11678's conflicts against develop now, **without** pulling in any RD-11871 code. Then ask Dan which rules win (message below).
+
+## Prompt 1: check the state and preview the conflicts (read only)
 
 ```
-MINIMUM-CODE RULES (strict, apply to every change):
-- Smallest diff that meets the acceptance criteria. Every added line must be necessary; if a line can be removed without changing behaviour or test coverage, remove it.
-- Reuse existing types, helpers, fakes and test recorders. Do NOT add new files, packages, interfaces, structs, constants or exported identifiers unless there is no other way. Justify each one in one line.
-- Do not touch untouched code: no renames, reformatting, reordering, import shuffles or "while I'm here" refactors.
-- Comments only where a decision must be explained (e.g. "// RD-11871 decision 2: no v1 cancel yet"). No restating code, no banners, no long doc blocks.
-- Tests: table-driven, one test function per behaviour area, shared setup helper, no duplicated cases. Assert only what the acceptance criteria require.
-- Docs: add only the facts that changed; no rewrites of existing sections.
-- Before showing me the result, report `git diff --numstat origin/develop` per file and explain any file whose added lines exceed its budget.
+READ ONLY. Do not edit, commit or push.
+1. Guard: git rev-parse --show-toplevel; git remote -v (must be salucro.go).
+2. git status. Is a merge/rebase in progress? Any uncommitted or staged changes? List them.
+3. Which local branch is the source of PR #2851 (RD-11678)? git branch -vv; show its upstream.
+4. git fetch origin. Show:
+   - git rev-parse HEAD and origin/<PR branch>: same? If not, how far ahead/behind (git rev-list --left-right --count).
+   - git log --oneline origin/<PR branch>..origin/develop (what's new on develop), with the files each commit touches.
+5. Preview conflicts WITHOUT touching the working tree:
+   git merge-tree --write-tree origin/<PR branch> origin/develop
+   List each conflicting file and, for each, what develop changed vs what RD-11678 changed (which ticket caused the develop side: RD-11676/11872/11677/other).
+6. Also flag any file that merges CLEANLY but may break at compile or test time (same function edited on both sides, duplicate helpers or constants).
+Report only.
 ```
 
-## Prompt 2: the fix, with line budgets
+## Prompt 2: resolve (only after you've read Prompt 1)
 
 ```
-Fix RD-11871 on feature/RD-11871-edi-v1-lifecycle. Observability only: NO change to responses, status codes, payloads or the business flow. STOP on anything unexpected. Normal push only, never force.
+Resolve PR #2851 (RD-11678) conflicts by MERGING origin/develop into the PR branch. STOP on anything unexpected. Never force-push. Do not commit scripts/ or hosts.dummy. Do NOT bring in any RD-11871 code.
 
-<paste MINIMUM-CODE RULES here>
+MINIMUM-CODE RULES (strict):
+- Resolve conflicts with the smallest possible edit. Keep develop's code and RD-11678's intent; do not rewrite, rename, reformat or refactor anything outside the conflict hunks.
+- If develop already provides a helper or constant that RD-11678 duplicated (e.g. tag builder, sanitizeTagValue, hospital lookup), USE develop's and delete the duplicate.
+- No new files, types or exported identifiers. Comments only where a decision needs explaining.
+- Report git diff --numstat origin/develop...HEAD before and after; the PR diff must not grow except for necessary resolution lines.
 
-LINE BUDGETS for THIS fix (added lines; if you need more, STOP and explain why first):
-- Decline classification, non-test code: ≤ 25 lines
-- Decline tests: ≤ 40 lines, added as rows in the EXISTING table tests, not new test functions
-- Docs (docs/observability/edi-datadog-metrics.md): ≤ 15 lines
-- Restoring a removed runtime check (if any): exactly the original lines from origin/develop
-
-1. DECLINE CLASSIFICATION
-- Terminal = workflow_success ONLY when processing returns nil AND the Badger result is a success, using the SAME structured field and values legacy uses. A non-error decline gives workflow_failure. No free-text parsing.
-- Prefer the smallest route: if the service already returns or holds the result, read it; otherwise return the existing result value or a bool. Do NOT add a new type or enum if a bool or the existing struct suffices.
-- No structured decline indicator in v1 → STOP and tell me.
-- Test rows: non-error decline gives failure; approved gives success; 402 decline gives failure; exactly one terminal; tags identical to init.
-
-2. REMOVED CHECK: if runtime validation was removed, restore it exactly as on origin/develop. If only a comment changed, do nothing.
-
-3. DOCS: v1 feeds the same 7 series (application:legacy_edi); location_id = locationId (entity_id); tenant_id = RootEntityID via EntityRepository (50 ms, 10-min cache); unknown on failure; declines = failure; no v1 cancel yet; JWT claims follow-up.
-
-4. VERIFY
-- go test ./pkg/hedgehog/... ./cmd/hedgehog/... (all pass)
-- gofmt -l on changed files only (LF-normalised): empty
-- go vet ./pkg/hedgehog/lifecyclemetrics/... ./pkg/hedgehog/api/v1/...: no findings in changed files
-- git diff --check: clean
-5. Show: git diff --numstat for this fix, the full non-test diff, and the line count vs each budget. STOP for my "go".
+STEPS
+1. If a merge was already in progress (Prompt 1), show me the state and STOP for instructions. Otherwise: git status must be clean.
+2. git branch backup/RD-11678-before-develop-merge HEAD
+3. git merge --no-ff --no-commit origin/develop
+4. Resolve each conflict. Keep RD-11678's agreed behaviour (Dan's review decisions):
+   - workstation-not-found / no POS device = workflow_success with a degraded capability_result when Success=true
+   - reply-send failure = workflow_failure
+   - NATS decode failure = no init
+   - service_call metrics with service_call_name + response_code (bounded); hosts/paths/tokens/raw errors stay as log fields
+   - no dc_connect, no device_workstation_connectivity workflow name
+5. Verify and show each result:
+   - no conflict markers in changed files (git diff --name-only HEAD, then grep only those files for ^<<<<<<< / ^>>>>>>>)
+   - no duplicate functions or constants introduced by the merge
+   - gofmt -l on changed files (LF-normalised): empty
+   - go vet on changed packages; go test ./pkg/hedgehog/... ./cmd/hedgehog/... (all pass; -race only if cgo is available)
+   - git diff --stat origin/develop...HEAD: only RD-11678's files
+6. Stage only the resolved files. Show git status, the per-file resolution summary and the resolution diff. STOP for "go".
 
 On "go":
-git add <changed files only>
-git commit -m "RD-11871: classify non-error Badger declines as workflow_failure; update EDI metrics docs"
-git fetch origin; confirm the remote tip is unchanged (otherwise STOP)
-git push origin HEAD:feature/RD-11871-edi-v1-lifecycle
+git commit (default merge message + "; resolved conflicts with develop")
+git fetch origin; confirm origin/<PR branch> is unchanged (otherwise STOP)
+git push origin HEAD:<PR branch>   (normal push)
+Verify HEAD == origin/<PR branch> and 0 behind origin/develop.
 ```
 
-## Prompt 3: shrink pass on the whole branch (run after Prompt 2 is pushed)
+## After the push
 
-```
-Reduce the RD-11871 diff to the minimum WITHOUT changing behaviour or test coverage. STOP on anything unexpected. Normal push only.
+- **Bitbucket:** the conflict banner on PR #2851 should be gone, and a new build should run.
+- **Reply to Dan:**
 
-<paste MINIMUM-CODE RULES here>
+> Resolved the RD-11678 conflicts by merging latest develop into the branch, with a normal push and no force (commit `<hash>`). Tests pass locally. Waiting on the build.
+>
+> One question: RD-11678 and my new RD-11871 both touch the v1 device-capabilities and transaction handlers, with different rules:
+> - **Init timing:** handler entry, or after validation?
+> - **Validation errors:** failure, or no metric?
+> - **Tenant:** `unknown` with the TODO kept, or resolved from the entity?
+> - **Device unavailable on transactions:** cancel, or no metric?
+>
+> I suggest we merge RD-11678 first, and I adapt RD-11871 on top with whichever rules you prefer. Is that OK?
 
-1. BASELINE: show git diff --numstat origin/develop...HEAD per file and the total.
-
-2. NON-TEST CODE (lifecyclemetrics.go, handler_lifecycle.go, handler.go, handler_transaction.go, handler_device_capabilities.go, router.go, epicHandlers.go, telemetry/datadog.go):
-- Remove anything unused, duplicated or over-general: unused exported identifiers (unexport them or delete them), wrapper functions used once (inline them), redundant nil checks, extra interfaces where a func or existing type works, and comments that restate code.
-- Keep: the shared package (needed for byte-identical legacy and v1 tags), exactly-once semantics, the noop-safety, the unknown fallback, and the 50 ms / 10-min cache.
-- telemetry/datadog.go: if the aliases aren't needed by any caller, delete them instead of keeping both.
-- Do NOT change legacy output; legacy tests must stay UNCHANGED and pass.
-
-3. TESTS (handler_lifecycle_test.go 538 lines, lifecyclemetrics_test.go 111 lines):
-- Merge into table-driven tests with one shared setup helper and the existing recorder fakes.
-- Remove duplicated or overlapping cases, keeping ONE case per acceptance-criterion scenario: payment success (all 4 endpoints as rows), error, 402 decline, non-error decline, panic, each pre-acceptance rejection (as rows), identity (found, error, no row, nil repo, timeout, cache hit, failure not cached, metrics disabled), capabilities (success, empty, GetDevices error, encode failure, validation failure), and shared package sanitise and tags.
-- Target: handler_lifecycle_test.go ≤ 300 lines total.
-
-4. Before vs after: list every test scenario that existed before and confirm it still exists (a one-line mapping). If any coverage would be lost, keep it.
-
-5. VERIFY: same checks as before (go test, gofmt on changed files, go vet on changed packages, git diff --check).
-
-6. Show: before and after --numstat per file, total lines saved, and the non-test diff. STOP for "go".
-
-On "go": commit "RD-11871: trim diff (no behaviour change)"; check the remote tip is unchanged; normal push.
-```
-
-## When you review Copilot's output, check that
-
-- **Line counts:** each part is within its budget, or Copilot gave a clear one-line reason for going over.
-- **Legacy tests:** they are unchanged and pass. This proves the legacy behaviour is untouched.
-- **Scenario mapping:** no scenario is missing from the before and after list. Fewer lines must not mean less coverage.
-- **Shared package:** it still exists. It looks like extra code, but it is what keeps the legacy and v1 tags identical, so don't let Copilot inline it back into two copies.
-
-Send me the `--numstat` and the non-test diff after each step and I'll check them.
+Hold the RD-11871 fix and trim prompts until Dan answers that question. Otherwise you may end up redoing that work.
