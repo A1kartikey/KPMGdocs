@@ -1,15 +1,21 @@
-Resolve PR #2851 (RD-11678) conflicts by MERGING origin/develop into feature/RD-11678-edi-edi_device_capability-lifecycle. STOP on anything unexpected. Never force-push. Never commit scripts/ or hosts.dummy. Do NOT bring in any RD-11871 code.
+Continue the RD-11678 merge. Same rules: minimum code, no RD-11871 code, never force-push, never commit scripts/ or hosts.dummy.
 
-MINIMUM-CODE RULES (strict): smallest edit per conflict; take develop's structure and re-apply ONLY RD-11678's additions; no new files/types/exports; no refactors outside conflict hunks; no duplicate helpers, init/defer blocks or terminalAction; comments only for decisions. Report git diff --numstat origin/develop...HEAD after; the PR diff must not grow beyond necessary resolution lines.
+1. worker_test.go:754: apply ONLY the one-line adaptation: types.CustomFieldParams{} → lifecycleIdentifiers{}. Search the PR's test files for any other call with the old signature and adapt those the same way (list each one). Nothing else.
 
-1. git status clean (untracked scripts/ and hosts.dummy are OK). git switch feature/RD-11678-edi-edi_device_capability-lifecycle. git fetch origin. HEAD must equal its origin; otherwise STOP.
-2. git branch backup/RD-11678-before-develop-merge HEAD
-3. git merge --no-ff --no-commit origin/develop
-4. Resolve:
-   a) router.go: ONE metrics-sink parameter used for BOTH the payment service and the v1 handler (main.go already passes the same sink). Existing callers (main.go, tests) must compile unchanged where possible. Show the final signature.
-   b) epicHandlers.go: keep develop's lifecycleIdentifiers / relocated init+defer exactly. Re-apply only RD-11678's service_call context and capability_result/device_type terminal tags on top. Exactly one init and one terminal per request.
-   c) epicHandlers_metrics_test.go: keep develop's tests; keep RD-11678's tests but adapt them to the new helper signature (lifecycleIdentifiers). Merge imports. No duplicate test names.
-   d) Metrics docs (modify/delete): do NOT resolve yet. Leave this one file unresolved and tell me (1) what develop deleted, (2) where develop's EDI metrics docs live now (see commit effa1b83f), (3) RD-11678's doc content to keep. I'll confirm with Dan.
-   e) Do NOT fix develop's main.go payment-sink noop or the DD_CAR_ID→CAR_ID change. Just list them in your report.
-5. Verify (show each): no conflict markers in the resolved Go files; no duplicate funcs/consts/init/defer; gofmt -l on changed files (LF-normalised) empty; go vet on changed packages; go test ./pkg/hedgehog/... ./cmd/hedgehog/... all pass (-race only if cgo).
-6. Show the per-file resolution summary, the resolution diff and numstat. STOP. No commit until I say "go" (and the docs decision is made).
+2. Docs (modify/delete conflict): ACCEPT develop's deletion of the metrics contract file (git rm it). Move ONLY RD-11678's own content (capability_result/device_type semantics, service_call names + response_code derivation, v1/NATS lifecycle behaviour, tenant_id:unknown on v1 devicecapabilities until the bearer-token TODO) into docs/jira_tickets/RD-11678-edi-device-capability-lifecycle.md, following the style of docs/jira_tickets/RD-11676-edi-metrics-bootstrap.md. Concise. Do not edit other docs.
+
+3. Verify and show each result:
+   - no conflict markers in changed files; git diff --name-only --diff-filter=U is empty
+   - no duplicate funcs/consts/init/defer blocks/terminalAction
+   - every caller of the router constructor compiles (main.go and tests)
+   - gofmt -l on changed .go files (LF-normalised): empty
+   - go vet ./pkg/hedgehog/ ./pkg/hedgehog/api/v1/...: no findings in changed files
+   - go test ./pkg/hedgehog/... ./cmd/hedgehog/... -count=1: all pass
+   - git diff --check: clean
+4. Stage ONLY the resolved files. Show git status ("All conflicts fixed but you are still merging"), the numstat vs origin/develop for the eventual PR, and the diff of the worker_test and docs changes. STOP for "go".
+
+On "go":
+git commit (default merge message + "; resolved conflicts with develop (RD-11677, RD-11872)")
+git fetch origin; confirm origin/feature/RD-11678-edi-edi_device_capability-lifecycle is still f18a40c8a (otherwise STOP)
+git push origin HEAD:feature/RD-11678-edi-edi_device_capability-lifecycle   (normal push)
+Verify HEAD == origin branch and 0 behind origin/develop.
