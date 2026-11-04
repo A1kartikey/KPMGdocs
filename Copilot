@@ -1,85 +1,15 @@
-When Bitbucket says a PR "has merge conflicts", it means `develop` moved on since your branch was made, and some of the same lines changed on both sides. The fix is the same as for #7888: **merge `develop` into your branch, resolve the conflicts, then do a normal push.** Don't rebase this time, because the PR is already under review.
+Resolve PR #2851 (RD-11678) conflicts by MERGING origin/develop into feature/RD-11678-edi-edi_device_capability-lifecycle. STOP on anything unexpected. Never force-push. Never commit scripts/ or hosts.dummy. Do NOT bring in any RD-11871 code.
 
-## Two things to watch first
+MINIMUM-CODE RULES (strict): smallest edit per conflict; take develop's structure and re-apply ONLY RD-11678's additions; no new files/types/exports; no refactors outside conflict hunks; no duplicate helpers, init/defer blocks or terminalAction; comments only for decisions. Report git diff --numstat origin/develop...HEAD after; the PR diff must not grow beyond necessary resolution lines.
 
-1. **Your local branch may already be mid-merge.** Last time, RD-11678 still had an uncommitted merge of develop and some fixes in progress. Prompt 1 checks for this before doing anything.
-2. **RD-11678 and RD-11871 overlap.** Your two tickets change the same v1 code in different ways:
-
-| Point | RD-11678 (this PR) | RD-11871 (new branch) |
-|---|---|---|
-| v1 device-capabilities `workflow_init` | At handler entry | Only after validation succeeds |
-| Validation error (`locationId` not numeric, etc.) | `workflow_failure` | No metrics |
-| `tenant_id` | `unknown`; the bearer-token TODO at `:26` **stays** | Resolved from the entity; the TODO is **removed** |
-| Device unavailable on transactions | `edi_payment workflow_cancel` | Pre-acceptance, so no metrics |
-
-They will conflict with each other later, and the rules contradict each other. Fix RD-11678's conflicts against develop now, **without** pulling in any RD-11871 code. Then ask Dan which rules win (message below).
-
-## Prompt 1: check the state and preview the conflicts (read only)
-
-```
-READ ONLY. Do not edit, commit or push.
-1. Guard: git rev-parse --show-toplevel; git remote -v (must be salucro.go).
-2. git status. Is a merge/rebase in progress? Any uncommitted or staged changes? List them.
-3. Which local branch is the source of PR #2851 (RD-11678)? git branch -vv; show its upstream.
-4. git fetch origin. Show:
-   - git rev-parse HEAD and origin/<PR branch>: same? If not, how far ahead/behind (git rev-list --left-right --count).
-   - git log --oneline origin/<PR branch>..origin/develop (what's new on develop), with the files each commit touches.
-5. Preview conflicts WITHOUT touching the working tree:
-   git merge-tree --write-tree origin/<PR branch> origin/develop
-   List each conflicting file and, for each, what develop changed vs what RD-11678 changed (which ticket caused the develop side: RD-11676/11872/11677/other).
-6. Also flag any file that merges CLEANLY but may break at compile or test time (same function edited on both sides, duplicate helpers or constants).
-Report only.
-```
-
-## Prompt 2: resolve (only after you've read Prompt 1)
-
-```
-Resolve PR #2851 (RD-11678) conflicts by MERGING origin/develop into the PR branch. STOP on anything unexpected. Never force-push. Do not commit scripts/ or hosts.dummy. Do NOT bring in any RD-11871 code.
-
-MINIMUM-CODE RULES (strict):
-- Resolve conflicts with the smallest possible edit. Keep develop's code and RD-11678's intent; do not rewrite, rename, reformat or refactor anything outside the conflict hunks.
-- If develop already provides a helper or constant that RD-11678 duplicated (e.g. tag builder, sanitizeTagValue, hospital lookup), USE develop's and delete the duplicate.
-- No new files, types or exported identifiers. Comments only where a decision needs explaining.
-- Report git diff --numstat origin/develop...HEAD before and after; the PR diff must not grow except for necessary resolution lines.
-
-STEPS
-1. If a merge was already in progress (Prompt 1), show me the state and STOP for instructions. Otherwise: git status must be clean.
+1. git status clean (untracked scripts/ and hosts.dummy are OK). git switch feature/RD-11678-edi-edi_device_capability-lifecycle. git fetch origin. HEAD must equal its origin; otherwise STOP.
 2. git branch backup/RD-11678-before-develop-merge HEAD
 3. git merge --no-ff --no-commit origin/develop
-4. Resolve each conflict. Keep RD-11678's agreed behaviour (Dan's review decisions):
-   - workstation-not-found / no POS device = workflow_success with a degraded capability_result when Success=true
-   - reply-send failure = workflow_failure
-   - NATS decode failure = no init
-   - service_call metrics with service_call_name + response_code (bounded); hosts/paths/tokens/raw errors stay as log fields
-   - no dc_connect, no device_workstation_connectivity workflow name
-5. Verify and show each result:
-   - no conflict markers in changed files (git diff --name-only HEAD, then grep only those files for ^<<<<<<< / ^>>>>>>>)
-   - no duplicate functions or constants introduced by the merge
-   - gofmt -l on changed files (LF-normalised): empty
-   - go vet on changed packages; go test ./pkg/hedgehog/... ./cmd/hedgehog/... (all pass; -race only if cgo is available)
-   - git diff --stat origin/develop...HEAD: only RD-11678's files
-6. Stage only the resolved files. Show git status, the per-file resolution summary and the resolution diff. STOP for "go".
-
-On "go":
-git commit (default merge message + "; resolved conflicts with develop")
-git fetch origin; confirm origin/<PR branch> is unchanged (otherwise STOP)
-git push origin HEAD:<PR branch>   (normal push)
-Verify HEAD == origin/<PR branch> and 0 behind origin/develop.
-```
-
-## After the push
-
-- **Bitbucket:** the conflict banner on PR #2851 should be gone, and a new build should run.
-- **Reply to Dan:**
-
-> Resolved the RD-11678 conflicts by merging latest develop into the branch, with a normal push and no force (commit `<hash>`). Tests pass locally. Waiting on the build.
->
-> One question: RD-11678 and my new RD-11871 both touch the v1 device-capabilities and transaction handlers, with different rules:
-> - **Init timing:** handler entry, or after validation?
-> - **Validation errors:** failure, or no metric?
-> - **Tenant:** `unknown` with the TODO kept, or resolved from the entity?
-> - **Device unavailable on transactions:** cancel, or no metric?
->
-> I suggest we merge RD-11678 first, and I adapt RD-11871 on top with whichever rules you prefer. Is that OK?
-
-Hold the RD-11871 fix and trim prompts until Dan answers that question. Otherwise you may end up redoing that work.
+4. Resolve:
+   a) router.go: ONE metrics-sink parameter used for BOTH the payment service and the v1 handler (main.go already passes the same sink). Existing callers (main.go, tests) must compile unchanged where possible. Show the final signature.
+   b) epicHandlers.go: keep develop's lifecycleIdentifiers / relocated init+defer exactly. Re-apply only RD-11678's service_call context and capability_result/device_type terminal tags on top. Exactly one init and one terminal per request.
+   c) epicHandlers_metrics_test.go: keep develop's tests; keep RD-11678's tests but adapt them to the new helper signature (lifecycleIdentifiers). Merge imports. No duplicate test names.
+   d) Metrics docs (modify/delete): do NOT resolve yet. Leave this one file unresolved and tell me (1) what develop deleted, (2) where develop's EDI metrics docs live now (see commit effa1b83f), (3) RD-11678's doc content to keep. I'll confirm with Dan.
+   e) Do NOT fix develop's main.go payment-sink noop or the DD_CAR_ID→CAR_ID change. Just list them in your report.
+5. Verify (show each): no conflict markers in the resolved Go files; no duplicate funcs/consts/init/defer; gofmt -l on changed files (LF-normalised) empty; go vet on changed packages; go test ./pkg/hedgehog/... ./cmd/hedgehog/... all pass (-race only if cgo).
+6. Show the per-file resolution summary, the resolution diff and numstat. STOP. No commit until I say "go" (and the docs decision is made).
