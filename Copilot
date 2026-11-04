@@ -1,21 +1,12 @@
-Continue the RD-11678 merge. Same rules: minimum code, no RD-11871 code, never force-push, never commit scripts/ or hosts.dummy.
+RD-11678 follow-up on feature/RD-11678-edi-edi_device_capability-lifecycle. Minimum code. Normal push only. Never commit scripts/ or hosts.dummy.
 
-1. worker_test.go:754: apply ONLY the one-line adaptation: types.CustomFieldParams{} → lifecycleIdentifiers{}. Search the PR's test files for any other call with the old signature and adapt those the same way (list each one). Nothing else.
+1. READ-ONLY CHECK FIRST (router): compare origin/develop vs HEAD for how the v1 payment service gets its metrics sink.
+   - On develop: which sink did main.go pass (variadic paymentMetrics) to NewRouterWithDependencies, and into NewPaymentService?
+   - Now: is that SAME DogStatsD sink (lifecycleMetrics) passed to NewPaymentService, so v1 payment_* metrics still emit?
+   - Does an existing test prove the payment service gets a non-noop sink? If not, say so.
+   If v1 payment_* metrics would now be noop, STOP and tell me. Do not change anything in this step.
 
-2. Docs (modify/delete conflict): ACCEPT develop's deletion of the metrics contract file (git rm it). Move ONLY RD-11678's own content (capability_result/device_type semantics, service_call names + response_code derivation, v1/NATS lifecycle behaviour, tenant_id:unknown on v1 devicecapabilities until the bearer-token TODO) into docs/jira_tickets/RD-11678-edi-device-capability-lifecycle.md, following the style of docs/jira_tickets/RD-11676-edi-metrics-bootstrap.md. Concise. Do not edit other docs.
+2. DOCS (only if step 1 is fine): fold the RD-11678-only content from docs/jira_tickets/RD-11678-edi-device-capability-lifecycle.md into the existing docs/jira_tickets/RD-11678-EDI-device-capability-service-call.md (add only what's missing; no rewrites), then git rm the new file. Show the diff and the line count.
 
-3. Verify and show each result:
-   - no conflict markers in changed files; git diff --name-only --diff-filter=U is empty
-   - no duplicate funcs/consts/init/defer blocks/terminalAction
-   - every caller of the router constructor compiles (main.go and tests)
-   - gofmt -l on changed .go files (LF-normalised): empty
-   - go vet ./pkg/hedgehog/ ./pkg/hedgehog/api/v1/...: no findings in changed files
-   - go test ./pkg/hedgehog/... ./cmd/hedgehog/... -count=1: all pass
-   - git diff --check: clean
-4. Stage ONLY the resolved files. Show git status ("All conflicts fixed but you are still merging"), the numstat vs origin/develop for the eventual PR, and the diff of the worker_test and docs changes. STOP for "go".
-
-On "go":
-git commit (default merge message + "; resolved conflicts with develop (RD-11677, RD-11872)")
-git fetch origin; confirm origin/feature/RD-11678-edi-edi_device_capability-lifecycle is still f18a40c8a (otherwise STOP)
-git push origin HEAD:feature/RD-11678-edi-edi_device_capability-lifecycle   (normal push)
-Verify HEAD == origin branch and 0 behind origin/develop.
+3. Verify: git diff --check clean; go test ./pkg/hedgehog/... -count=1 passes.
+4. STOP for "go". On "go": commit "RD-11678: consolidate ticket docs", fetch, confirm the origin is still 990101a78, normal push.
