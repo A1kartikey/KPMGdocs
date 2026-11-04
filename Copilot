@@ -1,55 +1,108 @@
-Copilot's analysis is **solid and evidence-based**: file and line references, and it doesn't guess. It also found **four things that change the plan**, so don't start coding yet.
+Copilot's second analysis settles most of the open questions, and the answers make the job **simpler**.
 
-## Key findings
+## What we now know
 
-| # | Finding | Why it matters |
+| Question | Answer from code | What it means for RD-11871 |
 |---|---|---|
-| 1 | **The tag mismatch.** The legacy code actually sends `application:legacy_edi`, not `application:EDI` as the ticket says. | The acceptance criteria say v1 must be **byte-identical to legacy**. If v1 uses `EDI`, the dashboards split into two series. Also check your **EDI dashboard filters** use `legacy_edi`. |
-| 2 | **No JWT claims are available.** The v1 auth middleware (`hhmiddleware`) only returns yes or no. It doesn't put `root_entity_id` or `entity_id` into the request context. | Step 1 of the ticket's resolution order ("JWT claims preferred") **can't be built as written**. Parsing the token again in the handler would be a security smell. |
-| 3 | **`locationId` may be an entity_id, not a hospital_id.** The current v1 code treats it as an entity ID, but `GetHospitalByHospitalId` looks up by `hospital_id`. | If it's an entity_id, the DB fallback would **look up the wrong row**. And `location_id` would already be known, so only `tenant_id` would need a lookup. |
-| 4 | **Declines and cancels can't be told apart.** `processBadgerTxnRsp` turns every Badger error into a generic `ErrProcessTxn`. v1 never returns `ErrDeviceCanceled`. | `workflow_cancel` isn't possible yet (expected, decision 2). Also check that **a declined payment returns an error**. If it doesn't, declines would be counted as success, which doesn't match legacy. |
+| Declines in v1 | `processBadgerTxnRsp` doesn't recognise `DECLINED`. A decline surfaces as an **error, an HTTP 402 from `PayCardDevicePatch`**. | Error means `workflow_failure`, which **matches legacy** (default failure, success only on a good result). Add a test to prove it. |
+| `locationId` | Used everywhere in v1 as an **entity_id**, not a hospital_id | `location_id` = `locationId` directly, with no lookup and the **same grain as legacy**. |
+| Tenant lookup | `EntityRepository.GetById(entity_id)` returns `RootEntityID`. **`HospitalRepository` isn't needed.** | `tenant_id` = `RootEntityID`, and the payment and device services may already load this entity. |
+| Cache | The legacy cache is keyed by hospital_id and unexported in package `hedgehog` | v1 needs its own small cache keyed by entity_id, or a shared extract |
+| App tag | `legacy_edi`, unexported in package `hedgehog` (v1 is package `v1`) | To be truly identical, **extract the tag builder into a small shared package** that both paths use |
+| JWT claims | Not available | Skip them for now and raise a follow-up |
 
-## Good news: much of the wiring already exists
+## Step 1: send your lead this short message
 
-- `main.go` already creates `lifecycleMetrics` (DogStatsD) and passes it to the v1 router.
-- `NewPaymentService` already accepts `metrics.MetricsService`, and a nil one becomes a no-op.
-- **RD-11872 is on develop:** `HospitalRepo` already reaches the legacy processor and the v1 **device service**. It just isn't passed to the v1 `Handler`.
-- Legacy already has a pattern to copy: init, a deferred single terminal defaulting to failure, and a 50 ms / 10-minute lookup cache.
-- Test recorders exist: `lifecycleMetricsRecorder` and `paymentMetricsRecorder`.
+> RD-11871 plan, based on the code:
+> - `location_id` = the v1 `locationId` (it's an entity_id, the same grain as legacy). `tenant_id` = `RootEntityID` via `EntityRepository.GetById`, reusing the entity if it's already loaded. On any failure it's `unknown` and the request is never affected.
+> - JWT claims aren't exposed by the v1 auth middleware, so they're skipped and I'll raise a follow-up.
+> - The app tag stays `legacy_edi`, the same as legacy. I'll extract the legacy tag builder, sanitizer and app value into a small shared package so both paths emit byte-identical tags. Legacy behaviour is unchanged.
+> - There is no structured cancel in v1, so a cancel counts as failure for now, with a follow-up. A decline surfaces as an error (402) and counts as failure, matching legacy.
+> - Capabilities: a response-encoding failure after `GetDevices` succeeds counts as failure.
+> - Cache: a small v1 cache keyed by entity_id with the same 50 ms / 10-minute policy as legacy.
+> - The terminal is best-effort on a hard kill after the 202, the same as legacy.
+>
+> OK to proceed?
 
-## Step 1: one more read-only check, to cut the questions for your lead
+## Step 2: implementation prompt (after your lead says OK)
 
 ```
-READ ONLY, no edits. Same repo and origin/develop.
+Implement Jira RD-11871 in salucro.go (hedgehog). Minimal, careful diff. STOP on anything unexpected. Never force-push. Do not commit scripts/ or hosts.dummy.
 
-1. Decline path: in the v1 payment service, when Badger returns a DECLINED transaction (not an exception), does the service return an error or a nil error with a declined result? Show file:line. How does legacy classify the same decline (epicHandlers.go)?
-2. locationId: show every place the v1 request's locationId is used (handler and services). Is it passed as entity_id, hospital_id, or something else? Show the model or JSON field and the downstream calls.
-3. Is there an existing repository method that looks up by entity_id and returns root_entity_id (e.g. GetHospitalByEntityId or similar)? If not, say so.
-4. Show the legacy tenant/location lookup cache from RD-11872 (50 ms timeout, 10-minute TTL): where it lives, and whether it is reusable from the v1 Handler without duplication.
-5. Show exactly where the legacy tag builder sets application=legacy_edi, and whether v1 can call the same builder.
-Report findings only.
+SETUP
+- Repo guard: git rev-parse --show-toplevel; git remote -v (must be salucro.go). git status clean.
+- git fetch origin; git switch -c feature/RD-11871-edi-v1-lifecycle origin/develop
+
+1. SHARED LIFECYCLE CONTRACT (no legacy behaviour change)
+- Create a small leaf package (e.g. pkg/hedgehog/lifecyclemetrics). It must import nothing from hedgehog or v1, to avoid cycles.
+- Move or export from epicHandlers.go: the application tag value (legacy_edi), sanitizeTagValue, the lifecycle tag builder (application, workflow_name, tenant_id, location_id), the workflow names (edi_payment, edi_device_capability), the action names, and the emit helper (MetricsService.Count(workflow+"."+action+".count", 1, tags)).
+- Make the legacy code call the shared package. Its output must be byte-identical. ALL existing legacy tests (epicHandlers_metrics_test.go etc.) must pass UNCHANGED.
+
+2. WIRING
+- Pass the existing DogStatsD lifecycleMetrics (main.go, InitDatadogMetrics) and EntityRepository into the v1 Handler (and the device service if needed) via NewRouterWithDependencies and NewHandler. nil means a no-op (noop-safe), mirroring NewPaymentService's nil handling.
+- Keep the OTel MeterService as is. No route, payload or status-code changes. 202 Accepted stays.
+
+3. IDENTITY RESOLUTION (v1)
+- location_id = the request's locationId (an entity_id), as a string, sanitized.
+- tenant_id = RootEntityID of that entity. Reuse an entity already loaded in the request flow if one is available; otherwise call EntityRepository.GetById(locationId) with a 50 ms timeout and a small in-process cache keyed by entity_id (10-minute TTL, successful lookups only).
+- Any error, timeout, no-row or nil repository gives "unknown". Log at warn with request context. NEVER return early, change the response or fail the request.
+- Resolve ONCE per request and reuse the same tags for init and terminal.
+- No JWT parsing. Add a TODO comment referencing the claims follow-up.
+
+4. edi_payment (POST /sale, /auth, /tokenize, /checkscan, in handleTransactionRequest)
+- Pre-acceptance rejections (decode/validation, credential identifier, device unavailable, credential lookup) emit NO workflow_* metrics.
+- Emit exactly one workflow_init only when the work is actually accepted, i.e. shutdownCoord.Go successfully registers or launches the goroutine. If the coordinator refuses the work, emit nothing.
+- Inside the goroutine: a single deferred terminal, default workflow_failure, switched to workflow_success only when processing returns nil. Panics are still reported as failure. No workflow_cancel (decision 2: add a comment). A decline (402 from PayCardDevicePatch) is failure.
+
+5. edi_device_capability (GET /devicecapabilities, sync)
+- After query/validation succeeds: workflow_init. Then exactly one terminal: success if GetDevices succeeds AND the response is written; failure on a GetDevices error or an encoding failure. An empty device list is success. No cancel.
+- Remove the tenant_id:unknown TODO in HandleDeviceCapabilities.
+
+6. TESTS (table-driven, using a recording fake MetricsService like lifecycleMetricsRecorder)
+Assert the full metric name, value 1, the COMPLETE tag set and exactly-once for every v1 branch:
+- payment: success; processing error; decline (402) gives failure; panic gives failure; each pre-acceptance rejection gives zero workflow_* metrics; coordinator refusal gives zero metrics; init and terminal tags are identical.
+- identity: entity found (tenant = RootEntityID); repo error gives unknown; no row gives unknown; nil repo gives unknown; timeout gives unknown; cache hit (no second repo call); the response is unaffected in all cases.
+- capabilities: success, empty list = success, GetDevices error = failure, encode failure = failure, validation failure = zero metrics.
+- shared package: the tag builder output equals what legacy emitted before (application:legacy_edi, sanitize rules).
+
+7. VERIFY
+gofmt -l . (must be empty); go vet ./...; go test ./pkg/hedgehog/... ./cmd/hedgehog/...
+(-race only if cgo/gcc is available; otherwise say so). If anything fails, STOP and show me.
+
+8. DOCS: update docs/observability/edi-datadog-metrics.md: v1 now feeds the same 7 series; identity resolution (locationId = entity_id, tenant = root entity, unknown fallback); no v1 cancel yet; JWT claims follow-up.
+
+9. Show me: git diff --stat, the full diff of NON-test files, and test results. Then STOP. No commit until I say "go".
 ```
 
-## Step 2: message your lead (fill in from Step 1)
+## Step 3: self-review prompt (run before "go")
 
-> RD-11871 analysis done. I need decisions on a few points before coding:
-> 1. **App tag:** legacy actually emits `application:legacy_edi` (Datadog's normalisation of "Legacy EDI"), not `application:EDI` as the ticket says. For byte-identical series, I suggest v1 reuses the legacy tag builder, so `legacy_edi`. OK?
-> 2. **JWT claims:** the v1 auth middleware doesn't expose any claims in the request context. I suggest DB lookup only for now, with claim support as a follow-up ticket for the auth layer. OK?
-> 3. **`locationId`:** v1 uses it as `<entity_id / hospital_id, from Step 1>`. If it's entity_id, `location_id` is direct and only the tenant needs a lookup `<by …>`. Can you confirm?
-> 4. **Cancel:** v1 has no structured device-cancel signal, so I'll classify it as failure for now and raise a follow-up. OK?
-> 5. **Declines:** `<from Step 1: does a decline return an error?>`
-> 6. **Capabilities:** if `GetDevices` succeeds but encoding the response fails, should that count as failure? I suggest yes.
-> 7. **Cache:** I'll reuse RD-11872's lookup cache rather than add a new one. OK?
-> 8. **Shutdown:** the deferred terminal covers normal returns and panics, but not a hard kill after the 202. Is best-effort acceptable?
+```
+READ ONLY review of your RD-11871 changes against the ticket's acceptance criteria. For each criterion answer PASS or FAIL with file:line evidence:
+1. Exactly one init and one terminal per accepted v1 request, including the async path
+2. Pre-acceptance rejections emit no workflow_* metrics
+3. edi_device_capability emits only success/failure
+4. edi_payment classification matches legacy (declines, device errors, timeouts = failure; no cancel yet)
+5. tenant_id/location_id resolution and unknown fallback never alter the response or business behaviour
+6. Series names and tags byte-identical to legacy (application:legacy_edi, same sanitize)
+7. Noop-safe with nil MetricsService and nil repository
+8. Legacy tests unchanged and passing
+9. The tenant_id:unknown TODO removed
+10. No PAN/PHI/MRN/tokens/trace_id in tags
+Also list: any behaviour change outside metrics, any new exported API, any line you're unsure about.
+```
 
-## Step 3: after your lead answers
+## Step 4: commit, push and PR (after you've read the review)
 
-Use **Prompt 2 from my previous message**, with these changes:
+```
+go.
+git add <only RD-11871 files>
+git commit -m "RD-11871: emit EDI lifecycle metrics from the v1 request path; share legacy tag contract"
+git push -u origin feature/RD-11871-edi-v1-lifecycle   (normal push)
+Then draft the PR description: summary; decisions (DogStatsD, legacy_edi tag via shared package, locationId = entity_id, tenant via EntityRepository + cache, no JWT yet, no v1 cancel yet, capability encode failure = failure); metrics (the same 7 series as RD-11676); tests run; follow-ups (JWT claims, v1 device-cancel signal).
+```
 
-- **Tags:** reuse the **legacy tag builder** for all tags, including the application value. Don't hardcode `EDI`.
-- **Identity:** follow the agreed order, which probably drops "JWT claims" for now.
-- **Lookups:** look up by the correct key for `locationId`, and reuse RD-11872's repository and cache.
-- **Terminals:** use the same pattern as legacy: one deferred terminal, default failure, set to success on a good result. No cancel.
-- **Wiring:** pass `lifecycleMetrics` and `HospitalRepo` to `NewHandler` and the device service through `NewRouterWithDependencies` and `main.go`.
+## Step 5: after merge and deploy to QA
 
-Send me the Step 1 output and I'll fill in the message for your lead.
+In Datadog Metrics Explorer, check `Custom.8328.edi_payment.workflow_init.count` with `application:legacy_edi`, and confirm `tenant_id` is no longer `unknown` for v1 traffic. This still depends on fixing the earlier problem that EDI metrics don't show in Datadog at all, so raise that with your lead in the same message.
+
+Send me the Step 2 output (the diff and test results) and I'll review it before you say "go".
