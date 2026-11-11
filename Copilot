@@ -1,12 +1,33 @@
-RD-11678 follow-up on feature/RD-11678-edi-edi_device_capability-lifecycle. Minimum code. Normal push only. Never commit scripts/ or hosts.dummy.
+Implement the agreed RD-11936 gaps on a FRESH branch from develop. STOP on anything unexpected. Never force-push. Never commit scripts/ or hosts.dummy.
 
-1. READ-ONLY CHECK FIRST (router): compare origin/develop vs HEAD for how the v1 payment service gets its metrics sink.
-   - On develop: which sink did main.go pass (variadic paymentMetrics) to NewRouterWithDependencies, and into NewPaymentService?
-   - Now: is that SAME DogStatsD sink (lifecycleMetrics) passed to NewPaymentService, so v1 payment_* metrics still emit?
-   - Does an existing test prove the payment service gets a non-noop sink? If not, say so.
-   If v1 payment_* metrics would now be noop, STOP and tell me. Do not change anything in this step.
+MINIMUM-CODE RULES (strict): develop's RD-11677 implementation is canonical; smallest diff on top; reuse RecordEDIPaymentMetric / buildPaymentMetricContext / EDIPaymentErrorOutcome / EDIPaymentResultOutcome; no new exported identifiers unless unavoidable (justify each); no refactors outside touched lines; comments only for decisions. Do NOT change tag values (source, application), the processor allow-list, or Badger decline mapping. Those are pending decisions.
 
-2. DOCS (only if step 1 is fine): fold the RD-11678-only content from docs/jira_tickets/RD-11678-edi-device-capability-lifecycle.md into the existing docs/jira_tickets/RD-11678-EDI-device-capability-service-call.md (add only what's missing; no rewrites), then git rm the new file. Show the diff and the line count.
 
-3. Verify: git diff --check clean; go test ./pkg/hedgehog/... -count=1 passes.
-4. STOP for "go". On "go": commit "RD-11678: consolidate ticket docs", fetch, confirm the origin is still 990101a78, normal push.
+
+Hi Premkumar, I checked all 3:
+1. Approved: pass (Init 1, Success 1).
+2. Declined: the empty amount is rejected by EGG before the processor is called, so it's Workflow Failure only and no decline. The metrics are correct. Please retest with a processor decline (e.g. "CC Payment - Sale Failed") where the response shows e_status=declined.
+3. Error: the empty gateway identifier is an early merchant check, so it's Workflow Failure only (tenant N/A). The metrics are correct. For payment_error we need a processor-side error; I'm checking with Dan how to trigger one in QA.
+1. git status clean; git fetch origin; git switch -c feature/RD-11936-v1-payment-metrics-gaps origin/develop.
+
+2. EXACTLY-ONCE (pkg/hedgehog/service/payment/payment_service.go): for each Process*Request (sale, auth, tokenize, checkscan):
+   - build the metric context and emit payment_init at the START of Process*Request (once);
+   - one deferred terminal there, defaulting to payment_error, overridden by the real outcome (success / decline / error / tor+error);
+   - remove the now-duplicate init and defer from processPaymentTransaction / processCheckscanTransaction, so there is exactly one init and one terminal per request;
+   - CreateProcessor and BuildBadger*TxnCmd failures must now end in payment_error with a normalized reason/error_code (reuse EDIPaymentErrorOutcome);
+   - checkscan keeps timeoutReversal=false (no tor).
+
+3. PANIC SAFETY: in that single defer, if recover() != nil → emit payment_error (reason via existing outcome helpers, e.g. unknown), then re-panic with the same value. Never record success on a panic.
+
+4. TESTS (table-driven, existing assertPaymentMetrics / recorder fakes; add rows to existing tests where possible):
+   - auth, tokenize, checkscan: success, decline (402), error, early-return (CreateProcessor error, BuildBadger error); checkscan: no tor on timeout
+   - all 4 endpoints: panic → exactly one payment_error, then the panic propagates
+   - fix tests :167/:184 (early return) to assert init + payment_error
+   - assert exact metric names, value 1, the exact tag set, exactly one init and one terminal
+   - one handler-level test: no payment_* metrics on 4xx/502 pre-acceptance rejections
+
+5. VERIFY: gofmt -l on changed files (LF) empty; go vet ./pkg/hedgehog/service/payment/... ./pkg/hedgehog/api/v1/...; go test ./pkg/hedgehog/... ./cmd/hedgehog/... -count=1 all pass; git diff --check clean.
+
+6. Show: the non-test diff, numstat (target about 60 lines of code plus tests), test results. STOP for "go".
+
+On "go": commit "RD-11936: exactly-once and panic-safe v1 payment metrics; endpoint test coverage"; git push -u origin feature/RD-11936-v1-payment-metrics-gaps (normal push).
