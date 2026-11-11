@@ -1,33 +1,38 @@
-Implement the agreed RD-11936 gaps on a FRESH branch from develop. STOP on anything unexpected. Never force-push. Never commit scripts/ or hosts.dummy.
+**None of the three "Fail" rows is a metrics bug.** Each comes from test data or the QA environment. Row by row:
 
-MINIMUM-CODE RULES (strict): develop's RD-11677 implementation is canonical; smallest diff on top; reuse RecordEDIPaymentMetric / buildPaymentMetricContext / EDIPaymentErrorOutcome / EDIPaymentResultOutcome; no new exported identifiers unless unavoidable (justify each); no refactors outside touched lines; comments only for decisions. Do NOT change tag values (source, application), the processor allow-list, or Badger decline mapping. Those are pending decisions.
+| Row | Nirmal's result | What's actually happening | Real verdict |
+|---|---|---|---|
+| **4.2** Payment | Fail | **Incomplete:** the +1/−1 timing blip; the SUM is 0, so nothing is stuck. **Decline and Error not updating:** the requests (empty amount, empty gateway ID) were rejected by **EGG's own validation before the processor was called**, so only Workflow Failure moves. That's correct. | Pass for what was tested. **Decline and error are untested**, because they need a real processor decline or error. |
+| 4.3 Capture | Pass | ✅ | Pass |
+| 4.4 Reversal | Pass | ✅ | Pass |
+| **4.5** Auto-reversal | ? | `payment_auto_reversal` (TOR) fires only when the **processor call times out** after sending, and EGG automatically reverses it. It needs a simulated timeout. The dashboard note already says this is pending (RD-11639 timeout reversal). | **Blocked:** ask Dan how to simulate a processor timeout in QA |
+| 4.6 Tokenize | Pass | ✅ | Pass |
+| **4.7** Remove Token | Fail | Two separate things: **(a)** "Invalid token" with a correct token is a **functional** issue, not a metrics one. Likely causes: the `ID:` prefix is missing or extra, a different merchant or gateway ID than the one that created the token, or a token from another environment. **(b)** "Tokenize failure not showing" is expected: Remove Token is its own workflow (`egg_removetoken`), so its failure shows under **RemoveToken**, not Tokenize. | The metrics are correct for the response. **(a) needs investigation** |
+| **4.8** Bad account number | Fail | The QA processor is a **simulator** that doesn't fully validate card numbers. Test card 4111… with a few digits removed is still accepted. That's environment behaviour, not EGG or metrics. ACH Credit without an amount works as expected (error, under Reversal). | Not a metrics issue. **We need a proper decline test card or amount for the QA processor.** |
 
+## Reply to Nirmal
 
+> Thanks Premkumar, a detailed test. I went through each row:
+>
+> **4.2 Payment:**
+> - **Incomplete:** this is the timing effect I explained earlier. Init and success land in neighbouring time slots, so +1 then −1. The SUM is 0.00, so no payment is actually incomplete. I'm changing the widget to show the total only.
+> - **Decline and Error not updating:** the requests used (empty amount, invalid gateway ID) are rejected by EGG's validation **before the processor is called**, so only Workflow Failure updates. That's correct behaviour. `payment_decline` and `payment_error` only fire after the processor responds. To test them, we need a request the processor actually declines or errors on (see 4.8).
+>
+> **4.5 Auto-reversal:** this fires only when the processor call **times out** and EGG automatically reverses the payment. It needs a simulated processor timeout in QA. I'll check with Dan whether that's possible. Until then, please mark it Blocked rather than Fail.
+>
+> **4.7 Remove Token:**
+> - "Invalid token" is a functional response from EGG, not a metrics issue. Could you share the Tokenize response and the Remove Token request? Please check that the token is passed exactly as returned (including the `ID:` prefix) and with the same `e_gatewayidentifier` and merchant used to create it.
+> - Remove Token is its own workflow (`egg_removetoken`), so its failure appears under **EGG RemoveToken**, not under Tokenize. The metrics match the response.
+>
+> **4.8 Bad account number:** the QA processor is a simulator and doesn't strictly validate card numbers, so a slightly altered 4111… card is still approved. That's environment behaviour, not EGG. I'll ask Dan for a QA test card or amount that the simulator declines, so we can test `payment_decline` properly.
+>
+> **Summary:** the metrics match the gateway responses in all cases. The open items are test-data or environment questions (a decline card, a timeout simulation, and the Remove Token request). I'll come back once I hear from Dan.
 
-Hi Premkumar, I checked all 3:
-1. Approved: pass (Init 1, Success 1).
-2. Declined: the empty amount is rejected by EGG before the processor is called, so it's Workflow Failure only and no decline. The metrics are correct. Please retest with a processor decline (e.g. "CC Payment - Sale Failed") where the response shows e_status=declined.
-3. Error: the empty gateway identifier is an early merchant check, so it's Workflow Failure only (tenant N/A). The metrics are correct. For payment_error we need a processor-side error; I'm checking with Dan how to trigger one in QA.
-1. git status clean; git fetch origin; git switch -c feature/RD-11936-v1-payment-metrics-gaps origin/develop.
+## Message to Dan (short)
 
-2. EXACTLY-ONCE (pkg/hedgehog/service/payment/payment_service.go): for each Process*Request (sale, auth, tokenize, checkscan):
-   - build the metric context and emit payment_init at the START of Process*Request (once);
-   - one deferred terminal there, defaulting to payment_error, overridden by the real outcome (success / decline / error / tor+error);
-   - remove the now-duplicate init and defer from processPaymentTransaction / processCheckscanTransaction, so there is exactly one init and one terminal per request;
-   - CreateProcessor and BuildBadger*TxnCmd failures must now end in payment_error with a normalized reason/error_code (reuse EDIPaymentErrorOutcome);
-   - checkscan keeps timeoutReversal=false (no tor).
-
-3. PANIC SAFETY: in that single defer, if recover() != nil → emit payment_error (reason via existing outcome helpers, e.g. unknown), then re-panic with the same value. Never record success on a panic.
-
-4. TESTS (table-driven, existing assertPaymentMetrics / recorder fakes; add rows to existing tests where possible):
-   - auth, tokenize, checkscan: success, decline (402), error, early-return (CreateProcessor error, BuildBadger error); checkscan: no tor on timeout
-   - all 4 endpoints: panic → exactly one payment_error, then the panic propagates
-   - fix tests :167/:184 (early return) to assert init + payment_error
-   - assert exact metric names, value 1, the exact tag set, exactly one init and one terminal
-   - one handler-level test: no payment_* metrics on 4xx/502 pre-acceptance rejections
-
-5. VERIFY: gofmt -l on changed files (LF) empty; go vet ./pkg/hedgehog/service/payment/... ./pkg/hedgehog/api/v1/...; go test ./pkg/hedgehog/... ./cmd/hedgehog/... -count=1 all pass; git diff --check clean.
-
-6. Show: the non-test diff, numstat (target about 60 lines of code plus tests), test results. STOP for "go".
-
-On "go": commit "RD-11936: exactly-once and panic-safe v1 payment metrics; endpoint test coverage"; git push -u origin feature/RD-11936-v1-payment-metrics-gaps (normal push).
+> Hi Dan, QA (Nirmal) is testing the EGG metrics for RD-11639. To finish testing, we need:
+> 1. A QA test card or amount that the processor simulator **declines** (altered 4111 numbers still get approved).
+> 2. A way to simulate a **processor timeout**, to test `payment_auto_reversal` (TOR).
+> 3. Is RD-11640 deployed to QA? QA sees no `issue` metrics.
+>
+> Separately, Remove Token returns "Invalid token" for a freshly created token in QA. I'm checking the request details with Nirmal, but let me know if that's a known issue.
