@@ -1,66 +1,44 @@
-That JSON confirms the cause. Your screenshot shows the bug happening: only failure has data in that hour, so it gets the first palette colour (blue).
-
-## 1. Root cause (two settings combine)
-
-```json
-"style": { "palette": "datadog16", "order_by": "values", ... }   // on the REQUEST, not per formula
-```
-
-- **The palette is set on the request.** Datadog colours each series by its **position**, not by its name.
-- **`order_by: "values"`** sorts series by their values, so the positions change whenever the numbers change.
-- **Result:** in a 5-min window where success has no data, failure becomes series 1 and turns blue. On longer windows the order (and so the colour) changes again, which gives red. The colour is set by the data, never pinned to "failure".
-
-## 2. Fix: give each formula a fixed colour
-
-```json
-{
-  "title": "EDI Device Capability Workflow Success vs Failure",
-  "type": "timeseries",
-  "requests": [
-    {
-      "formulas": [
-        {
-          "alias": "Device Capability Workflow Success",
-          "formula": "success",
-          "style": { "palette": "datadog16", "palette_index": <SUCCESS_INDEX> }
-        },
-        {
-          "alias": "Device Capability Workflow Failure",
-          "formula": "failure",
-          "style": { "palette": "datadog16", "palette_index": <PINK_INDEX> }
-        }
-      ],
-      "queries": [ ...unchanged... ],
-      "response_format": "timeseries",
-      "style": { "palette": "datadog16", "order_by": "tags", "line_type": "solid", "line_width": "normal" },
-      "display_type": "line"
-    }
-  ]
-}
-```
-
-Don't guess the index numbers. In the **Edit** tab, click the colour swatch next to each formula and pick pink for failure and the success colour from the spec. Then switch to the **JSON** tab, and Datadog will have written the exact `style` block for you. Copy that.
-
-## 3. Same bug in other widgets
-
-Every success-vs-failure widget in `edi-fixed.json` is probably built the same way. Send this to Copilot:
+Here's the prompt. It writes to a **new file** and leaves `edi-latest.json` untouched.
 
 ```text
-QA bug on RD-11676: series colours change with the timeframe. Root cause: the palette is set at the request level with order_by "values", so Datadog assigns colours by position, and the positions shift when a series has no data or the values change.
+QA bug on RD-11676 (EDI Datadog dashboard): series colours change with the timeframe. Example: failure shows blue on 5m, sometimes on 15/30m, and red on long timeframes, but it should always be pink.
+Root cause: the palette is set at the REQUEST level ("style": {"palette": "datadog16", "order_by": "values"}), so Datadog assigns colours by series position. That position changes when a series has no data in the window or when the values change.
 
-In edi-fixed.json:
-1. List every timeseries/bar widget with more than one formula, or with a group-by where colours matter.
-2. For each one, add a per-formula "style": {"palette": "datadog16", "palette_index": N}. failure/error = <PINK_INDEX>, success = <SUCCESS_INDEX> (I'll fill these in), and use the same index for the same meaning in every widget.
-3. Change request-level "order_by": "values" to "tags" in those widgets.
-4. Don't change queries, aliases or any other widgets. Keep the JSON valid for Datadog import.
-5. Give me the list of widgets you changed.
+Task: read edi-latest.json and write a fixed copy to edi-colour-fixed.json. Do NOT modify edi-latest.json.
+
+## Colour mapping (use exactly these, the same in every widget)
+- failure / error / decline / timeout / any negative outcome → palette "datadog16", palette_index <PINK_INDEX>
+- success / approved / completed → palette "datadog16", palette_index <SUCCESS_INDEX>
+- init / requests / total / neutral → palette "datadog16", palette_index <NEUTRAL_INDEX>
+- anything else → give it its own fixed index, never reuse one of the three above
+Put these three values in ONE place at the top of your plan so I can change them, and use them everywhere.
+
+## Rules
+1. Go through EVERY widget, including the ones nested inside groups ("type": "group" → "definition.widgets").
+2. For every request with formulas: add "style": {"palette": "datadog16", "palette_index": N} to EACH formula, chosen by the formula's alias/meaning using the mapping above.
+3. Where a request has "order_by": "values", change it to "tags". Keep the other request-level style keys (line_type, line_width, display_type).
+4. If a widget colours series through a group-by (e.g. `by {status}` or `by {action}`), per-formula colours can't pin each group. Split it into one query + formula per outcome (filter by the tag value), each with its own fixed style. List these widgets separately for me to review.
+5. Query Value / Toplist / Table widgets with conditional_formats: make sure failure-type values use red/pink consistently and success uses green/blue. Don't let a "red background" rule fire on success values.
+6. Don't change: queries, metric names, template variables, aliases, titles, descriptions, layout, widget ids, or any widget that has only one series and no colour problem.
+7. The output must be valid JSON and importable into Datadog. Keep the top-level dashboard structure exactly the same.
+
+## After writing the file
+A. Validate it: parse with `python -m json.tool edi-colour-fixed.json > NUL` (or the jq/node equivalent) and confirm it parses.
+B. Run a check script and show me the output:
+   - every formula in a widget with more than one series has style.palette_index
+   - no request still has order_by "values"
+   - the same meaning always maps to the same palette_index
+   - widget count and widget ids are identical to edi-latest.json
+   - queries are byte-for-byte unchanged from edi-latest.json
+C. Give me a table: widget title | change made (formula styles / order_by / split group-by / conditional format) | formulas → index
+D. List anything you were unsure about. Don't guess.
 ```
 
-## 4. Verify before replying to Dinesh
+**Before running it:** fill in the three indexes. Open one widget in the Datadog **Edit** tab, pick pink on the failure formula with the colour swatch, then check the **JSON** tab for the exact `palette_index`. Do the same for success and neutral.
 
-Check each fixed widget at **5m, 15m, 30m, 1h, 1d and 1w**, and include one window where success = 0 (like your screenshot). Failure has to stay pink in every one.
+**After running it:**
+1. Import `edi-colour-fixed.json` into a **copy** of the dashboard first, not the shared one.
+2. Check each multi-series widget at **5m / 15m / 30m / 1h / 1d / 1w**, including a window where success = 0. Failure has to stay pink in every one.
+3. Once that's clean, update the real dashboard and ask Dinesh to retest in QA.
 
-Reply to Dinesh once it's deployed:
-```text
-Fixed. Colours were assigned by series position, which shifted with the timeframe/data. Failure is now pinned to pink (and success to <colour>) on every widget. Please re-check at 5/15/30 min and on long timeframes in QA.
-```
+Review the group-by widgets from rule 4 yourself. Splitting a query is where Copilot is most likely to change the numbers along with the colours.
