@@ -1,3 +1,8 @@
-Using egi-colour-fixed.json, list every widget where 2 or more formulas got the SAME palette_index (e.g. two pink lines in one widget). For each one, show the widget title, the aliases and the index.
-For those widgets only: keep the main category colour for the most important series, and give the others distinct shades. Use a different palette for the extra series (e.g. "warm" for extra failure types, "cool" for extra success types) with a fixed palette_index each, so they stay readable but keep the same colour family.
-Run all the checks again and show the PASS output.
+Two fixes on egi-colour-fixed.json, then re-run all checks:
+
+1. REGRESSION: queries broken down by tag (tenant, error_code, reason, etc.), e.g. EDI Error Trend by Tenant ID, EDI Warning, EDI Critical, Declines by reason, must NOT have a palette_index. A pinned index makes every group the same colour. For any formula/request whose query has a "by {...}" breakdown, remove palette_index and keep only the family palette (failure/critical → red family, warning → orange family, success → green family, neutral → gray family), so each group gets a different shade. Add a check: "no broken-down query has palette_index".
+
+2. Use these exact palette names (I've verified them in the Datadog UI): failure=<NAME>, success=<NAME>, warning=<NAME>, neutral=<NAME>. Put them in the constants block.
+
+Decisions on your open points: cross-widget shade differences within the same colour family are accepted, don't change them. Severity priority is fatal > critical > error: the most severe series in a widget gets the primary colour. Don't make any other changes.
+Show me the PASS output and the list of formulas you changed.
