@@ -1,6 +1,3 @@
-Add a fourth category: WARNING_INDEX=3 (placeholder, I'll confirm in the Datadog UI). Mapping:
-- Warning, Incomplete, no_pos_device, degraded → WARNING_INDEX (partial or degraded outcome, not a hard failure)
-- Cancel / Cancelled → NEUTRAL_INDEX (user or system cancellation, not a failure)
-- "Total": colour it by WHAT it counts, not by the word "total". "Total Failures/Errors" → PINK_INDEX, "Total Success" → SUCCESS_INDEX, a plain total of all requests/attempts → NEUTRAL_INDEX.
-- If a series could fit more than one category, don't guess. Put it in the unresolved list along with its alias and query.
-Define WARNING_INDEX with the other constants at the top.
+Using egi-colour-fixed.json, list every widget where 2 or more formulas got the SAME palette_index (e.g. two pink lines in one widget). For each one, show the widget title, the aliases and the index.
+For those widgets only: keep the main category colour for the most important series, and give the others distinct shades. Use a different palette for the extra series (e.g. "warm" for extra failure types, "cool" for extra success types) with a fixed palette_index each, so they stay readable but keep the same colour family.
+Run all the checks again and show the PASS output.
