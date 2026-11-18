@@ -1,1 +1,6 @@
-Use these values: PINK_INDEX=1, SUCCESS_INDEX=0, NEUTRAL_INDEX=2. Define them once in a constants block at the top of your script so I can change them after I've checked them in the Datadog UI. Also: egi-latest.json is the correct input file (my typo). Write the output to egi-colour-fixed.json.
+Add a fourth category: WARNING_INDEX=3 (placeholder, I'll confirm in the Datadog UI). Mapping:
+- Warning, Incomplete, no_pos_device, degraded → WARNING_INDEX (partial or degraded outcome, not a hard failure)
+- Cancel / Cancelled → NEUTRAL_INDEX (user or system cancellation, not a failure)
+- "Total": colour it by WHAT it counts, not by the word "total". "Total Failures/Errors" → PINK_INDEX, "Total Success" → SUCCESS_INDEX, a plain total of all requests/attempts → NEUTRAL_INDEX.
+- If a series could fit more than one category, don't guess. Put it in the unresolved list along with its alias and query.
+Define WARNING_INDEX with the other constants at the top.
