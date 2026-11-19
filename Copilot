@@ -1,4 +1,53 @@
-In edi-dashboard-v2.json: find EVERY widget of type "query_table" (grouped tables). In their formulas, remove default_zero(...) wrappers (e.g. default_zero(c) → c).
-For the INCOMPLETE formula in tables (init − success − failure − cancel): remove it from the table and instead add a small "query_value" widget next to the table showing the same formula ungrouped, where default_zero is fine.
-Do NOT change timeseries or query_value widgets, metric names, filters or titles.
-List every widget changed (title → before/after formulas), validate the JSON parses and every formula references an existing query. Show the diff. STOP for my OK.
+Dan wants the same kind of QA guide for **RD-11936 (v1 transaction metrics)** that he wrote for the legacy flow. That means two deliverables:
+1. **New Bruno requests** for the v1 endpoints (`/sale` and so on), copied from the legacy *PD → Hedgehog → epic → Transaction Request* examples. Change the **amount** to make sdcMock return each outcome.
+2. **A QA instructions comment on RD-11936**, in the same format as Dan's: setup, Bruno path, dashboard, then success, decline, cancel and failure with "Verify: …".
+
+## Prompt 1: discovery (read only, bruno + salucro.go)
+
+```
+READ ONLY. Two repos: C:\Users\B138458\dev\bruno and salucro.go (origin/develop). Report commit hashes.
+
+1. Bruno legacy examples: open PD/Hedgehog/epic/Transaction Request/* (Credit Card - Happy Path, Decline, User Cancels on Device, SLR Error, Tokenize - Happy Path, etc.). For each, show the amount and any other field that differs from the Happy Path, i.e. what makes sdcMock return decline/cancel/SLR error. Mask any secrets/tokens.
+2. Bruno v1: list everything under PD/Hedgehog/v1/ (Transactions/Sale.bru etc.): URL, method, body fields, auth/pre-request script, env variables used.
+3. sdcMock: from the code or any README in the repos, which amounts or values map to which device responses (approve, decline, user cancel, SLR error, timeout)? If not in code, say "from Bruno examples only".
+4. salucro.go v1 payment path (pkg/hedgehog/service/payment, RD-11677 + RD-11936): for /sale, /auth, /tokenize, /checkscan, which edi_payment metrics are emitted for each outcome (approve, decline 402, user cancel, device or SLR error, timeout)? Tags (source:v1_api, payment_method, processor, reason, error_code). Is user cancel emitted as payment_cancel, payment_error, or something else in v1? file:line.
+5. Which Datadog dashboard widgets show edi_payment payment_* by source (to filter source:v1_api)?
+Output a table: Scenario | Bruno request to base it on | amount/field change | expected v1 metrics.
+```
+
+## Prompt 2: build the Bruno requests (after you've read Prompt 1)
+
+```
+In C:\Users\B138458\dev\bruno. git status must be clean (my old stash is fine). git fetch; git switch develop (or the default branch); git pull; git switch -c feature/RD-11936-v1-transaction-bruno.
+
+Under PD/Hedgehog/v1/Transactions/, create one request per scenario by copying the existing v1 Sale request (keep its URL, auth and env variables exactly). Only change the body field from Prompt 1 (amount etc.):
+- Credit Card Sale - Happy Path
+- Credit Card Sale - Decline
+- Credit Card Sale - User Cancels on Device
+- Credit Card Sale - SLR Error
+- Credit Card Tokenize - Happy Path (copy the v1 tokenize request if one exists, else the sale with tokenize:true)
+Plus Auth and Checkscan happy paths if v1 requests exist for them.
+Rules: no real card data, no secrets or tokens in files, minimal copies, names in the same style as the legacy folder. Don't modify existing requests.
+Show git status and git diff --stat. STOP, no commit until I say go.
+On go: commit "RD-11936: Bruno requests for v1 transaction scenarios"; push -u origin; tell me the PR link to create.
+```
+
+## Prompt 3: draft the Jira QA instructions
+
+```
+Using Prompt 1 findings, draft a Jira comment for RD-11936 in exactly this format (Dan's style):
+Setup sdcMock (same command: ./sdcMock -badger device.qa.internal.salucro-qa.net:443 -startup fusebox -workstationName el-ws-03 -delay 1s)
+Bruno Collection: PD -> Hedgehog > v1 > Transactions
+Transaction Request: Datadog Dashboard (filter env:qa, source:v1_api)
+Success / Decline / Cancel / Failure sections: numbered, each with the Bruno request name and "Verify:" using the dashboard column names (INIT, SUCCESS, DECLINE, CANCEL, ERROR), plus the metric names in brackets (e.g. edi_payment.payment_init / payment_decline).
+Add notes: v1 replies 202 Accepted immediately, so check Datadog (~1-2 min), not the Bruno response; declines come from the Payment Service 402; Badger-level declines count as ERROR (known limitation); checkscan never emits TOR.
+Plain text, ready to paste.
+```
+
+## Before you post it
+
+- **Check what's deployed.** QA can only see the RD-11936 fixes (exactly-once on early returns and panic safety) once your PR `feature/RD-11936-v1-payment-metrics-gaps` is merged and deployed. Everything RD-11677 added is already on develop. Note in the comment which parts are pending.
+- **Run each new Bruno request once yourself against QA** and confirm the dashboard moves as described before handing it over.
+- **Never commit the test edits from your old stash,** especially Jenkins.bru.
+
+Send me Prompt 1's output and I'll check the scenario-to-metric table before you build anything.
