@@ -1,1 +1,4 @@
-In edi-dashboard-v2.json, widget "EDI Service Calls by Name and Response Code": remove default_zero() from its formulas (use cap and pay directly). Keep service_call_name:* and response_code:* filters. Change nothing else. Show the diff.
+In edi-dashboard-v2.json: find EVERY widget of type "query_table" (grouped tables). In their formulas, remove default_zero(...) wrappers (e.g. default_zero(c) → c).
+For the INCOMPLETE formula in tables (init − success − failure − cancel): remove it from the table and instead add a small "query_value" widget next to the table showing the same formula ungrouped, where default_zero is fine.
+Do NOT change timeseries or query_value widgets, metric names, filters or titles.
+List every widget changed (title → before/after formulas), validate the JSON parses and every formula references an existing query. Show the diff. STOP for my OK.
