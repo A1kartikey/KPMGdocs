@@ -1,8 +1,32 @@
-Two fixes on egi-colour-fixed.json, then re-run all checks:
+Copilot is right on points 2 and 3: my rule was too broad. Here's how to answer.
 
-1. REGRESSION: queries broken down by tag (tenant, error_code, reason, etc.), e.g. EDI Error Trend by Tenant ID, EDI Warning, EDI Critical, Declines by reason, must NOT have a palette_index. A pinned index makes every group the same colour. For any formula/request whose query has a "by {...}" breakdown, remove palette_index and keep only the family palette (failure/critical → red family, warning → orange family, success → green family, neutral → gray family), so each group gets a different shade. Add a check: "no broken-down query has palette_index".
+## Answer 1/3: palette names
 
-2. Use these exact palette names (I've verified them in the Datadog UI): failure=<NAME>, success=<NAME>, warning=<NAME>, neutral=<NAME>. Put them in the constants block.
+First check them in Datadog (2 minutes): edit any timeseries widget → **Style → Palette** dropdown → choose each option → **JSON** tab → copy the exact value. As far as I know, Datadog's timeseries palettes are `dog_classic, cool, warm, purple, orange, grey`. I don't think there are plain `red` or `green` palettes for timeseries, so Copilot's guesses are probably invalid.
 
-Decisions on your open points: cross-widget shade differences within the same colour family are accepted, don't change them. Severity priority is fatal > critical > error: the most severe series in a widget gets the primary colour. Don't make any other changes.
-Show me the PASS output and the list of formulas you changed.
+Paste this once you've confirmed the names (edit them if the dropdown shows different ones):
+```text
+failure=warm, success=cool, warning=orange, neutral=grey. Use purple as the second family when two failure-type formulas need to be told apart (see below). I've checked these names in the Datadog UI.
+```
+
+## Answer 2/3: tables
+
+You're right. In `query_table` widgets the groups are rows and each formula is a column, so a pinned colour per column is correct and doesn't merge anything.
+```text
+Tables: exclude query_table widgets from fix 1 and keep their palette_index as it is. Fix 1 applies ONLY to timeseries/bar charts where a "by {...}" breakdown draws each group as its own line or bar.
+```
+
+## Answer 3/3: two broken-down formulas in one chart
+
+When Payment and Device Capability both use the red family, you can't tell them apart. Give each formula its own family instead:
+```text
+In EDI Error Trend, EDI Warning and EDI Critical (and any similar broken-down chart): give each formula a DIFFERENT family. Payment → warm, Device Capability → purple (for Warning: Payment → orange, Device Capability → purple). Within a family, each tenant gets a different shade. Update the duplicate check: palette-only formulas pass if no two formulas in the same widget share a family. Severity: accept your outcome as it is. In Issues by Tenant, Payment Fatal becomes primary and ERROR moves to red 4; in EDI Critical, nothing changes.
+```
+
+## After it finishes
+
+1. Re-run the checks. They should all PASS, including "no broken-down timeseries has palette_index".
+2. Import the file as a **new dashboard** and check: Success vs Failure at 5m/1h/1w (failure keeps its colour), one Error Trend chart (tenants in different shades, Payment and Device Capability clearly different), and one table (columns unchanged).
+3. If those pass, update the real dashboard and ask Dinesh to retest.
+
+Keep the scope at this point. If you keep tuning shades beyond this, the PR gets harder to review than the bug it fixes.
