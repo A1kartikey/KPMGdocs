@@ -1,40 +1,57 @@
+Everything below can be done now: Jira updates, dashboard edits and read-only investigation. None of it changes code on develop. Only the actual code fix (400 counting as failure) waits for Dan's ticket decision.
 
-Dinesh's RD-11678 QA results raise four points. Two are probably test or setup issues, one may be a real gap, and one is a quick dashboard edit. Here's my read on each, then a prompt to confirm in code and a reply for him.
+## Step 1: Correct the test expectations in RD-11678 (Jira comment)
 
-## 1. What each finding likely means
-
-| # | Dinesh's finding | Likely explanation | Action |
-|---|---|---|---|
-| 1 | **"Service calls not aligned"**: not every one of the 7 service calls goes +1 per request | The ticket comment assumes all 7 calls happen on **every** request. In reality some are probably **cached or conditional**, for example `epic.oauth_token` (a token is reused until it expires) or `tsapi.feature` and `tsapi.interconnect_settings` (settings may be cached). So +1 every time is the wrong expectation for those. | Confirm in code which calls are cached or conditional, then fix the test expectations in the ticket comment |
-| 2 | **`epic.interconnect_response` = 400** on the happy path, with `workflow_success` | Hedgehog's reply to Epic Interconnect got **HTTP 400 back**. Either QA's Interconnect endpoint is genuinely rejecting the reply (an environment or config issue), or our `response_code` is derived wrongly. **It also conflicts with Dan's decision** that a reply-send failure means `workflow_failure`, yet the workflow showed success. | **Investigate. This one may be a real bug.** |
-| 3 | **N/A service_call_name / N/A response_code row** | Data points with **no `service_call_name` tag**, either from an older build without the tags or from a series in the widget query that isn't a service-call metric | Check the deployed commit and the widget query |
-| 4 | **"(Pending-RD11678)" label on the dashboard** | Widget titles still say pending | Remove the label once RD-11678 is merged and deployed. It's a dashboard edit only |
-| — | "Service call name conflict (count) in widgets top and bottom" | The two widgets show different counts, probably for the same reasons as 1 and 3 | Ask him for a screenshot of both widgets |
-
-**Also worth noting:** the ticket's test steps say "filter env:qa", but we found yesterday that **hedgehog metrics in QAv2 have env N/A** (`DD_ENV` isn't set). With an `env:qa` filter they wouldn't show at all. Mention this so his results aren't skewed.
-
-## 2. Copilot prompt (read only, salucro.go, PR #2851 branch)
-
+**Copilot prompt (read only, salucro.go, origin/develop):**
 ```
-READ ONLY on feature/RD-11678-edi-edi_device_capability-lifecycle (and compare origin/develop). Report the commit hash.
-1. For edi_device_capability (Initialize Request) and edi_payment (Credit Card sale) legacy flows, list EVERY service_call emit in order with file:line: epic.interconnect_response, badger.available_devices, epic.oauth_token, tsapi.feature, tsapi.interconnect_settings, tsapi.sso_user, tsapi.processor_queries_init / _txn.
-   For each: is the call made on EVERY request, or cached/conditional (token cache, settings cache, feature cache)? If cached, is service_call still emitted on a cache hit?
-2. epic.interconnect_response: how is response_code derived (HTTP status of the reply POST to Epic? mapped buckets?). What happens to the workflow terminal if this returns 400 — workflow_success or workflow_failure? Does that match the agreed rule "reply-send failure → workflow_failure"?
-3. Can any service_call metric be emitted WITHOUT service_call_name or response_code tags (which would show as N/A)? List paths.
-4. Which tags does each service_call metric carry (service_call_name, response_code, workflow_name, tenant_id, location_id)?
-Report findings only.
+READ ONLY on origin/develop (salucro.go). Report the commit hash.
+For each scenario below, list EXACTLY which service_call metrics are emitted, in order, with response_code values, and which steps are conditional (and on what):
+A. Device capability – Initialize Request – Happy Path
+B. Device capability – Initialize Request – Workstation Offline
+C. Credit Card Sale – Happy Path
+D. Credit Card Sale – Error (Bruno body e_gatewayidentifier7 = el-ws-01)
+For each: OAuth JWT vs other auth, new vs old processor logic (how is it chosen? feature flag tsapi.feature?), how many times badger.available_devices and tsapi.processor_queries* fire, and the workflow terminal.
+Output a markdown table per scenario I can paste into a Jira comment: service_call_name | expected count | response_code | condition.
+```
+Then post it on RD-11678:
+> **Updated expected service_call metrics** (verified against develop `<hash>`). Not every call fires on every request: it depends on auth type, the new vs old processor logic, and early errors. Expected per scenario: *(paste tables)*.
+> Known gap (follow-up pending): a failed Interconnect reply (for example 400) is still counted as `workflow_success`.
+
+## Step 2: Fix the EDI dashboard (no code)
+
+1. Export the EDI dashboard JSON (Configure → Export) and save it as `edi-dashboard.json`.
+2. **Copilot prompt:**
+```
+Edit edi-dashboard.json (Datadog export) → write edi-dashboard-v2.json. Do not change metric names.
+1. Remove "(Pending-RD11678)" from every widget title.
+2. Service call widgets (edi_*.service_call.count): group ONLY by service_call_name and response_code (tags the metric actually has). Remove any grouping by capability_result or device_type on these widgets. Add the filter service_call_name:* so rows without the tag (old data) are excluded.
+3. Template variable env: keep it, but set the default to * (all), since hedgehog metrics in QAv2 currently have no env tag. Add a note widget: "Hedgehog metrics in QAv2 have env N/A until DD_ENV is set on the container."
+4. Validate: JSON parses, formulas reference existing queries, no default_zero inside query strings.
+Show me a change list before writing the file.
+```
+3. Import it into a **copy** of the dashboard first, check it, then apply it to the real one. Version history lets you roll back.
+
+## Step 3: Investigate why Interconnect returns 400 in QA (read only)
+
+**Bits AI prompt (Datadog):**
+```
+Search hedgehog logs in QAv2 (ecs_cluster_name:qa-ecs, service:hedgehog) for the last 7 days around sendResponseToInterconnect / epic interconnect reply.
+Find replies that got HTTP 400: show timestamps, the error/response body text, the Interconnect endpoint host (no tokens/PHI), and whether every reply gets 400 or only some.
+Correlate with Custom.8328.edi_*.service_call.count{service_call_name:epic.interconnect_response,response_code:400}.
+```
+**Copilot prompt (read only):**
+```
+READ ONLY on origin/develop. In sendResponseToInterconnect (epicHandlers.go ~745-761): what URL/endpoint, headers and payload shape are sent to Epic Interconnect? What does a 400 mean in that call, and is the response body logged? Anything environment-specific (config keys, QA vs prod URLs)?
 ```
 
-## 3. Reply to Dinesh
+## Step 4: Prepare the code fix locally (don't push)
 
-> Thanks Dinesh, this is very helpful. My initial read:
-> 1. **"+1 for each service call":** some of these calls are probably cached or conditional (for example `epic.oauth_token` reuses a token until it expires, and settings and features may be cached), so they won't go up on every request. I'm confirming each one in the code and will correct the expected results in the ticket comment.
-> 2. **`epic.interconnect_response` = 400 on the happy path:** this needs investigation. It means hedgehog's reply to Epic Interconnect got a 400 in QA. I'm checking whether that's the QA Interconnect setup or how we derive the code. It also shouldn't count as workflow success, so I'm looking at that too.
-> 3. **N/A rows:** those data points have no service_call_name tag. Can you tell me which build or commit is deployed on QAv2 for hedgehog?
-> 4. **"(Pending-RD11678)" labels:** I'll remove them once RD-11678 is merged and deployed.
->
-> Note: hedgehog metrics in QAv2 currently arrive **without an env tag** (`DD_ENV` isn't set on the container, which Dan is aware of), so please use the env **N/A** option rather than `env:qa` for now.
->
-> Could you also share a screenshot of the "service call name conflict" in the top and bottom widgets?
+Run the **fix prompt from my last message**, but on a local branch, `bugfix/interconnect-reply-failure`, and stop at "go". When Dan names the ticket, rename the branch, commit and push. Nothing is lost while you wait.
 
-Send me Copilot's output, especially point 2. If a 400 reply is counted as success, that's a real RD-11678 fix before merge.
+## Step 5: Messages
+
+- **Reply to Dinesh** (from my last message). Also tell him to use env **N/A** or All until `DD_ENV` is fixed.
+- **Ask Dan, in one message:**
+  1. A new bug ticket, or reopen RD-11678, for "400 reply counted as success"?
+  2. Why might QA Interconnect return 400?
+  3. Who sets `DD_ENV` on the QAv2 task definition?
