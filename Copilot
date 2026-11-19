@@ -1,32 +1,40 @@
-Copilot is right on points 2 and 3: my rule was too broad. Here's how to answer.
 
-## Answer 1/3: palette names
+Dinesh's RD-11678 QA results raise four points. Two are probably test or setup issues, one may be a real gap, and one is a quick dashboard edit. Here's my read on each, then a prompt to confirm in code and a reply for him.
 
-First check them in Datadog (2 minutes): edit any timeseries widget → **Style → Palette** dropdown → choose each option → **JSON** tab → copy the exact value. As far as I know, Datadog's timeseries palettes are `dog_classic, cool, warm, purple, orange, grey`. I don't think there are plain `red` or `green` palettes for timeseries, so Copilot's guesses are probably invalid.
+## 1. What each finding likely means
 
-Paste this once you've confirmed the names (edit them if the dropdown shows different ones):
-```text
-failure=warm, success=cool, warning=orange, neutral=grey. Use purple as the second family when two failure-type formulas need to be told apart (see below). I've checked these names in the Datadog UI.
+| # | Dinesh's finding | Likely explanation | Action |
+|---|---|---|---|
+| 1 | **"Service calls not aligned"**: not every one of the 7 service calls goes +1 per request | The ticket comment assumes all 7 calls happen on **every** request. In reality some are probably **cached or conditional**, for example `epic.oauth_token` (a token is reused until it expires) or `tsapi.feature` and `tsapi.interconnect_settings` (settings may be cached). So +1 every time is the wrong expectation for those. | Confirm in code which calls are cached or conditional, then fix the test expectations in the ticket comment |
+| 2 | **`epic.interconnect_response` = 400** on the happy path, with `workflow_success` | Hedgehog's reply to Epic Interconnect got **HTTP 400 back**. Either QA's Interconnect endpoint is genuinely rejecting the reply (an environment or config issue), or our `response_code` is derived wrongly. **It also conflicts with Dan's decision** that a reply-send failure means `workflow_failure`, yet the workflow showed success. | **Investigate. This one may be a real bug.** |
+| 3 | **N/A service_call_name / N/A response_code row** | Data points with **no `service_call_name` tag**, either from an older build without the tags or from a series in the widget query that isn't a service-call metric | Check the deployed commit and the widget query |
+| 4 | **"(Pending-RD11678)" label on the dashboard** | Widget titles still say pending | Remove the label once RD-11678 is merged and deployed. It's a dashboard edit only |
+| — | "Service call name conflict (count) in widgets top and bottom" | The two widgets show different counts, probably for the same reasons as 1 and 3 | Ask him for a screenshot of both widgets |
+
+**Also worth noting:** the ticket's test steps say "filter env:qa", but we found yesterday that **hedgehog metrics in QAv2 have env N/A** (`DD_ENV` isn't set). With an `env:qa` filter they wouldn't show at all. Mention this so his results aren't skewed.
+
+## 2. Copilot prompt (read only, salucro.go, PR #2851 branch)
+
+```
+READ ONLY on feature/RD-11678-edi-edi_device_capability-lifecycle (and compare origin/develop). Report the commit hash.
+1. For edi_device_capability (Initialize Request) and edi_payment (Credit Card sale) legacy flows, list EVERY service_call emit in order with file:line: epic.interconnect_response, badger.available_devices, epic.oauth_token, tsapi.feature, tsapi.interconnect_settings, tsapi.sso_user, tsapi.processor_queries_init / _txn.
+   For each: is the call made on EVERY request, or cached/conditional (token cache, settings cache, feature cache)? If cached, is service_call still emitted on a cache hit?
+2. epic.interconnect_response: how is response_code derived (HTTP status of the reply POST to Epic? mapped buckets?). What happens to the workflow terminal if this returns 400 — workflow_success or workflow_failure? Does that match the agreed rule "reply-send failure → workflow_failure"?
+3. Can any service_call metric be emitted WITHOUT service_call_name or response_code tags (which would show as N/A)? List paths.
+4. Which tags does each service_call metric carry (service_call_name, response_code, workflow_name, tenant_id, location_id)?
+Report findings only.
 ```
 
-## Answer 2/3: tables
+## 3. Reply to Dinesh
 
-You're right. In `query_table` widgets the groups are rows and each formula is a column, so a pinned colour per column is correct and doesn't merge anything.
-```text
-Tables: exclude query_table widgets from fix 1 and keep their palette_index as it is. Fix 1 applies ONLY to timeseries/bar charts where a "by {...}" breakdown draws each group as its own line or bar.
-```
+> Thanks Dinesh, this is very helpful. My initial read:
+> 1. **"+1 for each service call":** some of these calls are probably cached or conditional (for example `epic.oauth_token` reuses a token until it expires, and settings and features may be cached), so they won't go up on every request. I'm confirming each one in the code and will correct the expected results in the ticket comment.
+> 2. **`epic.interconnect_response` = 400 on the happy path:** this needs investigation. It means hedgehog's reply to Epic Interconnect got a 400 in QA. I'm checking whether that's the QA Interconnect setup or how we derive the code. It also shouldn't count as workflow success, so I'm looking at that too.
+> 3. **N/A rows:** those data points have no service_call_name tag. Can you tell me which build or commit is deployed on QAv2 for hedgehog?
+> 4. **"(Pending-RD11678)" labels:** I'll remove them once RD-11678 is merged and deployed.
+>
+> Note: hedgehog metrics in QAv2 currently arrive **without an env tag** (`DD_ENV` isn't set on the container, which Dan is aware of), so please use the env **N/A** option rather than `env:qa` for now.
+>
+> Could you also share a screenshot of the "service call name conflict" in the top and bottom widgets?
 
-## Answer 3/3: two broken-down formulas in one chart
-
-When Payment and Device Capability both use the red family, you can't tell them apart. Give each formula its own family instead:
-```text
-In EDI Error Trend, EDI Warning and EDI Critical (and any similar broken-down chart): give each formula a DIFFERENT family. Payment → warm, Device Capability → purple (for Warning: Payment → orange, Device Capability → purple). Within a family, each tenant gets a different shade. Update the duplicate check: palette-only formulas pass if no two formulas in the same widget share a family. Severity: accept your outcome as it is. In Issues by Tenant, Payment Fatal becomes primary and ERROR moves to red 4; in EDI Critical, nothing changes.
-```
-
-## After it finishes
-
-1. Re-run the checks. They should all PASS, including "no broken-down timeseries has palette_index".
-2. Import the file as a **new dashboard** and check: Success vs Failure at 5m/1h/1w (failure keeps its colour), one Error Trend chart (tenants in different shades, Payment and Device Capability clearly different), and one table (columns unchanged).
-3. If those pass, update the real dashboard and ask Dinesh to retest.
-
-Keep the scope at this point. If you keep tuning shades beyond this, the PR gets harder to review than the bug it fixes.
+Send me Copilot's output, especially point 2. If a 400 reply is counted as success, that's a real RD-11678 fix before merge.
