@@ -1,95 +1,25 @@
-RD-12344 adds a **zap logger hook** to hedgehog. Every WARN, ERROR and FATAL log line then also emits `Custom.8328.{workflow_name}.issue.count`, tagged with level, error_code, tenant and location, without touching the 253 log call sites. In a peer review you check that the PR does this **correctly and safely**. You don't rewrite it.
+READ ONLY. Repo salucro.go. PR branch tip 94fb696f6ccb14f9c78186069fb9a20114629b9b vs origin/develop. Do not check out or modify anything.
 
-## Steps
+I will post peer review comments on this PR in Bitbucket. For each comment below, tell me EXACTLY where to put it:
 
-1. **Find the PR.** Look for it linked on RD-12344 in Jira (Development panel) or in Bitbucket (salucro.go, search "RD-12344"). Note the branch name and who wrote it.
-2. **Read the acceptance criteria** (your screenshots) and keep them open next to the diff.
-3. **Run Prompts 1 to 3 below**, all read-only.
-4. **Review the diff in Bitbucket yourself**, especially the logger hook file and `epicHandlers.go`.
-5. **Write review comments** with Prompt 4, then post them on the PR, with file:line on each comment.
-6. **Approve, or request changes**: request changes if any blocker below fails.
+For each comment output a block:
+- Comment #
+- File path (as shown in the Bitbucket diff)
+- Line number at the branch tip AND the exact code text on that line (so I can find it visually)
+- Is that line part of the diff (added/changed, shown green in Bitbucket)? YES/NO
+  - If YES: "inline comment on this line"
+  - If NO (unchanged code, not visible in diff): give the nearest CHANGED line in the same file I can attach it to, or say "post as a general PR comment" and why
+- The comment text to paste (keep my wording, insert correct file:line references)
 
-## The eight risks to check
+Comments:
+1. Blocker: workflow_name never bound at entry points (epicHandlers.go logger fields ~309-315 / ~465-470, v1 handler_transaction.go ~61, handler_device_capabilities.go ~22, nats/handler.go ~73 / ~101) → all issue metrics are "none". Ask to bind edi_payment / edi_device_capability + tests. Pick ONE primary line for the inline comment and list the other locations in the text.
+2. Blocker: Fatal path calls Close() on the shared domainlessMetrics client (issue_metrics.go ~92-97); suggest Flush() instead.
+3. Blocker: docs/observability/edi-datadog-metrics.md missing → general PR comment.
+4. Major: tags not aligned with lifecycle (source legacy_edi vs legacy_interconnect; tenant_id unknown / raw location_id vs root_entity_id / entity_id) — issue_metrics.go ~78-90.
+5. Major: normalizedTagValue duplicates telemetry.SanitizeTagValue — issue_metrics.go ~163-181.
+6. Minor: metric emitted before inner Write, no recover; no re-entry guard, mutex held during Count — issue_metrics.go ~55-63.
+7. Minor: missing tests (recursion, non-canonical workflow_name, entry-point binding, Debug level) — issue_metrics_test.go (pick the most relevant changed line, or general).
+8. Nit: unused keys MetricLocationID / TenantID / WorkflowName — keys.go (the added lines).
+Also: check items I haven't confirmed — httpListener.go ingress rejections emit issue metrics? XML vs JSON identical? If either FAILS, add a comment block for it too.
 
-| # | Risk | Why it matters |
-|---|---|---|
-| 1 | **`zap.Hooks(...)` vs a wrapping `zapcore.Core`** | `zap.Hooks` only receives the Entry (level and message), **not the structured fields**, so it can't read `workflow_name`, `tenant_id` or `error_code`. It must be a wrapping Core that implements `With`, `Check` and `Write`. |
-| 2 | **Fields added via `logger.With(...)`** | Context fields such as workflow and hospital are attached with `With`. The wrapping core must keep them in its own `With()`, or the tags will be missing. |
-| 3 | **Fatal flush** | `logger.Fatal` calls `os.Exit` right after writing. The DogStatsD client buffers metrics, so the hook must **flush** before exit, or FATAL metrics are lost. That's an explicit acceptance criterion. |
-| 4 | **Recursion** | If the metrics client logs an error through the same logger, the hook triggers itself in a loop. Look for a guard. |
-| 5 | **`logprop.Workflow` free-text values** | It's currently used for text like `"sending transaction response"` (`epicHandlers.go:521`, `:525`). If those aren't changed, `workflow_name` becomes an **unbounded tag**. That's both a cardinality problem and wrong data. |
-| 6 | **Tag safety** | `message` must never be a tag, `error_code` must be bounded and sanitized, and tenant/location must use the existing sanitizer. No PAN, PHI or raw text anywhere. |
-| 7 | **Performance** | Debug and Info logs must not pay any cost (the hook works only at Warn and above), and a nil metrics client must be a safe no-op. |
-| 8 | **Level mapping** | zap has no CRITICAL level. Check how DPanic and Panic are mapped (to CRITICAL?) and that the tag values are exactly `WARNING`, `ERROR`, `CRITICAL` and `FATAL`. |
-
-Also check:
-- `workflow_name:none` appears for startup and background logs.
-- Ingress rejections in `httpListener.go` emit an issue metric.
-- XML and JSON payloads produce the same metrics.
-- `docs/observability/edi-datadog-metrics.md` is updated.
-- Tests cover each level, each branch, With-fields, the fatal flush, and that message is never a tag.
-
-## Prompt 1: understand the PR (read only)
-
-```
-READ ONLY. Repo guard: salucro.go. git fetch origin. Do NOT check out or modify my working branches; use git show / git diff origin/develop...origin/<RD-12344 branch>.
-Report the branch tip hash and author.
-1. List every changed file with +/- lines (git diff --stat).
-2. Summarize in plain words what the PR does: where the hook is installed (logex.go / cmd/hedgehog/main.go), where workflow_name is bound (epicHandlers.go:113/:268, v1 handler_transaction.go:54, handler_device_capabilities.go:16, nats/handler.go:60/:101), httpListener.go ingress rejections, docs.
-3. Is the hook a zap.Hooks(...) callback or a wrapping zapcore.Core (With/Check/Write)? Show the code.
-Facts only, with file:line.
-```
-
-## Prompt 2: review against the acceptance criteria and risks (read only)
-
-```
-READ ONLY review of origin/<RD-12344 branch> vs origin/develop. For each item give PASS / FAIL / UNCLEAR with file:line evidence:
-
-Correctness
-1. Hook can read structured fields (wrapping zapcore.Core, not zap.Hooks). Fields added via logger.With() are retained in the core's With().
-2. Emits exactly one Custom.{CAR_ID}.{workflow_name}.issue.count per WARN/ERROR/CRITICAL/FATAL entry; nothing for DEBUG/INFO. Level tag values exactly WARNING/ERROR/CRITICAL/FATAL — how are DPanic/Panic mapped?
-3. Fatal: metric emitted AND DogStatsD client flushed before os.Exit. Show how.
-4. Recursion guard: metrics client errors cannot re-enter the hook.
-5. workflow_name bound at all EDI entry points; entries without it emit workflow_name:none (not dropped).
-6. logprop.Workflow free-text uses (epicHandlers.go ~521/525 "sending transaction response") — changed? If not, workflow_name tag becomes unbounded.
-7. httpListener.go parse rejections (:46…:121) emit issue metrics.
-8. Behaviour unchanged: logs still written identically (same fields/format); hook errors never break logging.
-
-Safety
-9. message never a tag; error_code bounded/sanitized; tenant_id/location_id sanitized via existing helper; no PAN/PHI/MRN/raw payload in any tag.
-10. Noop-safe with nil metrics client; no overhead below Warn (Enabled/Check short-circuit).
-11. Metric names/tags consistent with existing EDI metrics (application value, sanitizer, Custom.{CAR_ID} prefix).
-
-Tests & docs
-12. Unit tests: per level, per branch, With-fields propagation, fatal flush, workflow_name:none, message-not-a-tag, recursion. Do they assert full metric name + full tag set?
-13. XML vs JSON produce identical metrics (test or evidence).
-14. docs/observability/edi-datadog-metrics.md updated (every metric, tags, emission site, dc_connect boundary).
-
-Also list: anything outside ticket scope, risky refactors, duplicated helpers, and lines you are unsure about.
-```
-
-## Prompt 3: run the tests locally (safe, uses a worktree)
-
-```
-Create a throwaway worktree so my branches are untouched:
-git worktree add ..\review-12344 origin/<RD-12344 branch>
-cd ..\review-12344
-gofmt -l <changed .go files> (LF-normalised); go vet ./pkg/hedgehog/... ./pkg/util/logex/... ./cmd/hedgehog/...
-go test ./pkg/hedgehog/... ./pkg/util/... ./cmd/hedgehog/... -count=1 -cover
-Report pass/fail, coverage of changed packages vs develop, and any failure output.
-Do NOT commit or push anything. When done: cd back and git worktree remove ..\review-12344
-```
-
-## Prompt 4: draft review comments
-
-```
-From the FAIL/UNCLEAR items above, draft Bitbucket PR review comments. One comment per issue: file:line, what's wrong, why it matters (one sentence), suggested fix. Mark each BLOCKER or NIT. Polite, short. Then a summary comment: what's good, blockers, nits, and whether I should Approve or Request changes.
-```
-
-## Before approving
-
-- **Approve only** when items 1 to 6 and 9 pass, and the tests pass.
-- **Overlap with your work:** your RD-11871 also touches `epicHandlers.go` and the v1 handlers. Comment if this PR changes the same functions, so the two can be merged in the right order.
-- **Dependency:** issue metrics only appear in QA once `CAR_ID` and the Agent (DEVOPS-10247 / RD-11683) and `DD_ENV` are fixed. Mention that in your summary so QA results aren't misread.
-
-Send me Copilot's Prompt 2 output and I'll help you decide which items are real blockers.
+Finally give: the order to post them, and the summary comment text for the PR overview.
