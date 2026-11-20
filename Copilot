@@ -1,4 +1,55 @@
-Before committing:
-1. Show the full diff of "Sale - SLR Error.bru" vs Sale.bru. Both IIAS amounts (rx and total) must be 1001 along with amount 1001. If not, fix only that.
-2. List seq numbers of every request in PD/Hedgehog/v1/Transactions; make sure 5/6/7 don't clash (renumber the new ones only if needed).
-Then go: make the 2 commits as planned (your commit 1 wording is fine). Do NOT push yet.
+Here is the whole flow, step by step. You need three windows open: a **terminal** (sdcMock), **Bruno**, and **Datadog**.
+
+## Step 1: Start sdcMock (once per session)
+
+1. Download the **sdcMock zip** attached to Dan's ticket (the legacy EDI lifecycle one he referred to) and unzip it to a temp folder on your VDI, for example `C:\temp\sdcMock`.
+2. Open a terminal in that folder (PowerShell, or Git Bash if the file has no `.exe`).
+3. Run Dan's command:
+   ```
+   ./sdcMock -badger device.qa.internal.salucro-qa.net:443 -startup fusebox -workstationName el-ws-03 -delay 1s
+   ```
+   On Windows PowerShell with an `.exe`, use `.\sdcMock.exe` with the same flags.
+4. **Leave this window open.** sdcMock is pretending to be the card reader `el-ws-03`, so closing it means the device goes "offline". You should see it connect to Badger with no errors.
+
+## Step 2: Open a transaction in the Payment Service (before every test)
+
+1. In Bruno, select the **QA** environment at the top right.
+2. Go to **TXN → Transactions Service → Pay → Card device → Sale → Fusebox → Patch → Successful payment - 200 → Start**.
+3. Click **Send**. You should get a **202**.
+4. In the response, find `transactions[0].transactionIdentifier` and copy the value (a long ID).
+
+**Check the amount in this Start request's body.** If it's different from the amount in your v1 request (for example Start = 20.00 but Decline = 4501), the Payment Service may reject the result. If they differ, set Start to the same value, such as 45.01 for Decline. Confirm this with Dan on your first run.
+
+## Step 3: Send the v1 request
+
+1. Go to **PD → Hedgehog → v1 → Transactions → Sale - Decline** (or User Cancels or SLR Error).
+2. Open the **Body** tab:
+   - Paste the copied ID into `transactionIdentifier`.
+   - Set `processorCredentialIdentifier` to the QA Fusebox credential UUID for location 2552. Ask Dan where to get it (env variable, TSAPI or DB). The placeholder `a1b2c3d4-...` won't work.
+   - **Don't save these edits back to Git.** They're local test values. In Bruno, just send without committing, or run `git restore` afterwards.
+3. Click **Send**. Expect **202 Accepted**. That only means "received", not the result.
+4. Look at the **sdcMock terminal**. You should see it receive the transaction and reply (decline, cancel or SLR error).
+
+## Step 4: Check Datadog
+
+1. Open the dashboard **8328_Salucro_MedEpay_EDI_Metrics_DRAFT**.
+2. Set **env = qa**, **source = v1_api**, and the time to **Past 15 minutes**.
+3. Wait **1 to 2 minutes**, then look at **EDI Legacy vs v1 → EDI Payments by Source**, row `v1_api`.
+4. Check the reason under **EDI Issues → EDI Payment Declines by reason**.
+
+## Repeat for each scenario
+
+**Each scenario needs a new Start (step 2) and a new ID.** Reusing an ID shows ERROR instead of the expected result.
+
+| Order | Start, then v1 request | Expected |
+|---|---|---|
+| 1 | Sale (2000) | Init +1, Success +1 |
+| 2 | Sale - Decline (4501) | Init +1, Decline +1 |
+| 3 | Sale - User Cancels (3350) | Init +1, Decline +1 (Copilot's claim, **verify**) |
+| 4 | Sale - SLR Error (1001) | Init +1, Decline +1 (Copilot's claim, **verify**) |
+
+Write down what you actually see for rows 3 and 4. If it's ERROR instead of Decline, update the Jira table to match.
+
+**If something fails:**
+- **Bruno gets 4xx or 502:** the credential ID or the token is wrong, or the device is offline (check sdcMock is running).
+- **202, but nothing in Datadog after 3 minutes:** check that hedgehog is deployed on QAv2, and try **env = All** in case env is N/A.
