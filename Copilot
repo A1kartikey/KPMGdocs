@@ -1,25 +1,27 @@
-READ ONLY. Repo salucro.go. PR branch tip 94fb696f6ccb14f9c78186069fb9a20114629b9b vs origin/develop. Do not check out or modify anything.
+Copilot checked the Payment Service code itself, so this is more reliable than both my earlier guesses and Rovo's. Two corrections first.
 
-I will post peer review comments on this PR in Bitbucket. For each comment below, tell me EXACTLY where to put it:
+## What we now know
 
-For each comment output a block:
-- Comment #
-- File path (as shown in the Bitbucket diff)
-- Line number at the branch tip AND the exact code text on that line (so I can find it visually)
-- Is that line part of the diff (added/changed, shown green in Bitbucket)? YES/NO
-  - If YES: "inline comment on this line"
-  - If NO (unchanged code, not visible in diff): give the nearest CHANGED line in the same file I can attach it to, or say "post as a general PR comment" and why
-- The comment text to paste (keep my wording, insert correct file:line references)
+1. **Start never contacts the card reader, so `workstationKey` in Start doesn't matter.** I was wrong to blame `rico-elavon`.
+2. **Start looks up the first line item's location as both tenant and location:**
+   - **Original sample**: `primaryLocationId 2550`, items 2550 and 2551. Looks up 2550/2550, which is valid because 2550 is the root. ✅
+   - **With 2552 as the first item**: looks up 2552/2552, which fails, so you get the generic 500. ❌ That's the change I suggested, so it was mine.
+3. **`processorCredentialIdentifier` does NOT come from the Start response** (Rovo was wrong). The real UUID has to come from **Dan or the Payment Service credentials data**.
 
-Comments:
-1. Blocker: workflow_name never bound at entry points (epicHandlers.go logger fields ~309-315 / ~465-470, v1 handler_transaction.go ~61, handler_device_capabilities.go ~22, nats/handler.go ~73 / ~101) → all issue metrics are "none". Ask to bind edi_payment / edi_device_capability + tests. Pick ONE primary line for the inline comment and list the other locations in the text.
-2. Blocker: Fatal path calls Close() on the shared domainlessMetrics client (issue_metrics.go ~92-97); suggest Flush() instead.
-3. Blocker: docs/observability/edi-datadog-metrics.md missing → general PR comment.
-4. Major: tags not aligned with lifecycle (source legacy_edi vs legacy_interconnect; tenant_id unknown / raw location_id vs root_entity_id / entity_id) — issue_metrics.go ~78-90.
-5. Major: normalizedTagValue duplicates telemetry.SanitizeTagValue — issue_metrics.go ~163-181.
-6. Minor: metric emitted before inner Write, no recover; no re-entry guard, mutex held during Count — issue_metrics.go ~55-63.
-7. Minor: missing tests (recursion, non-canonical workflow_name, entry-point binding, Debug level) — issue_metrics_test.go (pick the most relevant changed line, or general).
-8. Nit: unused keys MetricLocationID / TenantID / WorkflowName — keys.go (the added lines).
-Also: check items I haven't confirmed — httpListener.go ingress rejections emit issue metrics? XML vs JSON identical? If either FAILS, add a comment block for it too.
+## What to do
 
-Finally give: the order to post them, and the summary comment text for the PR overview.
+1. **Revert the Start request to the original Bruno sample.** In Bruno, discard the unsaved body edits (or `git restore` the file) and send it **unchanged**. It should return 202 with a `transactionIdentifier`.
+2. **Confirm** with **PISTL → HC Provider → location/lookup** for 2550/2550 (should work) and 2552/2552 (should fail).
+3. **If Rufina's unchanged request still returns 500:** her screenshot did start with 2550, so check the other differences: the **"QA 5"** environment, an expired token, or other unsaved edits. Then check the Payment Service logs for that timestamp.
+4. **Ask Dan for the credential UUID.** Without it, the v1 request can't succeed.
+5. **Click Keep** on Copilot's `RD-11936-QA.md` update.
+
+## Message to Rufina
+
+> Hi Rufina, correction from my side, after checking the Payment Service code: Start doesn't contact the device, so `workstationKey` doesn't matter there, and the first item's `locationId` must be **2550** (the root), which your request already had. Please discard any edits and send the **unchanged** Bruno Start sample, and check that the environment is the right QA one, not "QA 5". If it still returns 500, send me the time and I'll check the logs.
+
+## Message to Dan
+
+> Hi Dan, two questions for RD-11936 QA testing:
+> 1. What's the Fusebox card-device `processorCredentialIdentifier` UUID for 2550/2552 in QA? It's needed in the v1 request.
+> 2. Start returns 500 when the first item's location is 2552, because the Payment Service's location lookup uses it as the tenant. Is the unchanged sample (`primaryLocationId 2550`) the expected setup?
